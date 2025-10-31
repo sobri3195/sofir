@@ -1,0 +1,224 @@
+.sofir-admin {
+    margin-top: 20px;
+}
+
+.sofir-admin .sofir-tabs {
+    margin-top: 20px;
+    border-bottom: 1px solid #ccd0d4;
+}
+
+.sofir-admin .sofir-tab-content {
+    background: #fff;
+    padding: 24px;
+    border: 1px solid #ccd0d4;
+    border-top: none;
+}
+
+.sofir-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 24px;
+}
+
+.sofir-card {
+    background: #fff;
+    border: 1px solid #ccd0d4;
+    border-radius: 6px;
+    padding: 24px;
+    box-shadow: 0 1px 2px rgba(18, 32, 73, 0.08);
+}
+
+.sofir-card h2 {
+    margin-top: 0;
+}
+
+.sofir-field-group {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+}
+
+.sofir-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.sofir-field .required {
+    color: #d63638;
+}
+
+.sofir-checkbox-group {
+    display: grid;
+    gap: 6px;
+}
+
+.sofir-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+}
+
+.sofir-field-catalog {
+    display: grid;
+    gap: 16px;
+    margin-top: 16px;
+}
+
+.sofir-field-catalog__item {
+    border: 1px solid #e0e4ea;
+    border-radius: 6px;
+    padding: 16px;
+    background: #f8fafc;
+}
+
+.sofir-field-catalog__heading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+}
+
+.sofir-field-catalog__filter {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 12px;
+    font-weight: 500;
+}
+
+.sofir-table .column-actions {
+    width: 120px;
+    text-align: right;
+}
+
+.sofir-table a.delete {
+    color: #b32d2e;
+}
+
+.sofir-templates {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+.sofir-template-group__header {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.sofir-template-group__header h2 {
+    margin: 0;
+}
+
+.sofir-template-group__grid {
+    display: grid;
+    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.sofir-template-card {
+    border: 1px solid #d8dce3;
+    border-radius: 10px;
+    background: #fff;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-shadow: 0 1px 1px rgba(18, 32, 73, 0.06);
+}
+
+.sofir-template-card h3 {
+    margin: 0;
+}
+
+.sofir-template-card__meta {
+    display: flex;
+    gap: 8px;
+}
+
+.sofir-badge {
+    display: inline-flex;
+    align-items: center;
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: #f0f4ff;
+    color: #2f3a5d;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.sofir-template-card__actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: auto;
+}
+
+.sofir-subscribe {
+    display: flex;
+    justify-content: center;
+}
+
+.sofir-subscribe__fields {
+    display: flex;
+    gap: 10px;
+}
+
+.sofir-subscribe__fields input[type="email"] {
+    padding: 12px 14px;
+    border-radius: 999px;
+    border: 1px solid #ccd0d4;
+    min-width: 260px;
+}
+
+.sofir-subscribe__fields button {
+    padding: 12px 24px;
+    border-radius: 999px;
+    border: none;
+    background: var(--wp--preset--color--primary, #3858e9);
+    color: #fff;
+    cursor: pointer;
+}
+
+.sofir-redirect-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.sofir-metrics {
+    display: grid;
+    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.sofir-metric-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 8px;
+}
+
+.sofir-metric-list li {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.sofir-metric-list .count {
+    font-weight: 600;
+}
+
+.sofir-metric-list .path {
+    color: rgba(15, 23, 42, 0.6);
+    font-size: 12px;
+    margin-right: auto;
+    margin-left: 12px;
+}
