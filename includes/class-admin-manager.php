@@ -5,6 +5,7 @@ use Sofir\Admin\ContentPanel;
 use Sofir\Admin\SeoPanel;
 use Sofir\Admin\TemplatesPanel;
 use Sofir\Admin\UserPanel;
+use Sofir\Admin\Wizard;
 use Sofir\Templates\Manager as TemplateManager;
 
 class Manager {
