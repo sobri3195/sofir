@@ -14,13 +14,13 @@
 
 declare( strict_types=1 );
 
-namespace Sofir;
+namespace Sofir {
 
 if ( ! \defined( 'ABSPATH' ) ) {
     exit;
 }
 
-\require_once __DIR__ . '/includes/sofir-bootstrap-lifecycle.php';
+require_once __DIR__ . '/includes/sofir-bootstrap-lifecycle.php';
 
 final class Plugin {
     private const VERSION = '0.1.0';
@@ -125,8 +125,10 @@ function plugin(): Plugin {
     return Plugin::instance();
 }
 
+} // end namespace Sofir
+
 namespace {
-    Sofir\plugin();
+    \Sofir\plugin();
 
     \register_activation_hook( __FILE__, [ \Sofir\Bootstrap\Lifecycle::class, 'activate' ] );
     \register_deactivation_hook( __FILE__, [ \Sofir\Bootstrap\Lifecycle::class, 'deactivate' ] );
