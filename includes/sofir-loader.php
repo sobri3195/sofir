@@ -45,6 +45,10 @@ class Loader {
             } elseif ( method_exists( $instance, 'register' ) ) {
                 $instance->register();
             }
+
+            if ( method_exists( $instance, 'init_ajax' ) ) {
+                $instance->init_ajax();
+            }
         }
     }
 
@@ -53,6 +57,7 @@ class Loader {
      */
     private function discover_modules(): array {
         $modules = [
+            ConfigChecker::class,
             AdminManager::class,
             CptManager::class,
             TemplateManager::class,

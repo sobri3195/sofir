@@ -79,12 +79,25 @@ SOFIR is a powerful WordPress plugin that bootstraps via a custom autoloader and
 - Resource hints (preconnect, prefetch)
 - Frontend user dashboard
 
+### Configuration Checker
+- Automatic detection of wp-config.php issues
+- Admin notices for duplicate constant definitions
+- Guidance for fixing "headers already sent" errors
+- Links to detailed troubleshooting documentation
+
 ## Installation
 
 1. Download the plugin files
 2. Upload to `/wp-content/plugins/sofir/` directory
 3. Activate the plugin through the 'Plugins' menu in WordPress
 4. Run the setup wizard from the SOFIR admin menu
+
+### Troubleshooting
+
+If you encounter "Constant WP_DEBUG already defined" errors:
+- See `WP_CONFIG_FIX_GUIDE.md` for detailed troubleshooting steps
+- Reference `wp-config-sample.php` for proper configuration examples
+- SOFIR will automatically detect and warn about common configuration issues
 
 ## Directory Structure
 
