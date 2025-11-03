@@ -32,7 +32,7 @@ final class Plugin {
         $this->register_autoloader();
 
         \add_action( 'init', [ $this, 'load_textdomain' ], 0 );
-        \add_action( 'plugins_loaded', [ $this, 'bootstrap' ] );
+        \add_action( 'init', [ $this, 'bootstrap' ], 1 );
     }
 
     public function load_textdomain(): void {
