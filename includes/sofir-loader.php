@@ -5,8 +5,13 @@ use Sofir\Admin\Manager as AdminManager;
 use Sofir\Cpt\Manager as CptManager;
 use Sofir\Ai\Builder as AiBuilder;
 use Sofir\Blocks\Registrar as BlocksRegistrar;
+use Sofir\Blocks\Elements as BlocksElements;
 use Sofir\Directory\Manager as DirectoryManager;
+use Sofir\Directory\Mobile as DirectoryMobile;
 use Sofir\Membership\Manager as MembershipManager;
+use Sofir\Payments\Manager as PaymentsManager;
+use Sofir\Webhooks\Manager as WebhooksManager;
+use Sofir\Loyalty\Manager as LoyaltyManager;
 use Sofir\Rest\Router as RestRouter;
 use Sofir\Seo\Engine as SeoEngine;
 use Sofir\Templates\Manager as TemplateManager;
@@ -66,9 +71,14 @@ class Loader {
             Enhancer::class,
             RestRouter::class,
             DirectoryManager::class,
+            DirectoryMobile::class,
             MembershipManager::class,
+            PaymentsManager::class,
+            WebhooksManager::class,
+            LoyaltyManager::class,
             AiBuilder::class,
             BlocksRegistrar::class,
+            BlocksElements::class,
         ];
 
         /** @var class-string[] $modules */
