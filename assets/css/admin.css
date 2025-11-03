@@ -123,11 +123,41 @@
     border: 1px solid #d8dce3;
     border-radius: 10px;
     background: #fff;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    box-shadow: 0 1px 1px rgba(18, 32, 73, 0.06);
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+    overflow: hidden;
+}
+
+.sofir-template-card:hover {
+    box-shadow: 0 4px 12px rgba(18, 32, 73, 0.12);
+    transform: translateY(-2px);
+}
+
+.sofir-template-card__preview {
+    width: 100%;
+    aspect-ratio: 4/3;
+    overflow: hidden;
+    background: #f5f7fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sofir-template-card__preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.sofir-template-card__content {
     padding: 20px;
     display: flex;
     flex-direction: column;
     gap: 12px;
-    box-shadow: 0 1px 1px rgba(18, 32, 73, 0.06);
+    flex: 1;
 }
 
 .sofir-template-card h3 {
@@ -221,4 +251,141 @@
     font-size: 12px;
     margin-right: auto;
     margin-left: 12px;
+}
+
+.sofir-import-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999999;
+    animation: sofirModalFadeIn 0.2s ease;
+}
+
+@keyframes sofirModalFadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.sofir-import-modal__content {
+    position: relative;
+    background: #fff;
+    border-radius: 12px;
+    padding: 32px;
+    max-width: 520px;
+    width: 90%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: sofirModalSlideUp 0.3s ease;
+}
+
+@keyframes sofirModalSlideUp {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.sofir-import-modal__header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.sofir-import-modal__icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #10b981;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+}
+
+.sofir-import-modal__title {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.sofir-import-modal__message {
+    margin-bottom: 20px;
+    color: #64748b;
+}
+
+.sofir-import-modal__steps {
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 24px;
+}
+
+.sofir-import-modal__steps ul {
+    margin: 0;
+    padding-left: 20px;
+    list-style: none;
+}
+
+.sofir-import-modal__steps li {
+    position: relative;
+    padding-left: 8px;
+    margin-bottom: 8px;
+    color: #475569;
+}
+
+.sofir-import-modal__steps li:last-child {
+    margin-bottom: 0;
+}
+
+.sofir-import-modal__steps li::before {
+    content: "✓";
+    position: absolute;
+    left: -12px;
+    color: #10b981;
+    font-weight: bold;
+}
+
+.sofir-import-modal__actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.sofir-import-modal__actions .button {
+    flex: 1;
+    min-width: 140px;
+    justify-content: center;
+    text-align: center;
+}
+
+.sofir-import-modal__close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: transparent;
+    border: none;
+    font-size: 24px;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 4px 8px;
+    line-height: 1;
+}
+
+.sofir-import-modal__close:hover {
+    color: #475569;
 }

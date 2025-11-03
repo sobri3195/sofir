@@ -37,8 +37,17 @@ class TemplatesPanel {
             foreach ( $templates as $template ) {
                 $contexts = isset( $template['context'] ) ? (array) $template['context'] : [ 'page' ];
                 $context_labels = $this->context_labels( $contexts );
+                $preview_url    = $template['preview'] ?? '';
 
                 echo '<article class="sofir-template-card" data-template="' . \esc_attr( $template['slug'] ) . '">';
+
+                if ( $preview_url ) {
+                    echo '<div class="sofir-template-card__preview">';
+                    echo '<img src="' . \esc_url( $preview_url ) . '" alt="' . \esc_attr( $template['title'] ) . '" loading="lazy" />';
+                    echo '</div>';
+                }
+
+                echo '<div class="sofir-template-card__content">';
                 echo '<h3>' . \esc_html( $template['title'] ) . '</h3>';
                 if ( ! empty( $template['description'] ) ) {
                     echo '<p class="description">' . \esc_html( $template['description'] ) . '</p>';
@@ -57,6 +66,7 @@ class TemplatesPanel {
                     echo '<button type="button" class="button sofir-template-import" data-template="' . \esc_attr( $template['slug'] ) . '" data-context="template">' . \esc_html__( 'Import to FSE', 'sofir' ) . '</button>';
                 }
 
+                echo '</div>';
                 echo '</div>';
                 echo '</article>';
             }
