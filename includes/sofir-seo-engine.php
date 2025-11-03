@@ -273,7 +273,7 @@ class Engine {
             }
         }
 
-        $request_path = parse_url( add_query_arg( [], \home_url( \$_SERVER['REQUEST_URI'] ?? '/' ) ), PHP_URL_PATH );
+        $request_path = parse_url( add_query_arg( [], \home_url( $_SERVER['REQUEST_URI'] ?? '/' ) ), PHP_URL_PATH );
         $request_path = rtrim( (string) $request_path, '/' );
 
         foreach ( $this->redirects as $redirect ) {
@@ -301,7 +301,7 @@ class Engine {
         $analytics    = isset( $_POST['sofir_enable_analytics'] );
 
         $this->settings = [
-            'title_pattern'       = $pattern,
+            'title_pattern'       => $pattern,
             'default_description' => $description,
             'default_image'       => $image,
             'twitter_handle'      => $twitter,
