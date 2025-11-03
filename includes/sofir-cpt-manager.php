@@ -27,6 +27,9 @@ class Manager {
     /** @var array<string, string> */
     private array $seed_labels_cache = [];
 
+    /** @var bool */
+    private bool $definitions_loaded = false;
+
     public static function instance(): Manager {
         if ( null === self::$instance ) {
             self::$instance = new self();
@@ -36,11 +39,10 @@ class Manager {
     }
 
     private function __construct() {
-        $this->post_types = $this->load_or_seed_option( self::OPTION_POST_TYPES, $this->get_seed_post_types() );
-        $this->taxonomies = $this->load_or_seed_option( self::OPTION_TAXONOMIES, $this->get_seed_taxonomies() );
     }
 
     public function boot(): void {
+        \add_action( 'init', [ $this, 'load_definitions' ], 0 );
         \add_action( 'init', [ $this, 'register_dynamic_post_types' ], 1 );
         \add_action( 'init', [ $this, 'register_dynamic_taxonomies' ], 2 );
         \add_filter( 'query_vars', [ $this, 'register_query_vars' ] );
@@ -48,10 +50,23 @@ class Manager {
         \add_filter( 'the_posts', [ $this, 'filter_open_now' ], 10, 2 );
     }
 
+    public function load_definitions(): void {
+        if ( $this->definitions_loaded ) {
+            return;
+        }
+
+        $this->post_types = $this->load_or_seed_option( self::OPTION_POST_TYPES, $this->get_seed_post_types() );
+        $this->taxonomies = $this->load_or_seed_option( self::OPTION_TAXONOMIES, $this->get_seed_taxonomies() );
+        $this->definitions_loaded = true;
+    }
+
     /**
      * @return array<string, array>
      */
     public function get_post_types(): array {
+        if ( empty( $this->post_types ) ) {
+            $this->load_definitions();
+        }
         return $this->post_types;
     }
 
@@ -59,6 +74,9 @@ class Manager {
      * @return array<string, array>
      */
     public function get_taxonomies(): array {
+        if ( empty( $this->taxonomies ) ) {
+            $this->load_definitions();
+        }
         return $this->taxonomies;
     }
 
@@ -75,6 +93,7 @@ class Manager {
                     'meta'        => [
                         'type'              => 'object',
                         'single'            => true,
+                        'default'           => [],
                         'show_in_rest'      => [
                             'schema' => [
                                 'type'       => 'object',
@@ -104,6 +123,7 @@ class Manager {
                     'meta'        => [
                         'type'              => 'object',
                         'single'            => true,
+                        'default'           => [],
                         'show_in_rest'      => [
                             'schema' => [
                                 'type'       => 'object',
@@ -155,10 +175,11 @@ class Manager {
                 ],
                 'price'   => [
                     'label'       => \__( 'Price Range', 'sofir' ),
-                    'description' => \__( 'Tag listings with a human readable price range (e.g. $$, Premium).', 'sofir' ),
+                    'description' => \__( 'Tag listings with a human readable price range (e.g. $, Premium).', 'sofir' ),
                     'meta'        => [
                         'type'              => 'string',
                         'single'            => true,
+                        'default'           => '',
                         'show_in_rest'      => true,
                         'sanitize_callback' => [ __CLASS__, 'sanitize_text_meta' ],
                         'auth_callback'     => [ __CLASS__, 'authorize_meta' ],
@@ -175,6 +196,7 @@ class Manager {
                     'meta'        => [
                         'type'              => 'object',
                         'single'            => true,
+                        'default'           => [],
                         'show_in_rest'      => [
                             'schema' => [
                                 'type'       => 'object',
@@ -195,6 +217,7 @@ class Manager {
                     'meta'        => [
                         'type'              => 'array',
                         'single'            => true,
+                        'default'           => [],
                         'show_in_rest'      => [
                             'schema' => [
                                 'type'  => 'array',
@@ -211,6 +234,7 @@ class Manager {
                     'meta'        => [
                         'type'              => 'object',
                         'single'            => true,
+                        'default'           => [],
                         'show_in_rest'      => true,
                         'sanitize_callback' => [ __CLASS__, 'sanitize_attributes' ],
                         'auth_callback'     => [ __CLASS__, 'authorize_meta' ],

@@ -97,12 +97,12 @@ class Engine {
         $post_types = \get_post_types( [ 'show_in_rest' => true ], 'names' );
 
         $meta_specs = [
-            'sofir_seo_title'       => [ 'type' => 'string' ],
-            'sofir_seo_description' => [ 'type' => 'string' ],
-            'sofir_seo_keywords'    => [ 'type' => 'string' ],
-            'sofir_seo_image'       => [ 'type' => 'integer' ],
+            'sofir_seo_title'       => [ 'type' => 'string', 'default' => '' ],
+            'sofir_seo_description' => [ 'type' => 'string', 'default' => '' ],
+            'sofir_seo_keywords'    => [ 'type' => 'string', 'default' => '' ],
+            'sofir_seo_image'       => [ 'type' => 'integer', 'default' => 0 ],
             'sofir_noindex'         => [ 'type' => 'boolean', 'default' => false ],
-            'sofir_redirect_url'    => [ 'type' => 'string' ],
+            'sofir_redirect_url'    => [ 'type' => 'string', 'default' => '' ],
         ];
 
         foreach ( $post_types as $post_type ) {
@@ -114,7 +114,7 @@ class Engine {
                         'single'            => true,
                         'type'              => $schema['type'],
                         'show_in_rest'      => true,
-                        'default'           => $schema['default'] ?? null,
+                        'default'           => $schema['default'],
                         'auth_callback'     => [ $this, 'can_manage_post_meta' ],
                         'sanitize_callback' => [ $this, 'sanitize_meta_value' ],
                     ]
