@@ -1,6 +1,8 @@
 # WordPress
 .DS_Store
 Thumbs.db
+wp-config.php
+!wp-config-sample.php
 
 # Node modules
 node_modules/
