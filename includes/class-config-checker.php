@@ -18,6 +18,7 @@ if ( ! \defined( 'ABSPATH' ) ) {
 
 class ConfigChecker {
     private static ?ConfigChecker $instance = null;
+    private bool $script_enqueued = false;
 
     public static function instance(): ConfigChecker {
         if ( null === self::$instance ) {
@@ -208,14 +209,18 @@ class ConfigChecker {
             );
         }
 
-        // Add JavaScript to handle dismissal
-        $this->add_dismissal_script();
+        // Add JavaScript to handle dismissal (only once)
+        if ( ! $this->script_enqueued ) {
+            \add_action( 'admin_print_footer_scripts', [ $this, 'add_dismissal_script' ] );
+            $this->script_enqueued = true;
+        }
     }
 
     /**
      * Add JavaScript for notice dismissal
      */
-    private function add_dismissal_script(): void {
+    public function add_dismissal_script(): void {
+        $nonce = \wp_create_nonce( 'sofir_dismiss_notice' );
         ?>
         <script type="text/javascript">
         jQuery(document).ready(function($) {
@@ -230,7 +235,7 @@ class ConfigChecker {
                 $.post(ajaxurl, {
                     action: 'sofir_dismiss_notice',
                     notice_key: noticeKey,
-                    nonce: '<?php echo \esc_js( \wp_create_nonce( 'sofir_dismiss_notice' ) ); ?>'
+                    nonce: <?php echo \wp_json_encode( $nonce ); ?>
                 });
                 
                 // Hide the notice
@@ -245,7 +250,7 @@ class ConfigChecker {
                     $.post(ajaxurl, {
                         action: 'sofir_dismiss_notice',
                         notice_key: noticeKey,
-                        nonce: '<?php echo \esc_js( \wp_create_nonce( 'sofir_dismiss_notice' ) ); ?>'
+                        nonce: <?php echo \wp_json_encode( $nonce ); ?>
                     });
                 }
             });
