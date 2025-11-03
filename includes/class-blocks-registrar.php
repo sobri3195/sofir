@@ -18,7 +18,20 @@ class Registrar {
 
     public function boot(): void {
         \add_action( 'init', [ $this, 'register_blocks' ] );
+        \add_action( 'wp_enqueue_scripts', [ $this, 'register_block_assets' ] );
         \add_filter( 'block_categories_all', [ $this, 'register_category' ], 10, 2 );
+    }
+
+    public function register_block_assets(): void {
+        \wp_register_script( 'sofir-countdown', SOFIR_ASSETS_URL . 'js/countdown.js', [], SOFIR_VERSION, true );
+        \wp_register_script( 'sofir-create-post', SOFIR_ASSETS_URL . 'js/create-post.js', [ 'wp-api-fetch' ], SOFIR_VERSION, true );
+        \wp_register_script( 'sofir-messages', SOFIR_ASSETS_URL . 'js/messages.js', [ 'wp-api-fetch' ], SOFIR_VERSION, true );
+        \wp_register_script( 'sofir-navbar', SOFIR_ASSETS_URL . 'js/navbar.js', [], SOFIR_VERSION, true );
+        \wp_register_script( 'sofir-popup', SOFIR_ASSETS_URL . 'js/popup.js', [], SOFIR_VERSION, true );
+        \wp_register_script( 'sofir-quick-search', SOFIR_ASSETS_URL . 'js/quick-search.js', [ 'wp-api-fetch' ], SOFIR_VERSION, true );
+        \wp_register_script( 'sofir-slider', SOFIR_ASSETS_URL . 'js/slider.js', [], SOFIR_VERSION, true );
+        \wp_register_script( 'sofir-charts', SOFIR_ASSETS_URL . 'js/charts.js', [], SOFIR_VERSION, true );
+        \wp_register_script( 'sofir-auth', SOFIR_ASSETS_URL . 'js/auth.js', [ 'wp-api-fetch' ], SOFIR_VERSION, true );
     }
 
     public function register_blocks(): void {
