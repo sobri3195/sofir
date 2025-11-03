@@ -31,7 +31,12 @@ final class Plugin {
         $this->define_constants();
         $this->register_autoloader();
 
+        \add_action( 'init', [ $this, 'load_textdomain' ], 0 );
         \add_action( 'plugins_loaded', [ $this, 'bootstrap' ] );
+    }
+
+    public function load_textdomain(): void {
+        \load_plugin_textdomain( 'sofir', false, \dirname( \plugin_basename( SOFIR_PLUGIN_FILE ) ) . '/languages' );
     }
 
     public static function instance(): Plugin {

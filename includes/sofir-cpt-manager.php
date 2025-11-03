@@ -93,7 +93,7 @@ class Manager {
                     'meta'        => [
                         'type'              => 'object',
                         'single'            => true,
-                        'default'           => [],
+                        'default'           => (object) [],
                         'show_in_rest'      => [
                             'schema' => [
                                 'type'       => 'object',
@@ -123,7 +123,7 @@ class Manager {
                     'meta'        => [
                         'type'              => 'object',
                         'single'            => true,
-                        'default'           => [],
+                        'default'           => (object) [],
                         'show_in_rest'      => [
                             'schema' => [
                                 'type'       => 'object',
@@ -196,7 +196,7 @@ class Manager {
                     'meta'        => [
                         'type'              => 'object',
                         'single'            => true,
-                        'default'           => [],
+                        'default'           => (object) [],
                         'show_in_rest'      => [
                             'schema' => [
                                 'type'       => 'object',
@@ -234,7 +234,7 @@ class Manager {
                     'meta'        => [
                         'type'              => 'object',
                         'single'            => true,
-                        'default'           => [],
+                        'default'           => (object) [],
                         'show_in_rest'      => true,
                         'sanitize_callback' => [ __CLASS__, 'sanitize_attributes' ],
                         'auth_callback'     => [ __CLASS__, 'authorize_meta' ],
@@ -1063,10 +1063,11 @@ class Manager {
     }
 
     public static function sanitize_location( $value ) {
-        if ( ! \is_array( $value ) ) {
-            return [];
+        if ( ! \is_array( $value ) && ! \is_object( $value ) ) {
+            return (object) [];
         }
 
+        $value = (array) $value;
         $fields = [ 'address', 'city', 'state', 'country', 'postal' ];
 
         $output = [];
@@ -1085,14 +1086,15 @@ class Manager {
             $output['lng'] = (float) $value['lng'];
         }
 
-        return $output;
+        return (object) $output;
     }
 
     public static function sanitize_hours( $value ) {
-        if ( ! \is_array( $value ) ) {
-            return [];
+        if ( ! \is_array( $value ) && ! \is_object( $value ) ) {
+            return (object) [];
         }
 
+        $value = (array) $value;
         $result = [];
 
         foreach ( self::get_weekdays() as $day ) {
@@ -1120,7 +1122,7 @@ class Manager {
             }
         }
 
-        return $result;
+        return (object) $result;
     }
 
     public static function sanitize_rating( $value ) {
@@ -1151,10 +1153,11 @@ class Manager {
     }
 
     public static function sanitize_contact( $value ) {
-        if ( ! \is_array( $value ) ) {
-            return [];
+        if ( ! \is_array( $value ) && ! \is_object( $value ) ) {
+            return (object) [];
         }
 
+        $value = (array) $value;
         $output = [];
 
         if ( isset( $value['email'] ) && \is_email( $value['email'] ) ) {
@@ -1169,7 +1172,7 @@ class Manager {
             $output['website'] = \esc_url_raw( $value['website'] );
         }
 
-        return $output;
+        return (object) $output;
     }
 
     public static function sanitize_gallery( $value ) {
@@ -1187,10 +1190,11 @@ class Manager {
     }
 
     public static function sanitize_attributes( $value ) {
-        if ( ! \is_array( $value ) ) {
-            return [];
+        if ( ! \is_array( $value ) && ! \is_object( $value ) ) {
+            return (object) [];
         }
 
+        $value = (array) $value;
         $output = [];
 
         foreach ( $value as $key => $val ) {
@@ -1203,7 +1207,7 @@ class Manager {
             $output[ $key ] = \sanitize_text_field( (string) $val );
         }
 
-        return $output;
+        return (object) $output;
     }
 
     private static function sanitize_time( string $time ): string {
@@ -1219,7 +1223,13 @@ class Manager {
     }
 
     private static function is_schedule_open( $schedule, int $timestamp, string $weekday ): bool {
-        if ( ! \is_array( $schedule ) || empty( $schedule[ $weekday ] ) ) {
+        if ( ! \is_array( $schedule ) && ! \is_object( $schedule ) ) {
+            return false;
+        }
+
+        $schedule = (array) $schedule;
+
+        if ( empty( $schedule[ $weekday ] ) ) {
             return false;
         }
 
