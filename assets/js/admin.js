@@ -70,15 +70,7 @@
                 }
 
                 const { data: payload } = json;
-                notify( 'success', payload.message || 'Template imported.' );
-
-                if ( payload.editUrl ) {
-                    button.dataset.editUrl = payload.editUrl;
-                }
-
-                if ( payload.viewUrl ) {
-                    button.dataset.viewUrl = payload.viewUrl;
-                }
+                showSuccessModal( payload );
             } )
             .catch( function ( error ) {
                 console.error( 'SOFIR import error', error );
@@ -88,4 +80,69 @@
                 setButtonBusy( button, false );
             } );
     } );
+
+    function showSuccessModal( payload ) {
+        const modal = document.createElement( 'div' );
+        modal.className = 'sofir-import-modal';
+
+        let stepsHtml = '';
+        if ( payload.steps && payload.steps.length > 0 ) {
+            stepsHtml = '<div class="sofir-import-modal__steps"><ul>';
+            payload.steps.forEach( function ( step ) {
+                stepsHtml += '<li>' + escapeHtml( step ) + '</li>';
+            } );
+            stepsHtml += '</ul></div>';
+        }
+
+        let actionsHtml = '<div class="sofir-import-modal__actions">';
+        if ( payload.editUrl ) {
+            actionsHtml += '<a href="' + escapeHtml( payload.editUrl ) + '" class="button button-primary">Edit in Gutenberg</a>';
+        }
+        if ( payload.viewUrl ) {
+            actionsHtml += '<a href="' + escapeHtml( payload.viewUrl ) + '" class="button" target="_blank">View Page</a>';
+        }
+        actionsHtml += '<button type="button" class="button sofir-modal-close">Close</button>';
+        actionsHtml += '</div>';
+
+        modal.innerHTML = '<div class="sofir-import-modal__content">' +
+            '<button type="button" class="sofir-import-modal__close" aria-label="Close">×</button>' +
+            '<div class="sofir-import-modal__header">' +
+            '<div class="sofir-import-modal__icon">✓</div>' +
+            '<h2 class="sofir-import-modal__title">Import Successful!</h2>' +
+            '</div>' +
+            '<p class="sofir-import-modal__message">' + escapeHtml( payload.message || 'Template imported successfully.' ) + '</p>' +
+            stepsHtml +
+            actionsHtml +
+            '</div>';
+
+        document.body.appendChild( modal );
+
+        modal.addEventListener( 'click', function ( event ) {
+            if ( event.target === modal || event.target.classList.contains( 'sofir-modal-close' ) || event.target.classList.contains( 'sofir-import-modal__close' ) ) {
+                closeModal( modal );
+            }
+        } );
+
+        document.addEventListener( 'keydown', function onEscape( event ) {
+            if ( event.key === 'Escape' ) {
+                closeModal( modal );
+                document.removeEventListener( 'keydown', onEscape );
+            }
+        } );
+    }
+
+    function closeModal( modal ) {
+        modal.style.opacity = '0';
+        setTimeout( function () {
+            if ( modal.parentNode ) {
+                modal.parentNode.removeChild( modal );
+            }
+        }, 200 );
+    }
+
+    function escapeHtml( text ) {
+        const div = document.createElement( 'div' );
+        div.textContent = text;
+        return div.innerHTML;
+    }
 } )();
