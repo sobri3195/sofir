@@ -10,17 +10,22 @@ A modular, all-in-one WordPress plugin that provides comprehensive site manageme
 
 ## Description
 
-SOFIR is a powerful WordPress plugin that bootstraps via a custom autoloader and central loader singleton. It seamlessly integrates multiple modules into WordPress hooks to deliver a complete site toolkit including:
+SOFIR is a comprehensive WordPress plugin that bootstraps via a custom autoloader and central loader singleton. It seamlessly integrates multiple modules into WordPress hooks to deliver a complete site toolkit including:
 
-- **Custom Post Types & Taxonomies Management** - Dynamic CPT creation with rich metadata
-- **Template Management** - Gutenberg block patterns and one-click template imports
+- **Custom Post Types & Taxonomies Management** - Dynamic CPT creation with rich metadata, custom fields, and filters
+- **Template Management** - Gutenberg block patterns, one-click imports, and per-page link generation
 - **SEO Engine** - Complete SEO management with schema, redirects, and analytics
-- **Directory & Listings** - Filterable maps with Mapbox/Google Maps integration
-- **Membership System** - Plan management, Stripe integration, and content protection
+- **Directory & Listings** - Filterable maps with Mapbox/Google Maps, mobile support, reviews, and timeline
+- **Membership System** - Plan management, multi-vendor support, and content protection
+- **Payment Gateways** - Manual payments and Indonesian gateways (Duitku, Xendit, Midtrans)
+- **Webhooks Integration** - Compatible with Bit Integration for external service connections
+- **Loyalty Program** - Points-based rewards for signup, login, and purchases
+- **Phone Registration** - Allow users to register with phone number only
+- **Mobile Support** - Responsive mobile menu and bottom navigation bar
+- **28 Gutenberg Blocks** - Complete set including dashboard, forms, charts, maps, and more
 - **AI Integration** - Intelligent content enhancement capabilities
 - **Performance Enhancement** - Resource optimization and security features
 - **REST API Extensions** - Enhanced API endpoints for content management
-- **Blocks & Patterns** - Custom Gutenberg blocks and reusable patterns
 
 ## Requirements
 
@@ -35,19 +40,23 @@ SOFIR is a powerful WordPress plugin that bootstraps via a custom autoloader and
 - SEO settings and redirect management
 - User and membership management
 - Setup wizard for quick configuration
-- Analytics dashboard
+- Analytics dashboard with charts and statistics
 
 ### Custom Post Type Manager
-- Seed metadata (location, hours, rating, etc.)
+- Create custom post types with metadata (location, hours, rating, etc.)
+- Custom taxonomy creation and management
+- Custom field definitions
 - REST API query filters
 - "Open now" scheduling support
-- Taxonomy management
+- Event tracking and statistics
 
 ### Template System
 - Ships with Gutenberg block patterns
 - One-click page and FSE template import
 - AJAX-powered template installation
 - Multiple template categories (blog, directory, landing, profile)
+- Per-page import with link generation
+- Custom templates per CPT
 
 ### Directory Tools
 - Shortcodes and blocks for listings
@@ -55,10 +64,15 @@ SOFIR is a powerful WordPress plugin that bootstraps via a custom autoloader and
 - Review rating synchronization
 - Front-end listings with vanilla JavaScript
 - Location-based search
+- Mobile-responsive design with mobile menu
+- Bottom navigation bar for mobile devices
+- Dashboard with charts and analytics
 
 ### Membership Features
 - Plan and role storage
 - Stripe payment integration
+- Manual payment support
+- Local payment gateways (Duitku, Xendit, Midtrans)
 - Protected content shortcodes
 - Pricing blocks for Gutenberg
 - Member-only REST endpoints
@@ -73,11 +87,67 @@ SOFIR is a powerful WordPress plugin that bootstraps via a custom autoloader and
 
 ### Enhancement Module
 - Authentication shortcodes
+- Phone-only registration support
 - Login throttling and security
 - Honeypot spam protection
 - Performance tweaks
 - Resource hints (preconnect, prefetch)
 - Frontend user dashboard
+
+### Payment System
+- Manual payment processing
+- Duitku payment gateway integration
+- Xendit payment gateway integration
+- Midtrans payment gateway integration
+- Order management and tracking
+- Payment webhooks
+
+### Webhooks Integration
+- Compatible with Bit Integration plugin
+- User registration, login, and profile update triggers
+- Payment status change triggers
+- Post publishing triggers
+- Comment submission triggers
+- Form submission triggers
+- REST API for webhook management
+
+### Loyalty Program
+- Points-based rewards system
+- Signup rewards
+- Login rewards
+- Purchase rewards
+- Point tracking and redemption
+
+### Gutenberg Blocks (28 Elements)
+Complete set of custom Gutenberg blocks:
+- Action button
+- Cart summary
+- Countdown timer
+- Create post form
+- Dashboard widget
+- Gallery
+- Login/Register forms
+- Interactive maps
+- Messages/Direct messaging
+- Navigation bar
+- Order management
+- Popup kit
+- Post feed
+- Print template
+- Product form
+- Product price display
+- Quick search
+- Review statistics
+- Ring chart
+- Sales chart
+- Search form
+- Slider
+- Term feed
+- Timeline
+- Timeline style kit
+- User bar
+- Visit chart
+- Work hours display
 
 ### Configuration Checker
 - Automatic detection of wp-config.php issues
@@ -149,12 +219,37 @@ The plugin includes a sophisticated autoloader that supports:
 **Filters:**
 - Available through individual modules
 
+## Ready-to-Use Features
+
+SOFIR comes with complete, ready-to-use features for:
+- **Directory** - Location-based listings with map integration
+- **Appointments** - Schedule and manage appointments
+- **Events** - Event management with CPT support
+- **Reviews** - User reviews and rating system
+- **Timeline** - Activity timeline and history
+- **Membership** - Member management and subscriptions
+- **Forms** - Custom form creation and handling
+- **Google Sheets** - Integration capabilities via webhooks
+- **Multi Vendor** - Vendor management support
+- **Profile** - User profile management
+- **Filters** - Advanced filtering for listings
+- **Design Templates** - Pre-designed page templates
+- **Taxonomy** - Custom taxonomy management
+- **Direct Messages** - User-to-user messaging
+- **Map Directory** - Interactive map-based directory
+- **Dashboard & Charts** - Analytics dashboard with visualizations
+- **Orders** - Order management system
+
 ## API Integration
 
 SOFIR supports integration with:
 - **Mapbox API** - For interactive maps
 - **Google Maps API** - Alternative mapping solution
 - **Stripe API** - Payment processing for memberships
+- **Duitku API** - Indonesian payment gateway
+- **Xendit API** - Indonesian payment gateway
+- **Midtrans API** - Indonesian payment gateway
+- **Bit Integration** - Webhook-based integrations
 
 ## Support
 

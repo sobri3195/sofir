@@ -31,6 +31,7 @@ class Elements {
         $this->register_cart_summary_block();
         $this->register_countdown_block();
         $this->register_create_post_block();
+        $this->register_dashboard_block();
         $this->register_gallery_block();
         $this->register_login_register_block();
         $this->register_map_block();
@@ -155,6 +156,88 @@ class Elements {
                     echo '<textarea name="post_content" placeholder="' . \esc_attr__( 'Content', 'sofir' ) . '" rows="5"></textarea>';
                     echo '<button type="submit" class="button button-primary">' . \esc_html( $label ) . '</button>';
                     echo '</form>';
+                    echo '</div>';
+                    
+                    return (string) ob_get_clean();
+                },
+            ]
+        );
+    }
+
+    private function register_dashboard_block(): void {
+        \register_block_type(
+            'sofir/dashboard',
+            [
+                'attributes'      => [
+                    'title' => [ 'type' => 'string', 'default' => 'Dashboard' ],
+                    'showStats' => [ 'type' => 'boolean', 'default' => true ],
+                    'showRecent' => [ 'type' => 'boolean', 'default' => true ],
+                ],
+                'render_callback' => function ( array $attributes ): string {
+                    if ( ! \is_user_logged_in() ) {
+                        return '<p>' . \esc_html__( 'You must be logged in to view the dashboard.', 'sofir' ) . '</p>';
+                    }
+                    
+                    $user = \wp_get_current_user();
+                    $title = $attributes['title'] ?? 'Dashboard';
+                    $show_stats = $attributes['showStats'] ?? true;
+                    $show_recent = $attributes['showRecent'] ?? true;
+                    
+                    ob_start();
+                    echo '<div class="sofir-dashboard">';
+                    echo '<h2>' . \esc_html( $title ) . '</h2>';
+                    
+                    echo '<div class="sofir-dashboard-welcome">';
+                    echo '<p>' . \sprintf( \esc_html__( 'Welcome back, %s!', 'sofir' ), '<strong>' . \esc_html( $user->display_name ) . '</strong>' ) . '</p>';
+                    echo '</div>';
+                    
+                    if ( $show_stats ) {
+                        $post_count = \count_user_posts( $user->ID );
+                        $comment_count = \get_comments( [ 'user_id' => $user->ID, 'count' => true ] );
+                        
+                        echo '<div class="sofir-dashboard-stats">';
+                        echo '<div class="sofir-stat-card">';
+                        echo '<span class="sofir-stat-value">' . \esc_html( $post_count ) . '</span>';
+                        echo '<span class="sofir-stat-label">' . \esc_html__( 'Posts', 'sofir' ) . '</span>';
+                        echo '</div>';
+                        echo '<div class="sofir-stat-card">';
+                        echo '<span class="sofir-stat-value">' . \esc_html( $comment_count ) . '</span>';
+                        echo '<span class="sofir-stat-label">' . \esc_html__( 'Comments', 'sofir' ) . '</span>';
+                        echo '</div>';
+                        echo '<div class="sofir-stat-card">';
+                        echo '<span class="sofir-stat-value">' . \esc_html( \gmdate( 'M Y', \strtotime( $user->user_registered ) ) ) . '</span>';
+                        echo '<span class="sofir-stat-label">' . \esc_html__( 'Member Since', 'sofir' ) . '</span>';
+                        echo '</div>';
+                        echo '</div>';
+                    }
+                    
+                    if ( $show_recent ) {
+                        $recent_posts = \get_posts( [
+                            'author' => $user->ID,
+                            'numberposts' => 5,
+                            'post_status' => 'publish',
+                        ] );
+                        
+                        if ( ! empty( $recent_posts ) ) {
+                            echo '<div class="sofir-dashboard-recent">';
+                            echo '<h3>' . \esc_html__( 'Recent Posts', 'sofir' ) . '</h3>';
+                            echo '<ul class="sofir-post-list">';
+                            foreach ( $recent_posts as $post ) {
+                                echo '<li>';
+                                echo '<a href="' . \esc_url( \get_permalink( $post ) ) . '">' . \esc_html( $post->post_title ) . '</a>';
+                                echo '<span class="sofir-post-date">' . \esc_html( \get_the_date( '', $post ) ) . '</span>';
+                                echo '</li>';
+                            }
+                            echo '</ul>';
+                            echo '</div>';
+                        }
+                    }
+                    
+                    echo '<div class="sofir-dashboard-actions">';
+                    echo '<a href="' . \esc_url( \admin_url( 'profile.php' ) ) . '" class="button">' . \esc_html__( 'Edit Profile', 'sofir' ) . '</a>';
+                    echo '<a href="' . \esc_url( \admin_url( 'post-new.php' ) ) . '" class="button button-primary">' . \esc_html__( 'Create Post', 'sofir' ) . '</a>';
+                    echo '</div>';
+                    
                     echo '</div>';
                     
                     return (string) ob_get_clean();

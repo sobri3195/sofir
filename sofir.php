@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       SOFIR
  * Plugin URI:        https://example.com/sofir
- * Description:       Smart Optimized Framework for Integrated Rendering with native Gutenberg and FSE support.
+ * Description:       Complete WordPress solution with 28 Gutenberg blocks, directory, membership, payments (Duitku/Xendit/Midtrans), webhooks (Bit Integration), loyalty program, and mobile support.
  * Version:           0.1.0
  * Author:            SOFIR Team
  * Author URI:        https://example.com

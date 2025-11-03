@@ -1,6 +1,21 @@
 <?php
 namespace Sofir\Webhooks;
 
+/**
+ * Webhooks Manager
+ * 
+ * Provides webhook integration capabilities for external services.
+ * 
+ * Compatible with Bit Integration plugin and other webhook-based integrations.
+ * Supports triggers for:
+ * - User registration, login, and profile updates
+ * - Payment status changes
+ * - Post publishing
+ * - Comment submissions
+ * - Form submissions
+ * 
+ * @package Sofir\Webhooks
+ */
 class Manager {
     private const OPTION_WEBHOOKS = 'sofir_webhooks';
 
