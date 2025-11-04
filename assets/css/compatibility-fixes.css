@@ -1,0 +1,428 @@
+/**
+ * SOFIR - Compatibility Fixes
+ * Specific fixes for known plugin and theme conflicts
+ */
+
+/* ==========================================================================
+   Templately Conflicts
+   ========================================================================== */
+
+/* Fix Templately container width issues */
+.templately-content .sofir-block,
+.templately-builder .sofir-block {
+    max-width: 100% !important;
+    width: 100% !important;
+}
+
+/* Fix Templately overlay issues */
+.templately-content .sofir-popup-kit {
+    z-index: 999999 !important;
+}
+
+/* Templately button conflicts */
+.templately-content .sofir-action-button {
+    all: revert;
+    display: inline-block !important;
+    padding: 12px 30px !important;
+    background: #007cba !important;
+    color: #fff !important;
+}
+
+/* ==========================================================================
+   Elementor Conflicts
+   ========================================================================== */
+
+.elementor-widget-container .sofir-block {
+    margin: 0 !important;
+}
+
+.elementor .sofir-block * {
+    box-sizing: border-box !important;
+}
+
+/* ==========================================================================
+   WPBakery Page Builder Conflicts
+   ========================================================================== */
+
+.vc_row .sofir-block {
+    width: 100% !important;
+}
+
+.wpb_wrapper .sofir-block {
+    margin-bottom: 2em !important;
+}
+
+/* ==========================================================================
+   Divi Theme Conflicts
+   ========================================================================== */
+
+.et_pb_section .sofir-block {
+    width: 100% !important;
+    max-width: none !important;
+}
+
+.et_pb_row .sofir-block {
+    margin: 0 0 2em 0 !important;
+}
+
+/* ==========================================================================
+   Avada Theme Conflicts
+   ========================================================================== */
+
+.fusion-builder-container .sofir-block {
+    width: 100% !important;
+}
+
+.fusion-row .sofir-block {
+    margin-bottom: 2em !important;
+}
+
+/* ==========================================================================
+   WooCommerce Conflicts
+   ========================================================================== */
+
+.woocommerce .sofir-block button {
+    border: none !important;
+}
+
+.woocommerce .sofir-pricing-table .sofir-pricing-price {
+    color: #007cba !important;
+}
+
+/* ==========================================================================
+   Contact Form 7 Conflicts
+   ========================================================================== */
+
+.wpcf7 .sofir-contact-form input,
+.wpcf7 .sofir-contact-form textarea {
+    width: 100% !important;
+    padding: 12px !important;
+}
+
+/* ==========================================================================
+   Yoast SEO Breadcrumbs Conflicts
+   ========================================================================== */
+
+.sofir-breadcrumb + .yoast-breadcrumb,
+.yoast-breadcrumb + .sofir-breadcrumb {
+    display: none;
+}
+
+/* ==========================================================================
+   Jetpack Conflicts
+   ========================================================================== */
+
+.jetpack-related-posts ~ .sofir-block {
+    margin-top: 3em !important;
+}
+
+/* ==========================================================================
+   WPML Language Switcher Conflicts
+   ========================================================================== */
+
+.wpml-ls-legacy-horizontal .sofir-navbar-menu {
+    display: flex !important;
+}
+
+/* ==========================================================================
+   Cookie Notice Plugins Conflicts
+   ========================================================================== */
+
+.sofir-block {
+    z-index: 1 !important;
+}
+
+.cookie-notice,
+.gdpr-cookie-notice {
+    z-index: 999999 !important;
+}
+
+/* ==========================================================================
+   Popular Cache Plugins
+   ========================================================================== */
+
+/* WP Super Cache */
+.sofir-block[data-cached="true"] {
+    animation: none !important;
+}
+
+/* W3 Total Cache */
+.w3tc-container .sofir-block {
+    will-change: auto !important;
+}
+
+/* ==========================================================================
+   AMP (Accelerated Mobile Pages) Compatibility
+   ========================================================================== */
+
+amp-page .sofir-slider,
+amp-page .sofir-testimonial-slider {
+    position: relative !important;
+}
+
+amp-page .sofir-block button {
+    cursor: pointer !important;
+}
+
+/* ==========================================================================
+   GDPR / Privacy Plugins
+   ========================================================================== */
+
+.sofir-block iframe[data-gdpr] {
+    width: 100% !important;
+    height: 400px !important;
+}
+
+/* ==========================================================================
+   Translation Plugins (TranslatePress, etc)
+   ========================================================================== */
+
+.trp-language-switcher + .sofir-navbar {
+    margin-top: 1em !important;
+}
+
+/* ==========================================================================
+   Lazy Load Plugins Conflicts
+   ========================================================================== */
+
+.sofir-block img.lazy {
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.sofir-block img.lazy.loaded {
+    opacity: 1;
+}
+
+/* ==========================================================================
+   Page Speed Optimization Plugins
+   ========================================================================== */
+
+/* Autoptimize */
+.ao-processed .sofir-block {
+    contain: none !important;
+}
+
+/* WP Rocket */
+.rocket-lazyload .sofir-gallery-item img {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+/* ==========================================================================
+   Security Plugins (Wordfence, Sucuri, etc)
+   ========================================================================== */
+
+.sofir-contact-form [data-wf-captcha],
+.sofir-contact-form [data-sucuri-captcha] {
+    margin-bottom: 1em !important;
+}
+
+/* ==========================================================================
+   Popup Plugins Conflicts
+   ========================================================================== */
+
+.sofir-popup-kit {
+    z-index: 999998 !important;
+}
+
+body.sofir-popup-open {
+    overflow: hidden !important;
+}
+
+/* ==========================================================================
+   Mobile Menu Plugins
+   ========================================================================== */
+
+.mobile-menu-active .sofir-navbar {
+    display: none !important;
+}
+
+/* ==========================================================================
+   RTL (Right-to-Left) Support
+   ========================================================================== */
+
+.rtl .sofir-breadcrumb-item:not(:last-child)::after {
+    content: "\\";
+    transform: scaleX(-1);
+}
+
+.rtl .sofir-slider-prev {
+    right: 10px;
+    left: auto;
+}
+
+.rtl .sofir-slider-next {
+    left: 10px;
+    right: auto;
+}
+
+/* ==========================================================================
+   Dark Mode Plugins
+   ========================================================================== */
+
+.dark-mode .sofir-block {
+    background: transparent !important;
+    color: inherit !important;
+}
+
+.dark-mode .sofir-login-register,
+.dark-mode .sofir-contact-form,
+.dark-mode .sofir-appointment-booking {
+    background: #1e1e1e !important;
+    color: #fff !important;
+}
+
+.dark-mode .sofir-login-register input,
+.dark-mode .sofir-contact-form input,
+.dark-mode .sofir-contact-form textarea {
+    background: #2a2a2a !important;
+    color: #fff !important;
+    border-color: #444 !important;
+}
+
+/* ==========================================================================
+   Maintenance Mode Plugins
+   ========================================================================== */
+
+.maintenance-mode .sofir-block {
+    display: block !important;
+    visibility: visible !important;
+}
+
+/* ==========================================================================
+   Multi-Vendor Marketplace Plugins (Dokan, WCFM, etc)
+   ========================================================================== */
+
+.dokan-dashboard .sofir-dashboard,
+.wcfm-dashboard .sofir-dashboard {
+    width: 100% !important;
+    margin: 0 !important;
+}
+
+/* ==========================================================================
+   Learning Management System (LearnDash, LifterLMS, etc)
+   ========================================================================== */
+
+.learndash-wrapper .sofir-progress-bar,
+.llms-course-navigation .sofir-progress-bar {
+    margin: 2em 0 !important;
+}
+
+/* ==========================================================================
+   Event Calendar Plugins (The Events Calendar, etc)
+   ========================================================================== */
+
+.tribe-events-event-meta .sofir-countdown {
+    margin: 2em 0 !important;
+}
+
+/* ==========================================================================
+   Forum Plugins (bbPress, BuddyPress)
+   ========================================================================== */
+
+#bbpress-forums .sofir-block,
+.buddypress .sofir-block {
+    width: 100% !important;
+    margin: 2em 0 !important;
+}
+
+/* ==========================================================================
+   Membership Plugins (MemberPress, Restrict Content Pro)
+   ========================================================================== */
+
+.mepr-account-nav ~ .sofir-dashboard {
+    margin-top: 2em !important;
+}
+
+/* ==========================================================================
+   Review Plugins (WP Review, Rating-Widget)
+   ========================================================================== */
+
+.sofir-review-stats + .review-box {
+    margin-top: 2em !important;
+}
+
+/* ==========================================================================
+   Slider Revolution Conflicts
+   ========================================================================== */
+
+.rev_slider_wrapper ~ .sofir-slider {
+    margin-top: 3em !important;
+}
+
+/* ==========================================================================
+   Layer Slider Conflicts
+   ========================================================================== */
+
+.ls-container ~ .sofir-slider {
+    margin-top: 3em !important;
+}
+
+/* ==========================================================================
+   Bootstrap Theme Conflicts
+   ========================================================================== */
+
+.container .sofir-block,
+.container-fluid .sofir-block {
+    width: 100% !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
+/* Bootstrap grid inside SOFIR blocks */
+.sofir-block .row {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+/* ==========================================================================
+   Material Design Themes
+   ========================================================================== */
+
+.mdc-container .sofir-block {
+    box-shadow: none !important;
+}
+
+/* ==========================================================================
+   Print Styles for All Conflicts
+   ========================================================================== */
+
+@media print {
+    .sofir-block {
+        display: block !important;
+        page-break-inside: avoid !important;
+    }
+    
+    .templately-content .sofir-block {
+        max-width: 100% !important;
+    }
+}
+
+/* ==========================================================================
+   Force Important (Last Resort - Use Sparingly)
+   ========================================================================== */
+
+.sofir-force-display .sofir-block {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* ==========================================================================
+   Debug Mode Helpers
+   ========================================================================== */
+
+.sofir-debug .sofir-block {
+    outline: 2px solid red !important;
+    outline-offset: 2px !important;
+}
+
+.sofir-debug .sofir-block::before {
+    content: attr(class) !important;
+    display: block !important;
+    background: red !important;
+    color: white !important;
+    padding: 5px !important;
+    font-size: 10px !important;
+}
