@@ -1,0 +1,18 @@
+<svg width="400" height="200" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="200" fill="#1e293b"/>
+  <rect x="20" y="30" width="30" height="30" rx="4" fill="#3b82f6"/>
+  <rect x="55" y="38" width="60" height="14" rx="4" fill="#64748b"/>
+  <rect x="20" y="75" width="100" height="6" rx="2" fill="#475569"/>
+  <rect x="20" y="90" width="100" height="6" rx="2" fill="#475569"/>
+  <rect x="140" y="30" width="50" height="10" rx="2" fill="#cbd5e1"/>
+  <rect x="140" y="50" width="40" height="6" rx="2" fill="#64748b"/>
+  <rect x="140" y="65" width="40" height="6" rx="2" fill="#64748b"/>
+  <rect x="140" y="80" width="40" height="6" rx="2" fill="#64748b"/>
+  <rect x="210" y="30" width="50" height="10" rx="2" fill="#cbd5e1"/>
+  <rect x="210" y="50" width="40" height="6" rx="2" fill="#64748b"/>
+  <rect x="210" y="65" width="40" height="6" rx="2" fill="#64748b"/>
+  <rect x="280" y="30" width="50" height="10" rx="2" fill="#cbd5e1"/>
+  <rect x="280" y="50" width="40" height="6" rx="2" fill="#64748b"/>
+  <line x1="20" y1="130" x2="380" y2="130" stroke="#475569" stroke-width="1"/>
+  <rect x="140" y="150" width="120" height="8" rx="2" fill="#64748b"/>
+</svg>

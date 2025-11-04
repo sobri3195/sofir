@@ -145,4 +145,205 @@
         div.textContent = text;
         return div.innerHTML;
     }
+
+    document.addEventListener( 'click', function ( event ) {
+        const button = event.target.closest( '.sofir-template-preview' );
+
+        if ( ! button ) {
+            return;
+        }
+
+        event.preventDefault();
+
+        if ( ! window.ajaxurl ) {
+            notify( 'error', 'Ajax endpoint not found.' );
+            return;
+        }
+
+        const slug = button.dataset.template;
+
+        if ( ! slug ) {
+            notify( 'error', 'Template slug missing.' );
+            return;
+        }
+
+        const formData = new window.FormData();
+        formData.append( 'action', 'sofir_preview_template' );
+        formData.append( 'template', slug );
+        formData.append( 'nonce', data.nonce || '' );
+
+        setButtonBusy( button, true );
+        button.textContent = 'Loading Preview…';
+
+        window.fetch( window.ajaxurl, {
+            method: 'POST',
+            credentials: 'same-origin',
+            body: formData,
+        } )
+            .then( function ( response ) {
+                return response.json();
+            } )
+            .then( function ( json ) {
+                if ( ! json || ! json.success ) {
+                    const message = ( json && json.data && json.data.message ) || 'Preview failed.';
+                    notify( 'error', message );
+                    return;
+                }
+
+                const { data: payload } = json;
+                showPreviewModal( payload );
+            } )
+            .catch( function ( error ) {
+                console.error( 'SOFIR preview error', error );
+                notify( 'error', 'Unexpected error while loading preview.' );
+            } )
+            .finally( function () {
+                setButtonBusy( button, false );
+                button.textContent = 'Preview';
+            } );
+    } );
+
+    function showPreviewModal( payload ) {
+        const modal = document.createElement( 'div' );
+        modal.className = 'sofir-preview-modal';
+
+        modal.innerHTML = '<div class="sofir-preview-modal__content">' +
+            '<div class="sofir-preview-modal__header">' +
+            '<h2 class="sofir-preview-modal__title">' + escapeHtml( payload.title || 'Template Preview' ) + '</h2>' +
+            '<button type="button" class="sofir-preview-modal__close" aria-label="Close">×</button>' +
+            '</div>' +
+            '<div class="sofir-preview-modal__body">' +
+            '<iframe class="sofir-preview-modal__iframe" frameborder="0"></iframe>' +
+            '</div>' +
+            '</div>';
+
+        document.body.appendChild( modal );
+
+        const iframe = modal.querySelector( '.sofir-preview-modal__iframe' );
+        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+
+        iframeDoc.open();
+        iframeDoc.write( '<!DOCTYPE html><html><head>' +
+            '<style>body{margin:0;padding:20px;font-family:system-ui,-apple-system,sans-serif;}</style>' +
+            '<link rel="stylesheet" href="' + ( data.themeStyleUrl || '' ) + '">' +
+            '</head><body>' + payload.content + '</body></html>' );
+        iframeDoc.close();
+
+        modal.addEventListener( 'click', function ( event ) {
+            if ( event.target === modal || event.target.classList.contains( 'sofir-preview-modal__close' ) ) {
+                closeModal( modal );
+            }
+        } );
+
+        document.addEventListener( 'keydown', function onEscape( event ) {
+            if ( event.key === 'Escape' ) {
+                closeModal( modal );
+                document.removeEventListener( 'keydown', onEscape );
+            }
+        } );
+    }
+
+    document.addEventListener( 'click', function ( event ) {
+        const button = event.target.closest( '.sofir-template-copy' );
+
+        if ( ! button ) {
+            return;
+        }
+
+        event.preventDefault();
+
+        if ( ! window.ajaxurl ) {
+            notify( 'error', 'Ajax endpoint not found.' );
+            return;
+        }
+
+        const slug = button.dataset.template;
+
+        if ( ! slug ) {
+            notify( 'error', 'Template slug missing.' );
+            return;
+        }
+
+        const formData = new window.FormData();
+        formData.append( 'action', 'sofir_copy_pattern' );
+        formData.append( 'template', slug );
+        formData.append( 'nonce', data.nonce || '' );
+
+        setButtonBusy( button, true );
+        button.textContent = 'Copying…';
+
+        window.fetch( window.ajaxurl, {
+            method: 'POST',
+            credentials: 'same-origin',
+            body: formData,
+        } )
+            .then( function ( response ) {
+                return response.json();
+            } )
+            .then( function ( json ) {
+                if ( ! json || ! json.success ) {
+                    const message = ( json && json.data && json.data.message ) || 'Copy failed.';
+                    notify( 'error', message );
+                    return;
+                }
+
+                const { data: payload } = json;
+
+                if ( navigator.clipboard && navigator.clipboard.writeText ) {
+                    navigator.clipboard.writeText( payload.content ).then( function () {
+                        notify( 'success', payload.message || 'Pattern copied to clipboard!' );
+                        button.textContent = '✓ Copied!';
+                        setTimeout( function () {
+                            button.textContent = 'Copy Pattern';
+                        }, 2000 );
+                    } ).catch( function () {
+                        showCopyTextarea( payload.content );
+                    } );
+                } else {
+                    showCopyTextarea( payload.content );
+                }
+            } )
+            .catch( function ( error ) {
+                console.error( 'SOFIR copy error', error );
+                notify( 'error', 'Unexpected error while copying pattern.' );
+            } )
+            .finally( function () {
+                setButtonBusy( button, false );
+            } );
+    } );
+
+    function showCopyTextarea( content ) {
+        const modal = document.createElement( 'div' );
+        modal.className = 'sofir-copy-modal';
+
+        modal.innerHTML = '<div class="sofir-copy-modal__content">' +
+            '<button type="button" class="sofir-copy-modal__close" aria-label="Close">×</button>' +
+            '<h2>Copy Pattern Code</h2>' +
+            '<p>Select all text and copy manually:</p>' +
+            '<textarea class="sofir-copy-modal__textarea" readonly>' + escapeHtml( content ) + '</textarea>' +
+            '<button type="button" class="button button-primary sofir-copy-select-all">Select All</button>' +
+            '</div>';
+
+        document.body.appendChild( modal );
+
+        const textarea = modal.querySelector( '.sofir-copy-modal__textarea' );
+        const selectBtn = modal.querySelector( '.sofir-copy-select-all' );
+
+        selectBtn.addEventListener( 'click', function () {
+            textarea.select();
+        } );
+
+        modal.addEventListener( 'click', function ( event ) {
+            if ( event.target === modal || event.target.classList.contains( 'sofir-copy-modal__close' ) ) {
+                closeModal( modal );
+            }
+        } );
+
+        document.addEventListener( 'keydown', function onEscape( event ) {
+            if ( event.key === 'Escape' ) {
+                closeModal( modal );
+                document.removeEventListener( 'keydown', onEscape );
+            }
+        } );
+    }
 } )();

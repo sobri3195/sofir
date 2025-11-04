@@ -389,3 +389,143 @@
 .sofir-import-modal__close:hover {
     color: #475569;
 }
+
+.sofir-preview-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999999;
+    animation: sofirModalFadeIn 0.2s ease;
+    padding: 20px;
+}
+
+.sofir-preview-modal__content {
+    position: relative;
+    background: #fff;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 1200px;
+    height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    animation: sofirModalSlideUp 0.3s ease;
+}
+
+.sofir-preview-modal__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.sofir-preview-modal__title {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.sofir-preview-modal__close {
+    background: transparent;
+    border: none;
+    font-size: 28px;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 4px 8px;
+    line-height: 1;
+    transition: color 0.2s ease;
+}
+
+.sofir-preview-modal__close:hover {
+    color: #475569;
+}
+
+.sofir-preview-modal__body {
+    flex: 1;
+    overflow: auto;
+    background: #f8fafc;
+}
+
+.sofir-preview-modal__iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: #fff;
+}
+
+.sofir-copy-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999999;
+    animation: sofirModalFadeIn 0.2s ease;
+    padding: 20px;
+}
+
+.sofir-copy-modal__content {
+    position: relative;
+    background: #fff;
+    border-radius: 12px;
+    padding: 32px;
+    max-width: 600px;
+    width: 90%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: sofirModalSlideUp 0.3s ease;
+}
+
+.sofir-copy-modal__content h2 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    font-size: 20px;
+}
+
+.sofir-copy-modal__content p {
+    margin-bottom: 16px;
+    color: #64748b;
+}
+
+.sofir-copy-modal__textarea {
+    width: 100%;
+    min-height: 200px;
+    padding: 12px;
+    border: 1px solid #ccd0d4;
+    border-radius: 6px;
+    font-family: monospace;
+    font-size: 12px;
+    resize: vertical;
+    margin-bottom: 16px;
+}
+
+.sofir-copy-modal__close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: transparent;
+    border: none;
+    font-size: 24px;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 4px 8px;
+    line-height: 1;
+}
+
+.sofir-copy-modal__close:hover {
+    color: #475569;
+}
+
+.sofir-copy-select-all {
+    width: 100%;
+}

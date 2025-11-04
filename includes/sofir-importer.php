@@ -15,6 +15,8 @@ class Importer {
     public function boot(): void {
         \add_action( 'admin_init', [ $this, 'register_import_actions' ] );
         \add_action( 'wp_ajax_sofir_import_template', [ $this, 'handle_ajax_import' ] );
+        \add_action( 'wp_ajax_sofir_preview_template', [ $this, 'handle_ajax_preview' ] );
+        \add_action( 'wp_ajax_sofir_copy_pattern', [ $this, 'handle_ajax_copy_pattern' ] );
     }
 
     public function register_import_actions(): void {
@@ -178,5 +180,77 @@ class Importer {
 
     private function setup_header_footer( array $template, int $template_id ): void {
         \do_action( 'sofir/importer/setup_header_footer', $template, $template_id );
+    }
+
+    public function handle_ajax_preview(): void {
+        \check_ajax_referer( 'sofir_admin', 'nonce' );
+
+        if ( ! \current_user_can( 'edit_posts' ) ) {
+            \wp_send_json_error( [ 'message' => \__( 'Insufficient permission.', 'sofir' ) ], 403 );
+        }
+
+        $slug = isset( $_POST['template'] ) ? \sanitize_key( $_POST['template'] ) : '';
+
+        if ( '' === $slug ) {
+            \wp_send_json_error( [ 'message' => \__( 'Template slug required.', 'sofir' ) ], 400 );
+        }
+
+        $template = Templates\Manager::instance()->get_template( $slug );
+
+        if ( null === $template ) {
+            \wp_send_json_error( [ 'message' => \__( 'Template not found.', 'sofir' ) ], 404 );
+        }
+
+        $content = Templates\Manager::instance()->get_template_content( $template );
+
+        if ( '' === $content ) {
+            \wp_send_json_error( [ 'message' => \__( 'Template content not available.', 'sofir' ) ], 500 );
+        }
+
+        $rendered = $this->render_blocks_for_preview( $content );
+
+        \wp_send_json_success( [
+            'content' => $rendered,
+            'title'   => $template['title'] ?? $slug,
+        ] );
+    }
+
+    public function handle_ajax_copy_pattern(): void {
+        \check_ajax_referer( 'sofir_admin', 'nonce' );
+
+        if ( ! \current_user_can( 'edit_posts' ) ) {
+            \wp_send_json_error( [ 'message' => \__( 'Insufficient permission.', 'sofir' ) ], 403 );
+        }
+
+        $slug = isset( $_POST['template'] ) ? \sanitize_key( $_POST['template'] ) : '';
+
+        if ( '' === $slug ) {
+            \wp_send_json_error( [ 'message' => \__( 'Template slug required.', 'sofir' ) ], 400 );
+        }
+
+        $template = Templates\Manager::instance()->get_template( $slug );
+
+        if ( null === $template ) {
+            \wp_send_json_error( [ 'message' => \__( 'Template not found.', 'sofir' ) ], 404 );
+        }
+
+        $content = Templates\Manager::instance()->get_template_content( $template );
+
+        if ( '' === $content ) {
+            \wp_send_json_error( [ 'message' => \__( 'Template content not available.', 'sofir' ) ], 500 );
+        }
+
+        \wp_send_json_success( [
+            'content' => $content,
+            'message' => \__( 'Pattern copied to clipboard!', 'sofir' ),
+        ] );
+    }
+
+    private function render_blocks_for_preview( string $content ): string {
+        if ( ! function_exists( 'do_blocks' ) ) {
+            return $content;
+        }
+
+        return \do_blocks( $content );
     }
 }
