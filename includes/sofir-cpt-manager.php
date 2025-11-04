@@ -245,6 +245,49 @@ class Manager {
                         'compare'   => 'LIKE',
                     ],
                 ],
+                'event_date' => [
+                    'label'       => \__( 'Event Date', 'sofir' ),
+                    'description' => \__( 'Start and end date/time for events.', 'sofir' ),
+                    'meta'        => [
+                        'type'              => 'object',
+                        'single'            => true,
+                        'default'           => (object) [],
+                        'show_in_rest'      => [
+                            'schema' => [
+                                'type'       => 'object',
+                                'properties' => [
+                                    'start' => [ 'type' => 'string', 'format' => 'date-time' ],
+                                    'end'   => [ 'type' => 'string', 'format' => 'date-time' ],
+                                ],
+                            ],
+                        ],
+                        'sanitize_callback' => [ __CLASS__, 'sanitize_event_date' ],
+                        'auth_callback'     => [ __CLASS__, 'authorize_meta' ],
+                    ],
+                    'filter'      => [
+                        'mode'      => 'date_range',
+                        'query_var' => 'event_after',
+                        'compare'   => '>=',
+                    ],
+                ],
+                'event_capacity' => [
+                    'label'       => \__( 'Event Capacity', 'sofir' ),
+                    'description' => \__( 'Maximum number of attendees for the event.', 'sofir' ),
+                    'meta'        => [
+                        'type'              => 'number',
+                        'single'            => true,
+                        'show_in_rest'      => true,
+                        'default'           => 0,
+                        'sanitize_callback' => 'absint',
+                        'auth_callback'     => [ __CLASS__, 'authorize_meta' ],
+                    ],
+                    'filter'      => [
+                        'mode'      => 'meta_numeric',
+                        'query_var' => 'capacity_min',
+                        'compare'   => '>=',
+                        'type'      => 'NUMERIC',
+                    ],
+                ],
             ]
         );
     }
@@ -754,6 +797,20 @@ class Manager {
                     'value'   => \sanitize_text_field( (string) $text ),
                     'compare' => $field_config['filter']['compare'] ?? '=',
                 ];
+            case 'date_range':
+                $date = is_array( $value ) ? reset( $value ) : $value;
+                $date_str = \sanitize_text_field( (string) $date );
+                
+                if ( strtotime( $date_str ) === false ) {
+                    return [];
+                }
+
+                return [
+                    'key'     => $meta_key,
+                    'value'   => gmdate( 'Y-m-d', strtotime( $date_str ) ),
+                    'compare' => $field_config['filter']['compare'] ?? '>=',
+                    'type'    => 'DATE',
+                ];
             default:
                 $text = is_array( $value ) ? reset( $value ) : $value;
 
@@ -810,6 +867,16 @@ class Manager {
                 ],
                 'fields' => $this->prepare_field_selection( [ 'attributes' ], [ 'attribute' ] ),
             ],
+            'event' => [
+                'args'       => [
+                    'labels'    => $this->build_labels( \__( 'Event', 'sofir' ), \__( 'Events', 'sofir' ) ),
+                    'menu_icon' => 'dashicons-calendar',
+                    'rewrite'   => [ 'slug' => 'events' ],
+                    'supports'  => [ 'title', 'editor', 'thumbnail', 'excerpt', 'author', 'revisions', 'comments' ],
+                ],
+                'fields'     => $this->prepare_field_selection( [ 'event_date', 'event_capacity', 'location', 'contact', 'gallery', 'status', 'attributes' ], [ 'event_after', 'location', 'capacity_min', 'status' ] ),
+                'taxonomies' => [ 'event_category', 'event_tag' ],
+            ],
         ];
     }
 
@@ -840,6 +907,22 @@ class Manager {
                     'hierarchical' => false,
                 ],
                 'object_type' => [ 'profile' ],
+                'filterable'  => true,
+            ],
+            'event_category' => [
+                'args'        => [
+                    'labels'       => $this->build_taxonomy_labels( \__( 'Event Category', 'sofir' ), \__( 'Event Categories', 'sofir' ) ),
+                    'hierarchical' => true,
+                ],
+                'object_type' => [ 'event' ],
+                'filterable'  => true,
+            ],
+            'event_tag' => [
+                'args'        => [
+                    'labels'       => $this->build_taxonomy_labels( \__( 'Event Tag', 'sofir' ), \__( 'Event Tags', 'sofir' ) ),
+                    'hierarchical' => false,
+                ],
+                'object_type' => [ 'event' ],
                 'filterable'  => true,
             ],
         ];
@@ -1205,6 +1288,31 @@ class Manager {
             }
 
             $output[ $key ] = \sanitize_text_field( (string) $val );
+        }
+
+        return (object) $output;
+    }
+
+    public static function sanitize_event_date( $value ) {
+        if ( ! \is_array( $value ) && ! \is_object( $value ) ) {
+            return (object) [];
+        }
+
+        $value = (array) $value;
+        $output = [];
+
+        if ( isset( $value['start'] ) ) {
+            $start = \sanitize_text_field( (string) $value['start'] );
+            if ( strtotime( $start ) !== false ) {
+                $output['start'] = gmdate( 'c', strtotime( $start ) );
+            }
+        }
+
+        if ( isset( $value['end'] ) ) {
+            $end = \sanitize_text_field( (string) $value['end'] );
+            if ( strtotime( $end ) !== false ) {
+                $output['end'] = gmdate( 'c', strtotime( $end ) );
+            }
         }
 
         return (object) $output;
