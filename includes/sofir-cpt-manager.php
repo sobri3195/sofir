@@ -288,6 +288,94 @@ class Manager {
                         'type'      => 'NUMERIC',
                     ],
                 ],
+                'appointment_datetime' => [
+                    'label'       => \__( 'Appointment Date & Time', 'sofir' ),
+                    'description' => \__( 'Scheduled date and time for the appointment.', 'sofir' ),
+                    'meta'        => [
+                        'type'              => 'string',
+                        'single'            => true,
+                        'show_in_rest'      => true,
+                        'default'           => '',
+                        'sanitize_callback' => [ __CLASS__, 'sanitize_datetime' ],
+                        'auth_callback'     => [ __CLASS__, 'authorize_meta' ],
+                    ],
+                    'filter'      => [
+                        'mode'      => 'date_range',
+                        'query_var' => 'appointment_after',
+                        'compare'   => '>=',
+                    ],
+                ],
+                'appointment_duration' => [
+                    'label'       => \__( 'Appointment Duration', 'sofir' ),
+                    'description' => \__( 'Duration in minutes.', 'sofir' ),
+                    'meta'        => [
+                        'type'              => 'number',
+                        'single'            => true,
+                        'show_in_rest'      => true,
+                        'default'           => 30,
+                        'sanitize_callback' => 'absint',
+                        'auth_callback'     => [ __CLASS__, 'authorize_meta' ],
+                    ],
+                    'filter'      => [
+                        'mode'      => 'meta_numeric',
+                        'query_var' => 'duration_min',
+                        'compare'   => '>=',
+                        'type'      => 'NUMERIC',
+                    ],
+                ],
+                'appointment_status' => [
+                    'label'       => \__( 'Appointment Status', 'sofir' ),
+                    'description' => \__( 'Status: pending, confirmed, completed, cancelled.', 'sofir' ),
+                    'meta'        => [
+                        'type'              => 'string',
+                        'single'            => true,
+                        'show_in_rest'      => true,
+                        'default'           => 'pending',
+                        'sanitize_callback' => [ __CLASS__, 'sanitize_appointment_status' ],
+                        'auth_callback'     => [ __CLASS__, 'authorize_meta' ],
+                    ],
+                    'filter'      => [
+                        'mode'      => 'meta_exact',
+                        'query_var' => 'appointment_status',
+                        'compare'   => '=',
+                    ],
+                ],
+                'appointment_provider' => [
+                    'label'       => \__( 'Service Provider', 'sofir' ),
+                    'description' => \__( 'User ID of the service provider.', 'sofir' ),
+                    'meta'        => [
+                        'type'              => 'number',
+                        'single'            => true,
+                        'show_in_rest'      => true,
+                        'default'           => 0,
+                        'sanitize_callback' => 'absint',
+                        'auth_callback'     => [ __CLASS__, 'authorize_meta' ],
+                    ],
+                    'filter'      => [
+                        'mode'      => 'meta_numeric',
+                        'query_var' => 'provider_id',
+                        'compare'   => '=',
+                        'type'      => 'NUMERIC',
+                    ],
+                ],
+                'appointment_client' => [
+                    'label'       => \__( 'Client', 'sofir' ),
+                    'description' => \__( 'User ID of the client.', 'sofir' ),
+                    'meta'        => [
+                        'type'              => 'number',
+                        'single'            => true,
+                        'show_in_rest'      => true,
+                        'default'           => 0,
+                        'sanitize_callback' => 'absint',
+                        'auth_callback'     => [ __CLASS__, 'authorize_meta' ],
+                    ],
+                    'filter'      => [
+                        'mode'      => 'meta_numeric',
+                        'query_var' => 'client_id',
+                        'compare'   => '=',
+                        'type'      => 'NUMERIC',
+                    ],
+                ],
             ]
         );
     }
@@ -877,6 +965,16 @@ class Manager {
                 'fields'     => $this->prepare_field_selection( [ 'event_date', 'event_capacity', 'location', 'contact', 'gallery', 'status', 'attributes' ], [ 'event_after', 'location', 'capacity_min', 'status' ] ),
                 'taxonomies' => [ 'event_category', 'event_tag' ],
             ],
+            'appointment' => [
+                'args'       => [
+                    'labels'    => $this->build_labels( \__( 'Appointment', 'sofir' ), \__( 'Appointments', 'sofir' ) ),
+                    'menu_icon' => 'dashicons-clock',
+                    'rewrite'   => [ 'slug' => 'appointments' ],
+                    'supports'  => [ 'title', 'editor', 'thumbnail', 'author', 'revisions' ],
+                ],
+                'fields'     => $this->prepare_field_selection( [ 'appointment_datetime', 'appointment_duration', 'appointment_status', 'appointment_provider', 'appointment_client', 'contact', 'attributes' ], [ 'appointment_after', 'appointment_status', 'provider_id', 'client_id' ] ),
+                'taxonomies' => [ 'appointment_service' ],
+            ],
         ];
     }
 
@@ -923,6 +1021,14 @@ class Manager {
                     'hierarchical' => false,
                 ],
                 'object_type' => [ 'event' ],
+                'filterable'  => true,
+            ],
+            'appointment_service' => [
+                'args'        => [
+                    'labels'       => $this->build_taxonomy_labels( \__( 'Service', 'sofir' ), \__( 'Services', 'sofir' ) ),
+                    'hierarchical' => true,
+                ],
+                'object_type' => [ 'appointment' ],
                 'filterable'  => true,
             ],
         ];
@@ -1354,5 +1460,26 @@ class Manager {
         }
 
         return false;
+    }
+
+    public static function sanitize_datetime( $value ) {
+        $value = \sanitize_text_field( (string) $value );
+        
+        if ( '' === $value ) {
+            return '';
+        }
+        
+        if ( strtotime( $value ) === false ) {
+            return '';
+        }
+        
+        return gmdate( 'Y-m-d H:i:s', strtotime( $value ) );
+    }
+
+    public static function sanitize_appointment_status( $value ) {
+        $value = \sanitize_key( (string) $value );
+        $allowed = [ 'pending', 'confirmed', 'completed', 'cancelled' ];
+        
+        return in_array( $value, $allowed, true ) ? $value : 'pending';
     }
 }

@@ -96,7 +96,7 @@ SOFIR is a comprehensive WordPress plugin that provides a complete solution for 
 - ✅ Password strength validation
 - ✅ Custom login/register forms
 
-### 9. Gutenberg Blocks (28 Elements)
+### 9. Gutenberg Blocks (39 Elements)
 
 Complete set of custom Gutenberg blocks:
 
@@ -128,6 +128,17 @@ Complete set of custom Gutenberg blocks:
 26. ✅ **User Bar** - User info display bar
 27. ✅ **Visit Chart** - Visit analytics chart
 28. ✅ **Work Hours** - Business hours display
+29. ✅ **Testimonial Slider** - Testimonials carousel
+30. ✅ **Pricing Table** - Pricing plans display
+31. ✅ **Team Grid** - Team members grid
+32. ✅ **FAQ Accordion** - Collapsible FAQ
+33. ✅ **CTA Banner** - Call-to-action banner
+34. ✅ **Feature Box** - Feature highlight box
+35. ✅ **Contact Form** - Contact form builder
+36. ✅ **Social Share** - Social sharing buttons
+37. ✅ **Breadcrumb** - Navigation breadcrumbs
+38. ✅ **Progress Bar** - Animated progress bar
+39. ✅ **Appointment Booking** - Book appointments form
 
 ### 10. SEO Engine
 
