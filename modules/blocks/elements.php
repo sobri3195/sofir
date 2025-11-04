@@ -55,6 +55,16 @@ class Elements {
         $this->register_user_bar_block();
         $this->register_visit_chart_block();
         $this->register_work_hours_block();
+        $this->register_testimonial_slider_block();
+        $this->register_pricing_table_block();
+        $this->register_team_grid_block();
+        $this->register_faq_accordion_block();
+        $this->register_cta_banner_block();
+        $this->register_feature_box_block();
+        $this->register_contact_form_block();
+        $this->register_social_share_block();
+        $this->register_breadcrumb_block();
+        $this->register_progress_bar_block();
     }
 
     private function register_action_block(): void {
@@ -1006,5 +1016,666 @@ class Elements {
         }
         
         return $current_time >= $open && $current_time <= $close;
+    }
+
+    private function register_testimonial_slider_block(): void {
+        \register_block_type(
+            'sofir/testimonial-slider',
+            [
+                'attributes'      => [
+                    'autoplay' => [ 'type' => 'boolean', 'default' => true ],
+                    'interval' => [ 'type' => 'number', 'default' => 5000 ],
+                    'showRating' => [ 'type' => 'boolean', 'default' => true ],
+                    'postType' => [ 'type' => 'string', 'default' => 'testimonial' ],
+                    'numberOfItems' => [ 'type' => 'number', 'default' => 6 ],
+                ],
+                'render_callback' => function ( array $attributes ): string {
+                    $post_type = $attributes['postType'] ?? 'testimonial';
+                    $number = $attributes['numberOfItems'] ?? 6;
+                    $show_rating = $attributes['showRating'] ?? true;
+                    $autoplay = $attributes['autoplay'] ?? true;
+                    $interval = $attributes['interval'] ?? 5000;
+                    
+                    $query = new \WP_Query( [
+                        'post_type' => $post_type,
+                        'posts_per_page' => $number,
+                        'orderby' => 'date',
+                        'order' => 'DESC',
+                    ] );
+                    
+                    if ( ! $query->have_posts() ) {
+                        return '';
+                    }
+                    
+                    ob_start();
+                    echo '<div class="sofir-testimonial-slider" data-autoplay="' . \esc_attr( $autoplay ? 'true' : 'false' ) . '" data-interval="' . \esc_attr( $interval ) . '">';
+                    echo '<div class="sofir-testimonial-slides">';
+                    
+                    while ( $query->have_posts() ) {
+                        $query->the_post();
+                        $rating = \get_post_meta( \get_the_ID(), 'sofir_rating', true );
+                        $author = \get_post_meta( \get_the_ID(), 'sofir_author', true );
+                        $position = \get_post_meta( \get_the_ID(), 'sofir_position', true );
+                        
+                        echo '<div class="sofir-testimonial-slide">';
+                        echo '<div class="sofir-testimonial-content">';
+                        
+                        if ( $show_rating && $rating ) {
+                            echo '<div class="sofir-testimonial-rating">';
+                            for ( $i = 0; $i < 5; $i++ ) {
+                                echo $i < $rating ? '★' : '☆';
+                            }
+                            echo '</div>';
+                        }
+                        
+                        echo '<blockquote>' . \get_the_content() . '</blockquote>';
+                        echo '<div class="sofir-testimonial-author">';
+                        echo '<strong>' . \esc_html( $author ?: \get_the_title() ) . '</strong>';
+                        
+                        if ( $position ) {
+                            echo '<span class="sofir-testimonial-position">' . \esc_html( $position ) . '</span>';
+                        }
+                        
+                        echo '</div>';
+                        echo '</div>';
+                        echo '</div>';
+                    }
+                    
+                    \wp_reset_postdata();
+                    
+                    echo '</div>';
+                    echo '<button class="sofir-slider-prev">‹</button>';
+                    echo '<button class="sofir-slider-next">›</button>';
+                    echo '<div class="sofir-slider-dots"></div>';
+                    echo '</div>';
+                    
+                    return (string) ob_get_clean();
+                },
+            ]
+        );
+    }
+
+    private function register_pricing_table_block(): void {
+        \register_block_type(
+            'sofir/pricing-table',
+            [
+                'attributes'      => [
+                    'columns' => [ 'type' => 'number', 'default' => 3 ],
+                    'postType' => [ 'type' => 'string', 'default' => 'pricing' ],
+                    'showFeatures' => [ 'type' => 'boolean', 'default' => true ],
+                    'highlightBest' => [ 'type' => 'boolean', 'default' => true ],
+                ],
+                'render_callback' => function ( array $attributes ): string {
+                    $columns = $attributes['columns'] ?? 3;
+                    $post_type = $attributes['postType'] ?? 'pricing';
+                    $show_features = $attributes['showFeatures'] ?? true;
+                    $highlight_best = $attributes['highlightBest'] ?? true;
+                    
+                    $query = new \WP_Query( [
+                        'post_type' => $post_type,
+                        'posts_per_page' => $columns,
+                        'orderby' => 'menu_order',
+                        'order' => 'ASC',
+                    ] );
+                    
+                    if ( ! $query->have_posts() ) {
+                        return '';
+                    }
+                    
+                    ob_start();
+                    echo '<div class="sofir-pricing-table sofir-pricing-columns-' . \esc_attr( $columns ) . '">';
+                    
+                    while ( $query->have_posts() ) {
+                        $query->the_post();
+                        $price = \get_post_meta( \get_the_ID(), 'sofir_price', true );
+                        $period = \get_post_meta( \get_the_ID(), 'sofir_period', true );
+                        $features = \get_post_meta( \get_the_ID(), 'sofir_features', true );
+                        $button_text = \get_post_meta( \get_the_ID(), 'sofir_button_text', true );
+                        $button_url = \get_post_meta( \get_the_ID(), 'sofir_button_url', true );
+                        $is_featured = \get_post_meta( \get_the_ID(), 'sofir_featured', true );
+                        
+                        $class = 'sofir-pricing-plan';
+                        if ( $highlight_best && $is_featured ) {
+                            $class .= ' sofir-pricing-featured';
+                        }
+                        
+                        echo '<div class="' . \esc_attr( $class ) . '">';
+                        
+                        if ( $is_featured && $highlight_best ) {
+                            echo '<div class="sofir-pricing-badge">' . \esc_html__( 'Most Popular', 'sofir' ) . '</div>';
+                        }
+                        
+                        echo '<h3 class="sofir-pricing-title">' . \get_the_title() . '</h3>';
+                        echo '<div class="sofir-pricing-price">';
+                        echo '<span class="sofir-pricing-amount">' . \esc_html( $price ) . '</span>';
+                        
+                        if ( $period ) {
+                            echo '<span class="sofir-pricing-period">/' . \esc_html( $period ) . '</span>';
+                        }
+                        
+                        echo '</div>';
+                        
+                        if ( $show_features && $features ) {
+                            echo '<ul class="sofir-pricing-features">';
+                            
+                            if ( \is_array( $features ) ) {
+                                foreach ( $features as $feature ) {
+                                    echo '<li>' . \esc_html( $feature ) . '</li>';
+                                }
+                            }
+                            
+                            echo '</ul>';
+                        }
+                        
+                        if ( $button_text && $button_url ) {
+                            echo '<a href="' . \esc_url( $button_url ) . '" class="sofir-pricing-button">' . \esc_html( $button_text ) . '</a>';
+                        }
+                        
+                        echo '</div>';
+                    }
+                    
+                    \wp_reset_postdata();
+                    
+                    echo '</div>';
+                    
+                    return (string) ob_get_clean();
+                },
+            ]
+        );
+    }
+
+    private function register_team_grid_block(): void {
+        \register_block_type(
+            'sofir/team-grid',
+            [
+                'attributes'      => [
+                    'columns' => [ 'type' => 'number', 'default' => 3 ],
+                    'postType' => [ 'type' => 'string', 'default' => 'team_member' ],
+                    'numberOfItems' => [ 'type' => 'number', 'default' => 6 ],
+                    'showSocial' => [ 'type' => 'boolean', 'default' => true ],
+                ],
+                'render_callback' => function ( array $attributes ): string {
+                    $columns = $attributes['columns'] ?? 3;
+                    $post_type = $attributes['postType'] ?? 'team_member';
+                    $number = $attributes['numberOfItems'] ?? 6;
+                    $show_social = $attributes['showSocial'] ?? true;
+                    
+                    $query = new \WP_Query( [
+                        'post_type' => $post_type,
+                        'posts_per_page' => $number,
+                        'orderby' => 'menu_order',
+                        'order' => 'ASC',
+                    ] );
+                    
+                    if ( ! $query->have_posts() ) {
+                        return '';
+                    }
+                    
+                    ob_start();
+                    echo '<div class="sofir-team-grid sofir-team-columns-' . \esc_attr( $columns ) . '">';
+                    
+                    while ( $query->have_posts() ) {
+                        $query->the_post();
+                        $position = \get_post_meta( \get_the_ID(), 'sofir_position', true );
+                        $twitter = \get_post_meta( \get_the_ID(), 'sofir_twitter', true );
+                        $linkedin = \get_post_meta( \get_the_ID(), 'sofir_linkedin', true );
+                        $email = \get_post_meta( \get_the_ID(), 'sofir_email', true );
+                        
+                        echo '<div class="sofir-team-member">';
+                        
+                        if ( \has_post_thumbnail() ) {
+                            echo '<div class="sofir-team-photo">';
+                            \the_post_thumbnail( 'medium' );
+                            echo '</div>';
+                        }
+                        
+                        echo '<div class="sofir-team-info">';
+                        echo '<h3 class="sofir-team-name">' . \get_the_title() . '</h3>';
+                        
+                        if ( $position ) {
+                            echo '<p class="sofir-team-position">' . \esc_html( $position ) . '</p>';
+                        }
+                        
+                        if ( \get_the_content() ) {
+                            echo '<div class="sofir-team-bio">' . \wp_kses_post( \get_the_content() ) . '</div>';
+                        }
+                        
+                        if ( $show_social && ( $twitter || $linkedin || $email ) ) {
+                            echo '<div class="sofir-team-social">';
+                            
+                            if ( $twitter ) {
+                                echo '<a href="' . \esc_url( $twitter ) . '" target="_blank" rel="noopener">Twitter</a>';
+                            }
+                            
+                            if ( $linkedin ) {
+                                echo '<a href="' . \esc_url( $linkedin ) . '" target="_blank" rel="noopener">LinkedIn</a>';
+                            }
+                            
+                            if ( $email ) {
+                                echo '<a href="mailto:' . \esc_attr( $email ) . '">Email</a>';
+                            }
+                            
+                            echo '</div>';
+                        }
+                        
+                        echo '</div>';
+                        echo '</div>';
+                    }
+                    
+                    \wp_reset_postdata();
+                    
+                    echo '</div>';
+                    
+                    return (string) ob_get_clean();
+                },
+            ]
+        );
+    }
+
+    private function register_faq_accordion_block(): void {
+        \register_block_type(
+            'sofir/faq-accordion',
+            [
+                'attributes'      => [
+                    'postType' => [ 'type' => 'string', 'default' => 'faq' ],
+                    'numberOfItems' => [ 'type' => 'number', 'default' => 10 ],
+                    'expandFirst' => [ 'type' => 'boolean', 'default' => true ],
+                ],
+                'render_callback' => function ( array $attributes ): string {
+                    $post_type = $attributes['postType'] ?? 'faq';
+                    $number = $attributes['numberOfItems'] ?? 10;
+                    $expand_first = $attributes['expandFirst'] ?? true;
+                    
+                    $query = new \WP_Query( [
+                        'post_type' => $post_type,
+                        'posts_per_page' => $number,
+                        'orderby' => 'menu_order',
+                        'order' => 'ASC',
+                    ] );
+                    
+                    if ( ! $query->have_posts() ) {
+                        return '';
+                    }
+                    
+                    ob_start();
+                    echo '<div class="sofir-faq-accordion">';
+                    
+                    $index = 0;
+                    while ( $query->have_posts() ) {
+                        $query->the_post();
+                        $is_expanded = $expand_first && $index === 0;
+                        
+                        echo '<div class="sofir-faq-item' . ( $is_expanded ? ' sofir-faq-expanded' : '' ) . '">';
+                        echo '<button class="sofir-faq-question">';
+                        echo '<span>' . \get_the_title() . '</span>';
+                        echo '<span class="sofir-faq-icon">' . ( $is_expanded ? '−' : '+' ) . '</span>';
+                        echo '</button>';
+                        echo '<div class="sofir-faq-answer" style="' . ( $is_expanded ? '' : 'display:none;' ) . '">';
+                        echo \wp_kses_post( \get_the_content() );
+                        echo '</div>';
+                        echo '</div>';
+                        
+                        $index++;
+                    }
+                    
+                    \wp_reset_postdata();
+                    
+                    echo '</div>';
+                    
+                    return (string) ob_get_clean();
+                },
+            ]
+        );
+    }
+
+    private function register_cta_banner_block(): void {
+        \register_block_type(
+            'sofir/cta-banner',
+            [
+                'attributes'      => [
+                    'title' => [ 'type' => 'string', 'default' => 'Ready to Get Started?' ],
+                    'description' => [ 'type' => 'string', 'default' => '' ],
+                    'buttonText' => [ 'type' => 'string', 'default' => 'Get Started' ],
+                    'buttonUrl' => [ 'type' => 'string', 'default' => '#' ],
+                    'backgroundColor' => [ 'type' => 'string', 'default' => '#0073aa' ],
+                    'textColor' => [ 'type' => 'string', 'default' => '#ffffff' ],
+                    'alignment' => [ 'type' => 'string', 'default' => 'center' ],
+                ],
+                'render_callback' => function ( array $attributes ): string {
+                    $title = $attributes['title'] ?? 'Ready to Get Started?';
+                    $description = $attributes['description'] ?? '';
+                    $button_text = $attributes['buttonText'] ?? 'Get Started';
+                    $button_url = $attributes['buttonUrl'] ?? '#';
+                    $bg_color = $attributes['backgroundColor'] ?? '#0073aa';
+                    $text_color = $attributes['textColor'] ?? '#ffffff';
+                    $alignment = $attributes['alignment'] ?? 'center';
+                    
+                    ob_start();
+                    echo '<div class="sofir-cta-banner sofir-cta-align-' . \esc_attr( $alignment ) . '" style="background-color:' . \esc_attr( $bg_color ) . ';color:' . \esc_attr( $text_color ) . ';">';
+                    echo '<div class="sofir-cta-content">';
+                    echo '<h2 class="sofir-cta-title">' . \esc_html( $title ) . '</h2>';
+                    
+                    if ( $description ) {
+                        echo '<p class="sofir-cta-description">' . \esc_html( $description ) . '</p>';
+                    }
+                    
+                    echo '</div>';
+                    echo '<div class="sofir-cta-action">';
+                    echo '<a href="' . \esc_url( $button_url ) . '" class="sofir-cta-button">' . \esc_html( $button_text ) . '</a>';
+                    echo '</div>';
+                    echo '</div>';
+                    
+                    return (string) ob_get_clean();
+                },
+            ]
+        );
+    }
+
+    private function register_feature_box_block(): void {
+        \register_block_type(
+            'sofir/feature-box',
+            [
+                'attributes'      => [
+                    'icon' => [ 'type' => 'string', 'default' => '⭐' ],
+                    'title' => [ 'type' => 'string', 'default' => 'Feature Title' ],
+                    'description' => [ 'type' => 'string', 'default' => 'Feature description goes here.' ],
+                    'iconPosition' => [ 'type' => 'string', 'default' => 'top' ],
+                    'alignment' => [ 'type' => 'string', 'default' => 'center' ],
+                ],
+                'render_callback' => function ( array $attributes ): string {
+                    $icon = $attributes['icon'] ?? '⭐';
+                    $title = $attributes['title'] ?? 'Feature Title';
+                    $description = $attributes['description'] ?? 'Feature description goes here.';
+                    $icon_position = $attributes['iconPosition'] ?? 'top';
+                    $alignment = $attributes['alignment'] ?? 'center';
+                    
+                    ob_start();
+                    echo '<div class="sofir-feature-box sofir-feature-icon-' . \esc_attr( $icon_position ) . ' sofir-feature-align-' . \esc_attr( $alignment ) . '">';
+                    echo '<div class="sofir-feature-icon">' . \wp_kses_post( $icon ) . '</div>';
+                    echo '<div class="sofir-feature-content">';
+                    echo '<h3 class="sofir-feature-title">' . \esc_html( $title ) . '</h3>';
+                    echo '<p class="sofir-feature-description">' . \esc_html( $description ) . '</p>';
+                    echo '</div>';
+                    echo '</div>';
+                    
+                    return (string) ob_get_clean();
+                },
+            ]
+        );
+    }
+
+    private function register_contact_form_block(): void {
+        \register_block_type(
+            'sofir/contact-form',
+            [
+                'attributes'      => [
+                    'title' => [ 'type' => 'string', 'default' => 'Contact Us' ],
+                    'showSubject' => [ 'type' => 'boolean', 'default' => true ],
+                    'showPhone' => [ 'type' => 'boolean', 'default' => false ],
+                    'submitText' => [ 'type' => 'string', 'default' => 'Send Message' ],
+                ],
+                'render_callback' => function ( array $attributes ): string {
+                    $title = $attributes['title'] ?? 'Contact Us';
+                    $show_subject = $attributes['showSubject'] ?? true;
+                    $show_phone = $attributes['showPhone'] ?? false;
+                    $submit_text = $attributes['submitText'] ?? 'Send Message';
+                    
+                    ob_start();
+                    echo '<div class="sofir-contact-form">';
+                    
+                    if ( $title ) {
+                        echo '<h3 class="sofir-contact-title">' . \esc_html( $title ) . '</h3>';
+                    }
+                    
+                    echo '<form class="sofir-contact-form-fields" method="post" action="' . \esc_url( \admin_url( 'admin-post.php' ) ) . '">';
+                    echo '<input type="hidden" name="action" value="sofir_contact_form">';
+                    \wp_nonce_field( 'sofir_contact_form', 'sofir_contact_nonce' );
+                    
+                    echo '<div class="sofir-form-field">';
+                    echo '<label for="sofir-contact-name">' . \esc_html__( 'Name', 'sofir' ) . ' <span class="required">*</span></label>';
+                    echo '<input type="text" id="sofir-contact-name" name="contact_name" required>';
+                    echo '</div>';
+                    
+                    echo '<div class="sofir-form-field">';
+                    echo '<label for="sofir-contact-email">' . \esc_html__( 'Email', 'sofir' ) . ' <span class="required">*</span></label>';
+                    echo '<input type="email" id="sofir-contact-email" name="contact_email" required>';
+                    echo '</div>';
+                    
+                    if ( $show_phone ) {
+                        echo '<div class="sofir-form-field">';
+                        echo '<label for="sofir-contact-phone">' . \esc_html__( 'Phone', 'sofir' ) . '</label>';
+                        echo '<input type="tel" id="sofir-contact-phone" name="contact_phone">';
+                        echo '</div>';
+                    }
+                    
+                    if ( $show_subject ) {
+                        echo '<div class="sofir-form-field">';
+                        echo '<label for="sofir-contact-subject">' . \esc_html__( 'Subject', 'sofir' ) . '</label>';
+                        echo '<input type="text" id="sofir-contact-subject" name="contact_subject">';
+                        echo '</div>';
+                    }
+                    
+                    echo '<div class="sofir-form-field">';
+                    echo '<label for="sofir-contact-message">' . \esc_html__( 'Message', 'sofir' ) . ' <span class="required">*</span></label>';
+                    echo '<textarea id="sofir-contact-message" name="contact_message" rows="5" required></textarea>';
+                    echo '</div>';
+                    
+                    echo '<div class="sofir-form-field">';
+                    echo '<button type="submit" class="sofir-contact-submit">' . \esc_html( $submit_text ) . '</button>';
+                    echo '</div>';
+                    
+                    echo '</form>';
+                    echo '</div>';
+                    
+                    return (string) ob_get_clean();
+                },
+            ]
+        );
+    }
+
+    private function register_social_share_block(): void {
+        \register_block_type(
+            'sofir/social-share',
+            [
+                'attributes'      => [
+                    'title' => [ 'type' => 'string', 'default' => 'Share this:' ],
+                    'platforms' => [ 'type' => 'array', 'default' => [ 'facebook', 'twitter', 'linkedin', 'whatsapp' ] ],
+                    'layout' => [ 'type' => 'string', 'default' => 'horizontal' ],
+                ],
+                'render_callback' => function ( array $attributes ): string {
+                    $title = $attributes['title'] ?? 'Share this:';
+                    $platforms = $attributes['platforms'] ?? [ 'facebook', 'twitter', 'linkedin', 'whatsapp' ];
+                    $layout = $attributes['layout'] ?? 'horizontal';
+                    
+                    $url = \get_permalink();
+                    $post_title = \get_the_title();
+                    
+                    $share_urls = [
+                        'facebook' => 'https://www.facebook.com/sharer/sharer.php?u=' . \urlencode( $url ),
+                        'twitter' => 'https://twitter.com/intent/tweet?url=' . \urlencode( $url ) . '&text=' . \urlencode( $post_title ),
+                        'linkedin' => 'https://www.linkedin.com/sharing/share-offsite/?url=' . \urlencode( $url ),
+                        'whatsapp' => 'https://wa.me/?text=' . \urlencode( $post_title . ' ' . $url ),
+                    ];
+                    
+                    $labels = [
+                        'facebook' => 'Facebook',
+                        'twitter' => 'Twitter',
+                        'linkedin' => 'LinkedIn',
+                        'whatsapp' => 'WhatsApp',
+                    ];
+                    
+                    ob_start();
+                    echo '<div class="sofir-social-share sofir-social-' . \esc_attr( $layout ) . '">';
+                    
+                    if ( $title ) {
+                        echo '<span class="sofir-social-title">' . \esc_html( $title ) . '</span>';
+                    }
+                    
+                    echo '<div class="sofir-social-buttons">';
+                    
+                    foreach ( $platforms as $platform ) {
+                        if ( isset( $share_urls[ $platform ] ) ) {
+                            echo '<a href="' . \esc_url( $share_urls[ $platform ] ) . '" class="sofir-social-button sofir-social-' . \esc_attr( $platform ) . '" target="_blank" rel="noopener">';
+                            echo \esc_html( $labels[ $platform ] );
+                            echo '</a>';
+                        }
+                    }
+                    
+                    echo '</div>';
+                    echo '</div>';
+                    
+                    return (string) ob_get_clean();
+                },
+            ]
+        );
+    }
+
+    private function register_breadcrumb_block(): void {
+        \register_block_type(
+            'sofir/breadcrumb',
+            [
+                'attributes'      => [
+                    'showHome' => [ 'type' => 'boolean', 'default' => true ],
+                    'homeLabel' => [ 'type' => 'string', 'default' => 'Home' ],
+                    'separator' => [ 'type' => 'string', 'default' => '/' ],
+                ],
+                'render_callback' => function ( array $attributes ): string {
+                    $show_home = $attributes['showHome'] ?? true;
+                    $home_label = $attributes['homeLabel'] ?? 'Home';
+                    $separator = $attributes['separator'] ?? '/';
+                    
+                    if ( \is_front_page() ) {
+                        return '';
+                    }
+                    
+                    $breadcrumbs = [];
+                    
+                    if ( $show_home ) {
+                        $breadcrumbs[] = [
+                            'title' => $home_label,
+                            'url' => \home_url( '/' ),
+                        ];
+                    }
+                    
+                    if ( \is_category() || \is_tag() || \is_tax() ) {
+                        $term = \get_queried_object();
+                        $breadcrumbs[] = [
+                            'title' => $term->name,
+                            'url' => '',
+                        ];
+                    } elseif ( \is_single() ) {
+                        $post_type = \get_post_type();
+                        $post_type_object = \get_post_type_object( $post_type );
+                        
+                        if ( $post_type_object && $post_type !== 'post' ) {
+                            $breadcrumbs[] = [
+                                'title' => $post_type_object->labels->name,
+                                'url' => \get_post_type_archive_link( $post_type ),
+                            ];
+                        }
+                        
+                        $categories = \get_the_category();
+                        if ( ! empty( $categories ) ) {
+                            $category = $categories[0];
+                            $breadcrumbs[] = [
+                                'title' => $category->name,
+                                'url' => \get_category_link( $category->term_id ),
+                            ];
+                        }
+                        
+                        $breadcrumbs[] = [
+                            'title' => \get_the_title(),
+                            'url' => '',
+                        ];
+                    } elseif ( \is_page() ) {
+                        $breadcrumbs[] = [
+                            'title' => \get_the_title(),
+                            'url' => '',
+                        ];
+                    }
+                    
+                    if ( empty( $breadcrumbs ) ) {
+                        return '';
+                    }
+                    
+                    ob_start();
+                    echo '<nav class="sofir-breadcrumb" aria-label="Breadcrumb">';
+                    echo '<ol class="sofir-breadcrumb-list">';
+                    
+                    foreach ( $breadcrumbs as $index => $crumb ) {
+                        $is_last = $index === count( $breadcrumbs ) - 1;
+                        
+                        echo '<li class="sofir-breadcrumb-item' . ( $is_last ? ' sofir-breadcrumb-current' : '' ) . '">';
+                        
+                        if ( $crumb['url'] && ! $is_last ) {
+                            echo '<a href="' . \esc_url( $crumb['url'] ) . '">' . \esc_html( $crumb['title'] ) . '</a>';
+                        } else {
+                            echo \esc_html( $crumb['title'] );
+                        }
+                        
+                        if ( ! $is_last ) {
+                            echo '<span class="sofir-breadcrumb-separator">' . \esc_html( $separator ) . '</span>';
+                        }
+                        
+                        echo '</li>';
+                    }
+                    
+                    echo '</ol>';
+                    echo '</nav>';
+                    
+                    return (string) ob_get_clean();
+                },
+            ]
+        );
+    }
+
+    private function register_progress_bar_block(): void {
+        \register_block_type(
+            'sofir/progress-bar',
+            [
+                'attributes'      => [
+                    'label' => [ 'type' => 'string', 'default' => 'Progress' ],
+                    'percentage' => [ 'type' => 'number', 'default' => 75 ],
+                    'color' => [ 'type' => 'string', 'default' => '#0073aa' ],
+                    'height' => [ 'type' => 'number', 'default' => 20 ],
+                    'showPercentage' => [ 'type' => 'boolean', 'default' => true ],
+                    'animated' => [ 'type' => 'boolean', 'default' => true ],
+                ],
+                'render_callback' => function ( array $attributes ): string {
+                    $label = $attributes['label'] ?? 'Progress';
+                    $percentage = $attributes['percentage'] ?? 75;
+                    $color = $attributes['color'] ?? '#0073aa';
+                    $height = $attributes['height'] ?? 20;
+                    $show_percentage = $attributes['showPercentage'] ?? true;
+                    $animated = $attributes['animated'] ?? true;
+                    
+                    $percentage = \max( 0, \min( 100, $percentage ) );
+                    
+                    ob_start();
+                    echo '<div class="sofir-progress-bar-wrapper">';
+                    
+                    if ( $label || $show_percentage ) {
+                        echo '<div class="sofir-progress-header">';
+                        
+                        if ( $label ) {
+                            echo '<span class="sofir-progress-label">' . \esc_html( $label ) . '</span>';
+                        }
+                        
+                        if ( $show_percentage ) {
+                            echo '<span class="sofir-progress-value">' . \esc_html( $percentage ) . '%</span>';
+                        }
+                        
+                        echo '</div>';
+                    }
+                    
+                    echo '<div class="sofir-progress-bar" style="height:' . \esc_attr( $height ) . 'px;">';
+                    echo '<div class="sofir-progress-fill' . ( $animated ? ' sofir-progress-animated' : '' ) . '" style="width:' . \esc_attr( $percentage ) . '%;background-color:' . \esc_attr( $color ) . ';" data-percentage="' . \esc_attr( $percentage ) . '"></div>';
+                    echo '</div>';
+                    echo '</div>';
+                    
+                    return (string) ob_get_clean();
+                },
+            ]
+        );
     }
 }
