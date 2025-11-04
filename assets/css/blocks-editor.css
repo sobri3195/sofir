@@ -1,0 +1,151 @@
+/**
+ * SOFIR Blocks - Editor Styles
+ * Gutenberg editor specific styles
+ */
+
+/* ==========================================================================
+   Editor Base Styles
+   ========================================================================== */
+
+.block-editor .sofir-block {
+    margin: 1.5em 0;
+    position: relative;
+}
+
+.block-editor .sofir-block::before {
+    content: attr(data-type);
+    position: absolute;
+    top: -20px;
+    left: 0;
+    font-size: 11px;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* ==========================================================================
+   Block Selection
+   ========================================================================== */
+
+.block-editor .sofir-block.is-selected {
+    outline: 2px solid #007cba;
+    outline-offset: 2px;
+}
+
+.block-editor .sofir-block.is-hovered {
+    outline: 1px dashed #007cba;
+    outline-offset: 2px;
+}
+
+/* ==========================================================================
+   Block Toolbar
+   ========================================================================== */
+
+.block-editor .sofir-block-toolbar {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 5px;
+    display: flex;
+    gap: 5px;
+    z-index: 100;
+}
+
+/* ==========================================================================
+   Placeholder States
+   ========================================================================== */
+
+.block-editor .sofir-block-placeholder {
+    min-height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f9f9f9;
+    border: 2px dashed #ddd;
+    border-radius: 4px;
+    color: #999;
+}
+
+/* ==========================================================================
+   Editor Specific Adjustments
+   ========================================================================== */
+
+.block-editor .sofir-action-button,
+.block-editor .sofir-cta-button {
+    pointer-events: none;
+}
+
+.block-editor .sofir-slider,
+.block-editor .sofir-testimonial-slider {
+    overflow: visible;
+}
+
+.block-editor .sofir-map {
+    position: relative;
+}
+
+.block-editor .sofir-map::after {
+    content: "Map Preview - Click to configure";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 124, 186, 0.9);
+    color: #fff;
+    padding: 1em 2em;
+    border-radius: 4px;
+    pointer-events: none;
+}
+
+/* ==========================================================================
+   Inspector Controls Preview
+   ========================================================================== */
+
+.components-panel__body .sofir-inspector-preview {
+    background: #f9f9f9;
+    padding: 1em;
+    border-radius: 4px;
+    margin-top: 1em;
+}
+
+/* ==========================================================================
+   Block Category
+   ========================================================================== */
+
+.block-editor-inserter__panel-content .editor-block-list-item-sofir {
+    border-left: 3px solid #007cba;
+}
+
+.block-editor-inserter__panel-title.is-opened {
+    color: #007cba;
+}
+
+/* ==========================================================================
+   Responsive Preview
+   ========================================================================== */
+
+.is-tablet-preview .sofir-navbar-menu,
+.is-mobile-preview .sofir-navbar-menu {
+    flex-direction: column;
+}
+
+.is-mobile-preview .sofir-pricing-table,
+.is-mobile-preview .sofir-team-grid,
+.is-mobile-preview .sofir-feature-box {
+    grid-template-columns: 1fr;
+}
+
+/* ==========================================================================
+   Dark Mode Support
+   ========================================================================== */
+
+@media (prefers-color-scheme: dark) {
+    .block-editor .sofir-block-placeholder {
+        background: #1e1e1e;
+        border-color: #3a3a3a;
+        color: #999;
+    }
+}

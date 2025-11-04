@@ -1,0 +1,806 @@
+/**
+ * SOFIR Blocks - Main Stylesheet
+ * Universal styles for all 39 Gutenberg blocks
+ * Compatible with Templately, FSE, and modern themes
+ */
+
+/* ==========================================================================
+   Base Block Styles
+   ========================================================================== */
+
+.sofir-block {
+    margin: 0 0 1.5em;
+    clear: both;
+}
+
+.sofir-block *,
+.sofir-block *::before,
+.sofir-block *::after {
+    box-sizing: border-box;
+}
+
+/* ==========================================================================
+   Action Block
+   ========================================================================== */
+
+.sofir-action-block {
+    display: inline-block;
+    margin: 1em 0;
+}
+
+.sofir-action-button {
+    display: inline-block;
+    padding: 12px 30px;
+    background: #007cba;
+    color: #fff;
+    border-radius: 4px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.sofir-action-button:hover {
+    background: #005a87;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 124, 186, 0.3);
+}
+
+/* ==========================================================================
+   Login & Register Block
+   ========================================================================== */
+
+.sofir-login-register {
+    max-width: 400px;
+    margin: 2em auto;
+    padding: 2em;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.sofir-login-register input[type="text"],
+.sofir-login-register input[type="email"],
+.sofir-login-register input[type="password"],
+.sofir-login-register input[type="tel"] {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 1em;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1em;
+}
+
+.sofir-login-register button {
+    width: 100%;
+    padding: 12px;
+    background: #007cba;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.sofir-login-register button:hover {
+    background: #005a87;
+}
+
+/* ==========================================================================
+   Gallery Block
+   ========================================================================== */
+
+.sofir-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.5em;
+    margin: 2em 0;
+}
+
+.sofir-gallery-item {
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+    aspect-ratio: 1;
+}
+
+.sofir-gallery-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.sofir-gallery-item:hover img {
+    transform: scale(1.1);
+}
+
+/* ==========================================================================
+   Slider Block
+   ========================================================================== */
+
+.sofir-slider {
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+}
+
+.sofir-slider-track {
+    display: flex;
+    transition: transform 0.5s ease;
+}
+
+.sofir-slider-slide {
+    min-width: 100%;
+    position: relative;
+}
+
+.sofir-slider-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.5);
+    color: #fff;
+    border: none;
+    padding: 15px;
+    cursor: pointer;
+    z-index: 10;
+    transition: background 0.3s ease;
+}
+
+.sofir-slider-nav:hover {
+    background: rgba(0, 0, 0, 0.8);
+}
+
+.sofir-slider-prev {
+    left: 10px;
+}
+
+.sofir-slider-next {
+    right: 10px;
+}
+
+/* ==========================================================================
+   Testimonial Slider Block
+   ========================================================================== */
+
+.sofir-testimonial-slider {
+    max-width: 800px;
+    margin: 3em auto;
+    padding: 2em;
+    text-align: center;
+}
+
+.sofir-testimonial-item {
+    padding: 2em;
+}
+
+.sofir-testimonial-quote {
+    font-size: 1.25em;
+    font-style: italic;
+    margin-bottom: 1.5em;
+    line-height: 1.6;
+}
+
+.sofir-testimonial-author {
+    font-weight: 600;
+    margin-bottom: 0.5em;
+}
+
+.sofir-testimonial-role {
+    color: #666;
+    font-size: 0.9em;
+}
+
+/* ==========================================================================
+   Pricing Table Block
+   ========================================================================== */
+
+.sofir-pricing-table {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2em;
+    margin: 3em 0;
+}
+
+.sofir-pricing-plan {
+    background: #fff;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 2em;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.sofir-pricing-plan:hover {
+    border-color: #007cba;
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 124, 186, 0.2);
+}
+
+.sofir-pricing-plan.featured {
+    border-color: #007cba;
+    box-shadow: 0 5px 20px rgba(0, 124, 186, 0.2);
+}
+
+.sofir-pricing-title {
+    font-size: 1.5em;
+    font-weight: 700;
+    margin-bottom: 0.5em;
+}
+
+.sofir-pricing-price {
+    font-size: 3em;
+    font-weight: 700;
+    color: #007cba;
+    margin-bottom: 1em;
+}
+
+.sofir-pricing-features {
+    list-style: none;
+    padding: 0;
+    margin: 2em 0;
+}
+
+.sofir-pricing-features li {
+    padding: 0.75em 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+/* ==========================================================================
+   Team Grid Block
+   ========================================================================== */
+
+.sofir-team-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 2em;
+    margin: 3em 0;
+}
+
+.sofir-team-member {
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.sofir-team-member:hover {
+    transform: translateY(-5px);
+}
+
+.sofir-team-photo {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+}
+
+.sofir-team-info {
+    padding: 1.5em;
+    text-align: center;
+}
+
+.sofir-team-name {
+    font-size: 1.25em;
+    font-weight: 700;
+    margin-bottom: 0.5em;
+}
+
+.sofir-team-role {
+    color: #666;
+    margin-bottom: 1em;
+}
+
+.sofir-team-social {
+    display: flex;
+    justify-content: center;
+    gap: 1em;
+}
+
+/* ==========================================================================
+   FAQ Accordion Block
+   ========================================================================== */
+
+.sofir-faq-accordion {
+    max-width: 800px;
+    margin: 2em auto;
+}
+
+.sofir-faq-item {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    margin-bottom: 1em;
+    overflow: hidden;
+}
+
+.sofir-faq-question {
+    background: #f9f9f9;
+    padding: 1.5em;
+    cursor: pointer;
+    font-weight: 600;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.3s ease;
+}
+
+.sofir-faq-question:hover {
+    background: #f0f0f0;
+}
+
+.sofir-faq-question::after {
+    content: "+";
+    font-size: 1.5em;
+    font-weight: 300;
+    transition: transform 0.3s ease;
+}
+
+.sofir-faq-item.active .sofir-faq-question::after {
+    transform: rotate(45deg);
+}
+
+.sofir-faq-answer {
+    padding: 0 1.5em;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, padding 0.3s ease;
+}
+
+.sofir-faq-item.active .sofir-faq-answer {
+    padding: 1.5em;
+    max-height: 500px;
+}
+
+/* ==========================================================================
+   CTA Banner Block
+   ========================================================================== */
+
+.sofir-cta-banner {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    padding: 4em 2em;
+    border-radius: 12px;
+    text-align: center;
+    margin: 3em 0;
+}
+
+.sofir-cta-title {
+    font-size: 2.5em;
+    font-weight: 700;
+    margin-bottom: 0.5em;
+}
+
+.sofir-cta-description {
+    font-size: 1.25em;
+    margin-bottom: 2em;
+    opacity: 0.9;
+}
+
+.sofir-cta-button {
+    display: inline-block;
+    padding: 15px 40px;
+    background: #fff;
+    color: #667eea;
+    border-radius: 50px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.sofir-cta-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+/* ==========================================================================
+   Feature Box Block
+   ========================================================================== */
+
+.sofir-feature-box {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2em;
+    margin: 3em 0;
+}
+
+.sofir-feature-item {
+    padding: 2em;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.sofir-feature-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.15);
+}
+
+.sofir-feature-icon {
+    font-size: 3em;
+    margin-bottom: 1em;
+    color: #007cba;
+}
+
+.sofir-feature-title {
+    font-size: 1.5em;
+    font-weight: 700;
+    margin-bottom: 1em;
+}
+
+.sofir-feature-description {
+    line-height: 1.6;
+    color: #666;
+}
+
+/* ==========================================================================
+   Contact Form Block
+   ========================================================================== */
+
+.sofir-contact-form {
+    max-width: 600px;
+    margin: 2em auto;
+    padding: 2em;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+}
+
+.sofir-contact-form input,
+.sofir-contact-form textarea {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 1.5em;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 1em;
+    font-family: inherit;
+}
+
+.sofir-contact-form textarea {
+    min-height: 150px;
+    resize: vertical;
+}
+
+.sofir-contact-form button {
+    width: 100%;
+    padding: 15px;
+    background: #007cba;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 1.1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.sofir-contact-form button:hover {
+    background: #005a87;
+}
+
+/* ==========================================================================
+   Social Share Block
+   ========================================================================== */
+
+.sofir-social-share {
+    display: flex;
+    gap: 1em;
+    margin: 2em 0;
+}
+
+.sofir-social-share-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    color: #fff;
+    text-decoration: none;
+    transition: transform 0.3s ease;
+}
+
+.sofir-social-share-button:hover {
+    transform: scale(1.1);
+}
+
+.sofir-social-share-button.facebook {
+    background: #3b5998;
+}
+
+.sofir-social-share-button.twitter {
+    background: #1da1f2;
+}
+
+.sofir-social-share-button.linkedin {
+    background: #0077b5;
+}
+
+.sofir-social-share-button.whatsapp {
+    background: #25d366;
+}
+
+/* ==========================================================================
+   Breadcrumb Block
+   ========================================================================== */
+
+.sofir-breadcrumb {
+    padding: 1em 0;
+    font-size: 0.9em;
+}
+
+.sofir-breadcrumb-list {
+    display: flex;
+    flex-wrap: wrap;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sofir-breadcrumb-item {
+    display: flex;
+    align-items: center;
+}
+
+.sofir-breadcrumb-item:not(:last-child)::after {
+    content: "/";
+    margin: 0 0.5em;
+    color: #999;
+}
+
+.sofir-breadcrumb-link {
+    color: #007cba;
+    text-decoration: none;
+}
+
+.sofir-breadcrumb-link:hover {
+    text-decoration: underline;
+}
+
+.sofir-breadcrumb-current {
+    color: #666;
+}
+
+/* ==========================================================================
+   Progress Bar Block
+   ========================================================================== */
+
+.sofir-progress-bar {
+    margin: 2em 0;
+}
+
+.sofir-progress-label {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5em;
+    font-weight: 600;
+}
+
+.sofir-progress-track {
+    width: 100%;
+    height: 20px;
+    background: #e0e0e0;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.sofir-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    border-radius: 10px;
+    transition: width 1s ease;
+}
+
+/* ==========================================================================
+   Navbar Block
+   ========================================================================== */
+
+.sofir-navbar {
+    background: #fff;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 1em 0;
+}
+
+.sofir-navbar-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.sofir-navbar-menu {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: 2em;
+}
+
+.sofir-navbar-link {
+    color: #333;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.sofir-navbar-link:hover {
+    color: #007cba;
+}
+
+/* ==========================================================================
+   Map Block
+   ========================================================================== */
+
+.sofir-map {
+    width: 100%;
+    height: 400px;
+    border-radius: 8px;
+    overflow: hidden;
+    margin: 2em 0;
+}
+
+.sofir-map iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+/* ==========================================================================
+   Dashboard Block
+   ========================================================================== */
+
+.sofir-dashboard {
+    background: #f9f9f9;
+    padding: 2em;
+    border-radius: 12px;
+    margin: 2em 0;
+}
+
+.sofir-dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5em;
+}
+
+.sofir-dashboard-card {
+    background: #fff;
+    padding: 1.5em;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.sofir-dashboard-label {
+    font-size: 0.9em;
+    color: #666;
+    margin-bottom: 0.5em;
+}
+
+.sofir-dashboard-value {
+    font-size: 2em;
+    font-weight: 700;
+    color: #007cba;
+}
+
+/* ==========================================================================
+   Countdown Block
+   ========================================================================== */
+
+.sofir-countdown {
+    display: flex;
+    justify-content: center;
+    gap: 2em;
+    margin: 3em 0;
+    flex-wrap: wrap;
+}
+
+.sofir-countdown-item {
+    text-align: center;
+    min-width: 100px;
+}
+
+.sofir-countdown-value {
+    font-size: 3em;
+    font-weight: 700;
+    color: #007cba;
+    display: block;
+}
+
+.sofir-countdown-label {
+    font-size: 1em;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* ==========================================================================
+   Appointment Booking Block
+   ========================================================================== */
+
+.sofir-appointment-booking {
+    max-width: 500px;
+    margin: 2em auto;
+    padding: 2em;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+}
+
+.sofir-appointment-booking input,
+.sofir-appointment-booking select,
+.sofir-appointment-booking textarea {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 1.5em;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 1em;
+}
+
+.sofir-appointment-booking button {
+    width: 100%;
+    padding: 15px;
+    background: #007cba;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 1.1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.sofir-appointment-booking button:hover {
+    background: #005a87;
+}
+
+/* ==========================================================================
+   Responsive Design
+   ========================================================================== */
+
+@media (max-width: 768px) {
+    .sofir-pricing-table,
+    .sofir-team-grid,
+    .sofir-feature-box {
+        grid-template-columns: 1fr;
+    }
+
+    .sofir-navbar-menu {
+        flex-direction: column;
+        gap: 1em;
+    }
+
+    .sofir-countdown {
+        gap: 1em;
+    }
+
+    .sofir-countdown-value {
+        font-size: 2em;
+    }
+
+    .sofir-cta-title {
+        font-size: 1.75em;
+    }
+
+    .sofir-cta-description {
+        font-size: 1em;
+    }
+}
+
+/* ==========================================================================
+   Print Styles
+   ========================================================================== */
+
+@media print {
+    .sofir-action-block,
+    .sofir-navbar,
+    .sofir-social-share {
+        display: none;
+    }
+}

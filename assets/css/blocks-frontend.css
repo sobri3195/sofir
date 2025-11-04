@@ -1,0 +1,209 @@
+/**
+ * SOFIR Blocks - Frontend Optimization
+ * Additional frontend-only styles for performance and compatibility
+ */
+
+/* ==========================================================================
+   Performance Optimizations
+   ========================================================================== */
+
+.sofir-block {
+    will-change: auto;
+}
+
+.sofir-block img {
+    content-visibility: auto;
+}
+
+/* ==========================================================================
+   Smooth Animations
+   ========================================================================== */
+
+@media (prefers-reduced-motion: no-preference) {
+    .sofir-action-button,
+    .sofir-cta-button,
+    .sofir-pricing-plan,
+    .sofir-team-member,
+    .sofir-feature-item {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .sofir-gallery-item img {
+        transition: transform 0.5s ease;
+    }
+
+    .sofir-progress-fill {
+        animation: progressFill 1s ease-out;
+    }
+}
+
+@keyframes progressFill {
+    from {
+        transform: scaleX(0);
+        transform-origin: left;
+    }
+    to {
+        transform: scaleX(1);
+    }
+}
+
+/* ==========================================================================
+   Accessibility Enhancements
+   ========================================================================== */
+
+.sofir-block a:focus,
+.sofir-block button:focus {
+    outline: 2px solid #007cba;
+    outline-offset: 2px;
+}
+
+.sofir-block a:focus:not(:focus-visible),
+.sofir-block button:focus:not(:focus-visible) {
+    outline: none;
+}
+
+.sofir-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+/* ==========================================================================
+   Loading States
+   ========================================================================== */
+
+.sofir-block.is-loading {
+    position: relative;
+    pointer-events: none;
+    opacity: 0.6;
+}
+
+.sofir-block.is-loading::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 40px;
+    height: 40px;
+    margin: -20px 0 0 -20px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #007cba;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* ==========================================================================
+   Theme Compatibility Fixes
+   ========================================================================== */
+
+/* Twentytwentyfour theme */
+.wp-site-blocks .sofir-block {
+    max-width: none;
+}
+
+/* Astra theme */
+.ast-container .sofir-block {
+    width: 100%;
+}
+
+/* GeneratePress theme */
+.inside-article .sofir-block {
+    max-width: none;
+}
+
+/* OceanWP theme */
+.entry-content .sofir-block {
+    margin-left: 0;
+    margin-right: 0;
+}
+
+/* Kadence theme */
+.entry-content-wrap .sofir-block {
+    width: 100%;
+}
+
+/* ==========================================================================
+   Templately Specific Compatibility
+   ========================================================================== */
+
+.templately-content .sofir-block {
+    margin-bottom: 2em;
+}
+
+.templately-content .sofir-cta-banner {
+    margin: 4em 0;
+}
+
+.templately-content .sofir-pricing-table {
+    margin: 4em 0;
+}
+
+/* LifeTacts template specific adjustments */
+.page-template-lifetacts .sofir-feature-box {
+    margin: 5em 0;
+}
+
+.page-template-lifetacts .sofir-testimonial-slider {
+    margin: 5em auto;
+}
+
+/* ==========================================================================
+   Container Queries Support
+   ========================================================================== */
+
+@supports (container-type: inline-size) {
+    .sofir-block {
+        container-type: inline-size;
+    }
+
+    @container (max-width: 600px) {
+        .sofir-pricing-table,
+        .sofir-team-grid,
+        .sofir-feature-box {
+            grid-template-columns: 1fr;
+        }
+    }
+}
+
+/* ==========================================================================
+   Print Optimizations
+   ========================================================================== */
+
+@media print {
+    .sofir-block {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    .sofir-cta-banner,
+    .sofir-contact-form,
+    .sofir-appointment-booking {
+        display: none;
+    }
+}
+
+/* ==========================================================================
+   High Contrast Mode
+   ========================================================================== */
+
+@media (prefers-contrast: high) {
+    .sofir-action-button,
+    .sofir-cta-button {
+        border: 2px solid currentColor;
+    }
+
+    .sofir-pricing-plan {
+        border-width: 3px;
+    }
+}

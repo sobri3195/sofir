@@ -6,6 +6,8 @@ use Sofir\Cpt\Manager as CptManager;
 use Sofir\Ai\Builder as AiBuilder;
 use Sofir\Blocks\Registrar as BlocksRegistrar;
 use Sofir\Blocks\Elements as BlocksElements;
+use Sofir\Blocks\AssetsManager as BlocksAssetsManager;
+use Sofir\Blocks\Compatibility as BlocksCompatibility;
 use Sofir\Directory\Manager as DirectoryManager;
 use Sofir\Directory\Mobile as DirectoryMobile;
 use Sofir\Membership\Manager as MembershipManager;
@@ -81,6 +83,8 @@ class Loader {
             AiBuilder::class,
             BlocksRegistrar::class,
             BlocksElements::class,
+            BlocksAssetsManager::class,
+            BlocksCompatibility::class,
         ];
 
         /** @var class-string[] $modules */

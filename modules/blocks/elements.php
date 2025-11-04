@@ -72,6 +72,8 @@ class Elements {
         \register_block_type(
             'sofir/action',
             [
+                'api_version'     => 2,
+                'category'        => 'sofir',
                 'attributes'      => [
                     'actionType' => [ 'type' => 'string', 'default' => 'button' ],
                     'actionLabel' => [ 'type' => 'string', 'default' => 'Click Me' ],
