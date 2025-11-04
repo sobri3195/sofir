@@ -34,6 +34,8 @@ class ContentPanel {
             $this->render_notice( $notice );
         }
 
+        $this->render_statistics_dashboard( $post_types );
+
         echo '<div class="sofir-grid">';
         echo '<div class="sofir-card">';
         echo '<h2>' . \esc_html__( 'Custom Post Type Builder', 'sofir' ) . '</h2>';
@@ -221,6 +223,74 @@ class ContentPanel {
         echo '</div>';
 
         echo '</div>';
+    }
+
+    private function render_statistics_dashboard( array $post_types ): void {
+        echo '<div class="sofir-statistics-dashboard" style="margin-bottom: 20px;">';
+        echo '<h2>' . \esc_html__( 'Content Statistics', 'sofir' ) . '</h2>';
+        echo '<div class="sofir-stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">';
+
+        $stats = $this->get_content_statistics( $post_types );
+
+        foreach ( $stats as $stat ) {
+            echo '<div class="sofir-stat-card" style="background: #fff; padding: 20px; border: 1px solid #ccd0d4; border-radius: 4px; box-shadow: 0 1px 1px rgba(0,0,0,.04);">';
+            echo '<div class="sofir-stat-icon" style="font-size: 24px; margin-bottom: 10px;">' . $stat['icon'] . '</div>';
+            echo '<div class="sofir-stat-value" style="font-size: 32px; font-weight: bold; color: #2271b1; margin-bottom: 5px;">' . \esc_html( $stat['value'] ) . '</div>';
+            echo '<div class="sofir-stat-label" style="color: #646970; font-size: 14px;">' . \esc_html( $stat['label'] ) . '</div>';
+            if ( ! empty( $stat['link'] ) ) {
+                echo '<a href="' . \esc_url( $stat['link'] ) . '" style="display: inline-block; margin-top: 10px; text-decoration: none;">' . \esc_html__( 'View All', 'sofir' ) . ' →</a>';
+            }
+            echo '</div>';
+        }
+
+        echo '</div>';
+        echo '</div>';
+    }
+
+    private function get_content_statistics( array $post_types ): array {
+        $stats = [];
+
+        $total_posts = 0;
+        foreach ( $post_types as $slug => $definition ) {
+            $count = \wp_count_posts( $slug );
+            $published = isset( $count->publish ) ? (int) $count->publish : 0;
+            $total_posts += $published;
+
+            $object = \get_post_type_object( $slug );
+            $label = $object ? $object->labels->name : ucfirst( $slug );
+
+            $stats[] = [
+                'icon'  => '📄',
+                'value' => $published,
+                'label' => $label,
+                'link'  => \admin_url( 'edit.php?post_type=' . $slug ),
+            ];
+        }
+
+        array_unshift( $stats, [
+            'icon'  => '📊',
+            'value' => $total_posts,
+            'label' => \__( 'Total Content Items', 'sofir' ),
+            'link'  => '',
+        ] );
+
+        $user_count = \count_users();
+        $stats[] = [
+            'icon'  => '👥',
+            'value' => $user_count['total_users'] ?? 0,
+            'label' => \__( 'Total Users', 'sofir' ),
+            'link'  => \admin_url( 'users.php' ),
+        ];
+
+        $comment_count = \wp_count_comments();
+        $stats[] = [
+            'icon'  => '💬',
+            'value' => $comment_count->approved ?? 0,
+            'label' => \__( 'Comments', 'sofir' ),
+            'link'  => \admin_url( 'edit-comments.php' ),
+        ];
+
+        return $stats;
     }
 
     public function handle_save_cpt(): void {
