@@ -60,6 +60,10 @@ class Manager {
             'directory' => \__( 'SOFIR Directory', 'sofir' ),
             'blog'      => \__( 'SOFIR Blog', 'sofir' ),
             'profile'   => \__( 'SOFIR Profile', 'sofir' ),
+            'ecommerce' => \__( 'SOFIR Ecommerce', 'sofir' ),
+            'membership' => \__( 'SOFIR Membership', 'sofir' ),
+            'header'    => \__( 'SOFIR Headers', 'sofir' ),
+            'footer'    => \__( 'SOFIR Footers', 'sofir' ),
         ];
 
         foreach ( $categories as $slug => $label ) {

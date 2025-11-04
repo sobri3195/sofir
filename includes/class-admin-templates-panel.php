@@ -58,12 +58,19 @@ class TemplatesPanel {
                 echo '</div>';
 
                 echo '<div class="sofir-template-card__actions">';
+                
+                echo '<button type="button" class="button sofir-template-preview" data-template="' . \esc_attr( $template['slug'] ) . '">' . \esc_html__( 'Preview', 'sofir' ) . '</button>';
+                
                 if ( in_array( 'page', $contexts, true ) ) {
                     echo '<button type="button" class="button button-primary sofir-template-import" data-template="' . \esc_attr( $template['slug'] ) . '" data-context="page">' . \esc_html__( 'Import as Page', 'sofir' ) . '</button>';
                 }
 
                 if ( in_array( 'template', $contexts, true ) ) {
                     echo '<button type="button" class="button sofir-template-import" data-template="' . \esc_attr( $template['slug'] ) . '" data-context="template">' . \esc_html__( 'Import to FSE', 'sofir' ) . '</button>';
+                }
+
+                if ( in_array( 'pattern', $contexts, true ) ) {
+                    echo '<button type="button" class="button button-primary sofir-template-copy" data-template="' . \esc_attr( $template['slug'] ) . '">' . \esc_html__( 'Copy Pattern', 'sofir' ) . '</button>';
                 }
 
                 echo '</div>';
@@ -79,10 +86,14 @@ class TemplatesPanel {
 
     private function group_label( string $group ): string {
         $map = [
-            'landing'   => \__( 'Landing Templates', 'sofir' ),
-            'directory' => \__( 'Directory Templates', 'sofir' ),
-            'blog'      => \__( 'Blog & Portal', 'sofir' ),
-            'profile'   => \__( 'Profile & Company', 'sofir' ),
+            'landing'    => \__( 'Landing Templates', 'sofir' ),
+            'directory'  => \__( 'Directory Templates', 'sofir' ),
+            'blog'       => \__( 'Blog & Portal', 'sofir' ),
+            'profile'    => \__( 'Profile & Company', 'sofir' ),
+            'ecommerce'  => \__( 'Ecommerce Templates', 'sofir' ),
+            'membership' => \__( 'Membership Templates', 'sofir' ),
+            'header'     => \__( 'Header Designs', 'sofir' ),
+            'footer'     => \__( 'Footer Designs', 'sofir' ),
         ];
 
         return $map[ $group ] ?? ucfirst( $group );
@@ -90,10 +101,14 @@ class TemplatesPanel {
 
     private function group_description( string $group ): string {
         $map = [
-            'landing'   => \__( 'Optimized landing pages dengan CTA dan konversi tinggi.', 'sofir' ),
-            'directory' => \__( 'Listing &amp; direktori lengkap dengan filter dinamis.', 'sofir' ),
-            'blog'      => \__( 'Portal berita, magazine, dan konten editorial.', 'sofir' ),
-            'profile'   => \__( 'Profil bisnis, portofolio, dan company page.', 'sofir' ),
+            'landing'    => \__( 'Optimized landing pages dengan CTA dan konversi tinggi.', 'sofir' ),
+            'directory'  => \__( 'Listing &amp; direktori lengkap dengan filter dinamis.', 'sofir' ),
+            'blog'       => \__( 'Portal berita, magazine, dan konten editorial.', 'sofir' ),
+            'profile'    => \__( 'Profil bisnis, portofolio, dan company page.', 'sofir' ),
+            'ecommerce'  => \__( 'Template katalog produk dan checkout untuk toko online.', 'sofir' ),
+            'membership' => \__( 'Dashboard member dan pricing plans untuk situs membership.', 'sofir' ),
+            'header'     => \__( 'Template header siap pakai untuk berbagai jenis website.', 'sofir' ),
+            'footer'     => \__( 'Template footer dengan berbagai layout dan style.', 'sofir' ),
         ];
 
         return $map[ $group ] ?? '';
@@ -111,6 +126,9 @@ class TemplatesPanel {
             switch ( $context ) {
                 case 'template':
                     $labels[] = \__( 'Full Site Editing', 'sofir' );
+                    break;
+                case 'pattern':
+                    $labels[] = \__( 'Block Pattern', 'sofir' );
                     break;
                 case 'page':
                 default:
