@@ -12,6 +12,7 @@ use Sofir\Membership\Manager as MembershipManager;
 use Sofir\Payments\Manager as PaymentsManager;
 use Sofir\Webhooks\Manager as WebhooksManager;
 use Sofir\Loyalty\Manager as LoyaltyManager;
+use Sofir\Appointments\Manager as AppointmentsManager;
 use Sofir\Rest\Router as RestRouter;
 use Sofir\Seo\Engine as SeoEngine;
 use Sofir\Templates\Manager as TemplateManager;
@@ -76,6 +77,7 @@ class Loader {
             PaymentsManager::class,
             WebhooksManager::class,
             LoyaltyManager::class,
+            AppointmentsManager::class,
             AiBuilder::class,
             BlocksRegistrar::class,
             BlocksElements::class,

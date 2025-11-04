@@ -32,6 +32,12 @@ class Registrar {
         \wp_register_script( 'sofir-slider', SOFIR_ASSETS_URL . 'js/slider.js', [], SOFIR_VERSION, true );
         \wp_register_script( 'sofir-charts', SOFIR_ASSETS_URL . 'js/charts.js', [], SOFIR_VERSION, true );
         \wp_register_script( 'sofir-auth', SOFIR_ASSETS_URL . 'js/auth.js', [ 'wp-api-fetch' ], SOFIR_VERSION, true );
+        \wp_register_script( 'sofir-appointment', SOFIR_ASSETS_URL . 'js/appointment.js', [], SOFIR_VERSION, true );
+        
+        \wp_localize_script( 'sofir-appointment', 'sofirData', [
+            'ajaxUrl' => \admin_url( 'admin-ajax.php' ),
+            'nonce'   => \wp_create_nonce( 'sofir_appointment' ),
+        ] );
     }
 
     public function register_blocks(): void {

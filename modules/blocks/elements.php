@@ -65,6 +65,7 @@ class Elements {
         $this->register_social_share_block();
         $this->register_breadcrumb_block();
         $this->register_progress_bar_block();
+        $this->register_appointment_booking_block();
     }
 
     private function register_action_block(): void {
@@ -1671,6 +1672,70 @@ class Elements {
                     echo '<div class="sofir-progress-bar" style="height:' . \esc_attr( $height ) . 'px;">';
                     echo '<div class="sofir-progress-fill' . ( $animated ? ' sofir-progress-animated' : '' ) . '" style="width:' . \esc_attr( $percentage ) . '%;background-color:' . \esc_attr( $color ) . ';" data-percentage="' . \esc_attr( $percentage ) . '"></div>';
                     echo '</div>';
+                    echo '</div>';
+                    
+                    return (string) ob_get_clean();
+                },
+            ]
+        );
+    }
+
+    private function register_appointment_booking_block(): void {
+        \register_block_type(
+            'sofir/appointment-booking',
+            [
+                'attributes'      => [
+                    'serviceId' => [ 'type' => 'number', 'default' => 0 ],
+                    'providerId' => [ 'type' => 'number', 'default' => 0 ],
+                    'buttonText' => [ 'type' => 'string', 'default' => 'Book Appointment' ],
+                    'showCalendar' => [ 'type' => 'boolean', 'default' => true ],
+                ],
+                'render_callback' => function ( array $attributes ): string {
+                    if ( ! \is_user_logged_in() ) {
+                        return '<div class="sofir-appointment-booking"><p>' . \esc_html__( 'Please login to book an appointment.', 'sofir' ) . '</p></div>';
+                    }
+
+                    $button_text = $attributes['buttonText'] ?? 'Book Appointment';
+                    $show_calendar = $attributes['showCalendar'] ?? true;
+                    
+                    \wp_enqueue_script( 'sofir-appointment' );
+                    
+                    ob_start();
+                    echo '<div class="sofir-appointment-booking">';
+                    echo '<form class="sofir-appointment-form" method="post">';
+                    \wp_nonce_field( 'sofir_book_appointment', 'sofir_appointment_nonce' );
+                    
+                    echo '<div class="sofir-form-group">';
+                    echo '<label for="sofir-appointment-title">' . \esc_html__( 'Appointment Title', 'sofir' ) . '</label>';
+                    echo '<input type="text" id="sofir-appointment-title" name="appointment_title" required class="sofir-form-control" />';
+                    echo '</div>';
+                    
+                    if ( $show_calendar ) {
+                        echo '<div class="sofir-form-group">';
+                        echo '<label for="sofir-appointment-datetime">' . \esc_html__( 'Date & Time', 'sofir' ) . '</label>';
+                        echo '<input type="datetime-local" id="sofir-appointment-datetime" name="appointment_datetime" required class="sofir-form-control" />';
+                        echo '</div>';
+                    }
+                    
+                    echo '<div class="sofir-form-group">';
+                    echo '<label for="sofir-appointment-duration">' . \esc_html__( 'Duration (minutes)', 'sofir' ) . '</label>';
+                    echo '<select id="sofir-appointment-duration" name="appointment_duration" class="sofir-form-control">';
+                    echo '<option value="15">15</option>';
+                    echo '<option value="30" selected>30</option>';
+                    echo '<option value="45">45</option>';
+                    echo '<option value="60">60</option>';
+                    echo '<option value="90">90</option>';
+                    echo '<option value="120">120</option>';
+                    echo '</select>';
+                    echo '</div>';
+                    
+                    echo '<div class="sofir-form-group">';
+                    echo '<label for="sofir-appointment-notes">' . \esc_html__( 'Notes', 'sofir' ) . '</label>';
+                    echo '<textarea id="sofir-appointment-notes" name="appointment_notes" rows="4" class="sofir-form-control"></textarea>';
+                    echo '</div>';
+                    
+                    echo '<button type="submit" class="button button-primary sofir-appointment-submit">' . \esc_html( $button_text ) . '</button>';
+                    echo '</form>';
                     echo '</div>';
                     
                     return (string) ob_get_clean();
