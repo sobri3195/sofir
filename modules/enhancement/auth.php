@@ -185,12 +185,17 @@ class Auth {
                 return new \WP_REST_Response( [ 'message' => \__( 'Phone number is required', 'sofir' ) ], 400 );
             }
 
+            $is_valid = \apply_filters( 'sofir/auth/validate_phone', true, $phone );
+            if ( ! $is_valid ) {
+                return new \WP_REST_Response( [ 'message' => \__( 'Invalid phone number format', 'sofir' ) ], 400 );
+            }
+
             $existing = $this->get_user_by_phone( $phone );
             if ( $existing ) {
                 return new \WP_REST_Response( [ 'message' => \__( 'Phone number already registered', 'sofir' ) ], 400 );
             }
 
-            $username = 'user_' . \sanitize_title( $phone );
+            $username = \apply_filters( 'sofir/auth/generate_username', 'user_' . \sanitize_title( $phone ), $phone );
             $email = $username . '@phone.local';
             $password = \wp_generate_password( 12, true, true );
 
@@ -203,12 +208,17 @@ class Auth {
             \update_user_meta( $user_id, 'sofir_phone', $phone );
             \update_user_meta( $user_id, 'sofir_phone_only_registration', true );
 
+            \do_action( 'sofir/auth/user_registered', $user_id, true );
+
             \wp_set_current_user( $user_id );
             \wp_set_auth_cookie( $user_id );
+
+            $redirect = \apply_filters( 'sofir/auth/register_redirect', '', $user_id );
 
             return \rest_ensure_response( [
                 'status' => 'success',
                 'user_id' => $user_id,
+                'redirect' => $redirect,
                 'message' => \__( 'Registration successful', 'sofir' ),
             ] );
         }
@@ -231,12 +241,17 @@ class Auth {
             \update_user_meta( $user_id, 'sofir_phone', $phone );
         }
 
+        \do_action( 'sofir/auth/user_registered', $user_id, false );
+
         \wp_set_current_user( $user_id );
         \wp_set_auth_cookie( $user_id );
+
+        $redirect = \apply_filters( 'sofir/auth/register_redirect', '', $user_id );
 
         return \rest_ensure_response( [
             'status' => 'success',
             'user_id' => $user_id,
+            'redirect' => $redirect,
             'message' => \__( 'Registration successful', 'sofir' ),
         ] );
     }
@@ -253,6 +268,8 @@ class Auth {
         if ( ! $user ) {
             return new \WP_REST_Response( [ 'message' => \__( 'User not found', 'sofir' ) ], 404 );
         }
+
+        \do_action( 'sofir/auth/phone_login', $user->ID, $phone );
 
         \wp_set_current_user( $user->ID );
         \wp_set_auth_cookie( $user->ID );
