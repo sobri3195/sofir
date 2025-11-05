@@ -146,6 +146,17 @@ return [
             'demo_cpt'    => [ 'lawyer', 'testimonial' ],
             'theme'       => 'block-theme',
         ],
+        [
+            'slug'        => 'web-directory-dashboard',
+            'title'       => \__( 'Web Directory Dashboard', 'sofir' ),
+            'description' => \__( 'Dashboard komprehensif untuk mengelola web directory dengan statistik, map interaktif, filter, dan analytics.', 'sofir' ),
+            'path'        => __DIR__ . '/directory/web-directory-dashboard.html',
+            'preview'     => SOFIR_PLUGIN_URL . 'assets/images/templates/web-directory-dashboard.svg',
+            'category'    => 'directory',
+            'context'     => [ 'page', 'template' ],
+            'demo_cpt'    => [ 'listing' ],
+            'theme'       => 'block-theme',
+        ],
     ],
     'blog'      => [
         [
