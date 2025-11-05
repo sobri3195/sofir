@@ -393,6 +393,8 @@ class Manager {
 
             $defaults = [
                 'public'            => true,
+                'show_ui'           => true,
+                'show_in_menu'      => true,
                 'show_in_rest'      => true,
                 'supports'          => ! empty( $supports ) ? $supports : [ 'title', 'editor', 'thumbnail', 'excerpt', 'author', 'revisions' ],
                 'has_archive'       => true,
