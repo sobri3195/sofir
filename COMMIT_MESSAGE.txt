@@ -1,0 +1,40 @@
+feat: Add Gutenberg-ready header and footer templates
+
+Implemented complete header and footer template system with 8 professional designs
+ready to use in Gutenberg Block Editor and Full Site Editing.
+
+Features:
+- 4 header templates (modern, minimal, business, centered)
+- 4 footer templates (multi-column, simple, business, newsletter)
+- Clickable preview images with live demo modal
+- One-click copy to clipboard functionality
+- Full documentation (3 guides + 1 summary)
+- Mobile responsive designs
+- FSE compatible
+- Accessibility compliant
+
+Technical implementation:
+- AJAX endpoints for preview and copy
+- Clipboard API integration with fallback
+- Template registration in Gutenberg
+- Preview modal with theme styles
+- Keyboard navigation support
+- Security hardened (nonces, capability checks)
+
+Documentation:
+- HEADER_FOOTER_TEMPLATES.md - Complete feature guide
+- USAGE_EXAMPLES.md - Developer examples and patterns
+- QUICK_START.md - User quick start guide
+- TEMPLATE_IMPLEMENTATION_SUMMARY.md - Technical summary
+
+All templates use native WordPress blocks (no custom dependencies)
+and are fully customizable through the Gutenberg editor.
+
+Files:
+- 8 HTML template files in templates/components/
+- 8 SVG preview images in assets/images/templates/
+- Template catalog updated in templates/templates.php
+- Admin panel integration in includes/class-admin-templates-panel.php
+- Preview/copy logic in assets/js/admin.js and assets/css/admin.css
+- AJAX handlers in includes/sofir-importer.php
+- Updated README.md with template information
