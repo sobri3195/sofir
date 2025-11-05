@@ -66,6 +66,7 @@ class Elements {
         $this->register_breadcrumb_block();
         $this->register_progress_bar_block();
         $this->register_appointment_booking_block();
+        $this->register_dynamic_data_block();
     }
 
     private function register_action_block(): void {
@@ -1744,5 +1745,302 @@ class Elements {
                 },
             ]
         );
+    }
+
+    private function register_dynamic_data_block(): void {
+        \register_block_type(
+            'sofir/dynamic-data',
+            [
+                'attributes'      => [
+                    'dataSource' => [ 'type' => 'string', 'default' => 'post_meta' ],
+                    'metaKey' => [ 'type' => 'string', 'default' => '' ],
+                    'postId' => [ 'type' => 'number', 'default' => 0 ],
+                    'userId' => [ 'type' => 'number', 'default' => 0 ],
+                    'optionKey' => [ 'type' => 'string', 'default' => '' ],
+                    'format' => [ 'type' => 'string', 'default' => 'text' ],
+                    'fallback' => [ 'type' => 'string', 'default' => '' ],
+                    'prefix' => [ 'type' => 'string', 'default' => '' ],
+                    'suffix' => [ 'type' => 'string', 'default' => '' ],
+                    'dateFormat' => [ 'type' => 'string', 'default' => 'F j, Y' ],
+                    'imageSize' => [ 'type' => 'string', 'default' => 'medium' ],
+                ],
+                'render_callback' => function ( array $attributes ): string {
+                    $source = $attributes['dataSource'] ?? 'post_meta';
+                    $meta_key = $attributes['metaKey'] ?? '';
+                    $format = $attributes['format'] ?? 'text';
+                    $fallback = $attributes['fallback'] ?? '';
+                    $prefix = $attributes['prefix'] ?? '';
+                    $suffix = $attributes['suffix'] ?? '';
+                    $date_format = $attributes['dateFormat'] ?? 'F j, Y';
+                    $image_size = $attributes['imageSize'] ?? 'medium';
+                    
+                    $value = '';
+                    
+                    switch ( $source ) {
+                        case 'post_meta':
+                            $post_id = $attributes['postId'] ?: \get_the_ID();
+                            if ( $post_id && $meta_key ) {
+                                $raw_value = \get_post_meta( $post_id, $meta_key, true );
+                                $value = $this->format_dynamic_value( $raw_value, $format, $date_format, $image_size );
+                            }
+                            break;
+                            
+                        case 'post_field':
+                            $post_id = $attributes['postId'] ?: \get_the_ID();
+                            if ( $post_id && $meta_key ) {
+                                $post = \get_post( $post_id );
+                                if ( $post && isset( $post->$meta_key ) ) {
+                                    $raw_value = $post->$meta_key;
+                                    $value = $this->format_dynamic_value( $raw_value, $format, $date_format, $image_size );
+                                }
+                            }
+                            break;
+                            
+                        case 'user_meta':
+                            $user_id = $attributes['userId'] ?: \get_current_user_id();
+                            if ( $user_id && $meta_key ) {
+                                $raw_value = \get_user_meta( $user_id, $meta_key, true );
+                                $value = $this->format_dynamic_value( $raw_value, $format, $date_format, $image_size );
+                            }
+                            break;
+                            
+                        case 'user_field':
+                            $user_id = $attributes['userId'] ?: \get_current_user_id();
+                            if ( $user_id && $meta_key ) {
+                                $user = \get_user_by( 'id', $user_id );
+                                if ( $user && isset( $user->$meta_key ) ) {
+                                    $raw_value = $user->$meta_key;
+                                    $value = $this->format_dynamic_value( $raw_value, $format, $date_format, $image_size );
+                                }
+                            }
+                            break;
+                            
+                        case 'site_option':
+                            $option_key = $attributes['optionKey'] ?: $meta_key;
+                            if ( $option_key ) {
+                                $raw_value = \get_option( $option_key );
+                                $value = $this->format_dynamic_value( $raw_value, $format, $date_format, $image_size );
+                            }
+                            break;
+                            
+                        case 'cpt_field':
+                            $post_id = $attributes['postId'] ?: \get_the_ID();
+                            if ( $post_id && $meta_key ) {
+                                $sofir_meta_key = 'sofir_' . $meta_key;
+                                $raw_value = \get_post_meta( $post_id, $sofir_meta_key, true );
+                                $value = $this->format_cpt_field_value( $raw_value, $meta_key, $format );
+                            }
+                            break;
+                    }
+                    
+                    if ( empty( $value ) && ! empty( $fallback ) ) {
+                        $value = $fallback;
+                    }
+                    
+                    if ( empty( $value ) ) {
+                        return '';
+                    }
+                    
+                    $output = $prefix . $value . $suffix;
+                    
+                    return '<div class="sofir-dynamic-data" data-source="' . \esc_attr( $source ) . '">' . $output . '</div>';
+                },
+            ]
+        );
+    }
+
+    private function format_dynamic_value( $value, string $format, string $date_format, string $image_size ): string {
+        if ( empty( $value ) ) {
+            return '';
+        }
+        
+        switch ( $format ) {
+            case 'text':
+                return \esc_html( (string) $value );
+                
+            case 'html':
+                return \wp_kses_post( (string) $value );
+                
+            case 'url':
+                return \esc_url( (string) $value );
+                
+            case 'email':
+                return '<a href="' . \esc_url( 'mailto:' . $value ) . '">' . \esc_html( $value ) . '</a>';
+                
+            case 'phone':
+                $clean = \preg_replace( '/[^0-9+]/', '', (string) $value );
+                return '<a href="' . \esc_url( 'tel:' . $clean ) . '">' . \esc_html( $value ) . '</a>';
+                
+            case 'date':
+                if ( \is_numeric( $value ) ) {
+                    return \esc_html( \gmdate( $date_format, (int) $value ) );
+                }
+                $timestamp = \strtotime( (string) $value );
+                if ( $timestamp ) {
+                    return \esc_html( \gmdate( $date_format, $timestamp ) );
+                }
+                return \esc_html( (string) $value );
+                
+            case 'number':
+                return \esc_html( \number_format_i18n( (float) $value ) );
+                
+            case 'currency':
+                return \esc_html( \number_format_i18n( (float) $value, 2 ) );
+                
+            case 'image':
+                if ( \is_numeric( $value ) ) {
+                    $img = \wp_get_attachment_image( (int) $value, $image_size, false, [ 'class' => 'sofir-dynamic-image' ] );
+                    return $img ?: '';
+                }
+                return '<img src="' . \esc_url( (string) $value ) . '" alt="" class="sofir-dynamic-image" />';
+                
+            case 'array':
+                if ( \is_array( $value ) ) {
+                    return \esc_html( \implode( ', ', $value ) );
+                }
+                return \esc_html( (string) $value );
+                
+            case 'json':
+                if ( \is_array( $value ) || \is_object( $value ) ) {
+                    return \esc_html( \wp_json_encode( $value, JSON_PRETTY_PRINT ) );
+                }
+                return \esc_html( (string) $value );
+                
+            default:
+                return \esc_html( (string) $value );
+        }
+    }
+
+    private function format_cpt_field_value( $value, string $field_key, string $format ): string {
+        if ( empty( $value ) ) {
+            return '';
+        }
+        
+        switch ( $field_key ) {
+            case 'location':
+                if ( \is_array( $value ) ) {
+                    $parts = [];
+                    if ( ! empty( $value['address'] ) ) {
+                        $parts[] = $value['address'];
+                    }
+                    if ( ! empty( $value['city'] ) ) {
+                        $parts[] = $value['city'];
+                    }
+                    if ( ! empty( $value['state'] ) ) {
+                        $parts[] = $value['state'];
+                    }
+                    if ( ! empty( $value['country'] ) ) {
+                        $parts[] = $value['country'];
+                    }
+                    return \esc_html( \implode( ', ', $parts ) );
+                }
+                return \esc_html( (string) $value );
+                
+            case 'hours':
+                if ( \is_array( $value ) ) {
+                    $output = '<div class="sofir-hours-display">';
+                    $days = [ 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday' ];
+                    foreach ( $days as $day ) {
+                        if ( isset( $value[ $day ] ) && ! empty( $value[ $day ]['open'] ) ) {
+                            $output .= '<div class="sofir-hours-day">';
+                            $output .= '<strong>' . \esc_html( \ucfirst( $day ) ) . ':</strong> ';
+                            $output .= \esc_html( $value[ $day ]['open'] ) . ' - ' . \esc_html( $value[ $day ]['close'] );
+                            $output .= '</div>';
+                        }
+                    }
+                    $output .= '</div>';
+                    return $output;
+                }
+                return '';
+                
+            case 'rating':
+                $rating = (float) $value;
+                $stars = '';
+                for ( $i = 1; $i <= 5; $i++ ) {
+                    $stars .= $i <= $rating ? '★' : '☆';
+                }
+                return '<span class="sofir-rating-stars">' . $stars . ' ' . \esc_html( $rating ) . '</span>';
+                
+            case 'contact':
+                if ( \is_array( $value ) ) {
+                    $output = '<div class="sofir-contact-display">';
+                    if ( ! empty( $value['email'] ) ) {
+                        $output .= '<div class="sofir-contact-email">';
+                        $output .= '<a href="' . \esc_url( 'mailto:' . $value['email'] ) . '">' . \esc_html( $value['email'] ) . '</a>';
+                        $output .= '</div>';
+                    }
+                    if ( ! empty( $value['phone'] ) ) {
+                        $output .= '<div class="sofir-contact-phone">';
+                        $clean = \preg_replace( '/[^0-9+]/', '', $value['phone'] );
+                        $output .= '<a href="' . \esc_url( 'tel:' . $clean ) . '">' . \esc_html( $value['phone'] ) . '</a>';
+                        $output .= '</div>';
+                    }
+                    if ( ! empty( $value['website'] ) ) {
+                        $output .= '<div class="sofir-contact-website">';
+                        $output .= '<a href="' . \esc_url( $value['website'] ) . '" target="_blank">' . \esc_html( $value['website'] ) . '</a>';
+                        $output .= '</div>';
+                    }
+                    $output .= '</div>';
+                    return $output;
+                }
+                return '';
+                
+            case 'gallery':
+                if ( \is_array( $value ) ) {
+                    $output = '<div class="sofir-gallery-display sofir-gallery-columns-3">';
+                    foreach ( $value as $img_id ) {
+                        $img = \wp_get_attachment_image( (int) $img_id, 'medium', false, [ 'class' => 'sofir-gallery-image' ] );
+                        if ( $img ) {
+                            $output .= '<div class="sofir-gallery-item">' . $img . '</div>';
+                        }
+                    }
+                    $output .= '</div>';
+                    return $output;
+                }
+                return '';
+                
+            case 'attributes':
+                if ( \is_array( $value ) ) {
+                    $output = '<div class="sofir-attributes-display">';
+                    foreach ( $value as $key => $val ) {
+                        $output .= '<div class="sofir-attribute">';
+                        $output .= '<strong>' . \esc_html( $key ) . ':</strong> ';
+                        $output .= \esc_html( $val );
+                        $output .= '</div>';
+                    }
+                    $output .= '</div>';
+                    return $output;
+                }
+                return '';
+                
+            case 'event_date':
+            case 'appointment_datetime':
+                if ( ! empty( $value ) ) {
+                    $timestamp = \strtotime( (string) $value );
+                    if ( $timestamp ) {
+                        return \esc_html( \gmdate( 'F j, Y g:i A', $timestamp ) );
+                    }
+                }
+                return \esc_html( (string) $value );
+                
+            case 'appointment_status':
+            case 'status':
+                $status_classes = [
+                    'active' => 'success',
+                    'pending' => 'warning',
+                    'confirmed' => 'success',
+                    'completed' => 'info',
+                    'cancelled' => 'danger',
+                    'closed' => 'secondary',
+                ];
+                $class = $status_classes[ $value ] ?? 'default';
+                return '<span class="sofir-status-badge sofir-status-' . \esc_attr( $class ) . '">' . \esc_html( \ucfirst( (string) $value ) ) . '</span>';
+                
+            default:
+                if ( \is_array( $value ) ) {
+                    return \esc_html( \implode( ', ', $value ) );
+                }
+                return \esc_html( (string) $value );
+        }
     }
 }
