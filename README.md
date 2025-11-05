@@ -181,18 +181,28 @@ Complete set of custom Gutenberg blocks ready to use:
 
 **Bit Integration Compatible:**
 - Full REST API for webhook management
-- Connect with 1000+ external services via Bit Integration
+- Connect with 200+ external services via Bit Integration
+- **10 Comprehensive Triggers**
+- **3 Action Endpoints**
+- Visual integration builder
+- No coding required
 
 **Webhook Triggers:**
-- User registration
+- User registration (with phone, name, email, roles)
 - User profile updates
-- User login
-- Payment status changes
+- User login (with timestamp)
+- Payment completed (all gateways: Manual, Duitku, Xendit, Midtrans)
 - Post publishing
 - Comment submissions
 - Form submissions
-- Order creation
-- Subscription changes
+- Membership changes
+- Appointment created/updated
+- Custom events
+
+**SOFIR Actions (callable from external apps):**
+- Create User (with phone support)
+- Update User (profile fields)
+- Create Post (any post type)
 
 **Features:**
 - Test webhook functionality
@@ -201,6 +211,21 @@ Complete set of custom Gutenberg blocks ready to use:
 - Custom webhook endpoints
 - JSON payload support
 - Authentication support
+- Field mapping support
+- Conditional logic support
+
+**Popular Integrations:**
+- 📧 Email Marketing: Mailchimp, ActiveCampaign, ConvertKit
+- 💬 Messaging: Slack, Telegram, WhatsApp, Discord
+- 📊 Spreadsheets: Google Sheets, Airtable, Excel Online
+- 🔧 CRM: HubSpot, Salesforce, Zoho CRM
+- 🎯 Analytics: Google Analytics, Mixpanel
+- And 200+ more services via Bit Integration
+
+**Documentation:**
+- See [BIT_INTEGRATION_GUIDE.md](BIT_INTEGRATION_GUIDE.md) for Indonesian guide
+- See [BIT_INTEGRATION_README.md](BIT_INTEGRATION_README.md) for English guide
+- See [BIT_INTEGRATION_TEST.md](BIT_INTEGRATION_TEST.md) for testing checklist
 
 ### 8. 🎁 Loyalty & Rewards Program
 

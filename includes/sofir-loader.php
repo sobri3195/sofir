@@ -13,6 +13,7 @@ use Sofir\Directory\Mobile as DirectoryMobile;
 use Sofir\Membership\Manager as MembershipManager;
 use Sofir\Payments\Manager as PaymentsManager;
 use Sofir\Webhooks\Manager as WebhooksManager;
+use Sofir\Webhooks\BitIntegration as WebhooksBitIntegration;
 use Sofir\Loyalty\Manager as LoyaltyManager;
 use Sofir\Appointments\Manager as AppointmentsManager;
 use Sofir\Rest\Router as RestRouter;
@@ -78,6 +79,7 @@ class Loader {
             MembershipManager::class,
             PaymentsManager::class,
             WebhooksManager::class,
+            WebhooksBitIntegration::class,
             LoyaltyManager::class,
             AppointmentsManager::class,
             AiBuilder::class,
