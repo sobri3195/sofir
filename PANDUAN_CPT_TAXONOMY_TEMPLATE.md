@@ -11,7 +11,9 @@ Dokumentasi komprehensif untuk membuat Custom Post Type (CPT), taxonomy, dan men
 3. [Field Catalog](#3-field-catalog)
 4. [Template System](#4-template-system)
 5. [REST API Filtering](#5-rest-api-filtering)
-6. [Contoh Praktis](#6-contoh-praktis)
+6. [CPT Events & Hooks](#6-cpt-events--hooks)
+7. [Statistics API](#7-statistics-api)
+8. [Contoh Praktis](#8-contoh-praktis)
 
 ---
 
@@ -854,7 +856,7 @@ fetch(`/wp-json/wp/v2/listing?${params}`)
 
 ---
 
-## 6. Contoh Praktis
+## 8. Contoh Praktis
 
 ### 6.1 Membuat Directory Real Estate
 
@@ -1198,6 +1200,190 @@ $appointments = new WP_Query($args);
 2. **Meta Description** - Add meta description untuk CPT single pages
 3. **Structured Data** - Gunakan schema markup untuk rich snippets
 4. **XML Sitemap** - Include CPT di sitemap
+
+---
+
+## 6. CPT Events & Hooks
+
+SOFIR menyediakan 24+ event hooks untuk customize behavior CPT Manager. Hooks ini memungkinkan developer untuk:
+- Hook ke lifecycle CPT dan taxonomy
+- Monitor perubahan meta fields
+- Trigger aksi custom saat CPT/taxonomy di-create/update/delete
+- Sinkronisasi dengan external APIs
+- Send notifications
+- Dan banyak lagi
+
+### Hook Categories
+
+**CPT Lifecycle Hooks:**
+```php
+// Before & After Register
+do_action( 'sofir/cpt/before_register', $post_type, $definition );
+do_action( 'sofir/cpt/registered', $post_type, $definition, $args );
+do_action( "sofir/cpt/registered_{$post_type}", $definition, $args );
+
+// Before & After Save
+do_action( 'sofir/cpt/before_save', $slug, $payload );
+do_action( 'sofir/cpt/saved', $slug, $definition );
+do_action( "sofir/cpt/saved_{$slug}", $definition );
+
+// Before & After Delete
+do_action( 'sofir/cpt/before_delete', $slug, $definition );
+do_action( 'sofir/cpt/deleted', $slug, $definition );
+do_action( "sofir/cpt/deleted_{$slug}", $definition );
+```
+
+**Taxonomy Lifecycle Hooks:**
+```php
+// Similar pattern untuk taxonomy
+do_action( 'sofir/taxonomy/before_register', $taxonomy, $definition );
+do_action( 'sofir/taxonomy/registered', $taxonomy, $definition, $args );
+do_action( "sofir/taxonomy/registered_{$taxonomy}", $definition, $args );
+
+do_action( 'sofir/taxonomy/before_save', $slug, $payload );
+do_action( 'sofir/taxonomy/saved', $slug, $definition );
+do_action( "sofir/taxonomy/saved_{$slug}", $definition );
+
+do_action( 'sofir/taxonomy/before_delete', $slug, $definition );
+do_action( 'sofir/taxonomy/deleted', $slug, $definition );
+do_action( "sofir/taxonomy/deleted_{$slug}", $definition );
+```
+
+**Meta Field Update Hooks:**
+```php
+// Global meta update hook
+do_action( 'sofir/cpt/meta_updated', $post_id, $post_type, $field_name, $meta_value );
+
+// CPT-specific meta update
+do_action( "sofir/cpt/{$post_type}/meta_updated", $post_id, $field_name, $meta_value );
+
+// Field-specific meta update
+do_action( "sofir/cpt/{$post_type}/meta_updated_{$field_name}", $post_id, $meta_value );
+```
+
+### Contoh Penggunaan Hooks
+
+#### 1. Auto-populate Default Terms
+
+```php
+add_action( 'sofir/taxonomy/registered_listing_category', function( $definition, $args ) {
+    $default_terms = [ 'Restaurant', 'Hotel', 'Cafe', 'Spa', 'Gym' ];
+    
+    foreach ( $default_terms as $term ) {
+        if ( ! term_exists( $term, 'listing_category' ) ) {
+            wp_insert_term( $term, 'listing_category' );
+        }
+    }
+}, 10, 2 );
+```
+
+#### 2. Send Email Notification on High Rating
+
+```php
+add_action( 'sofir/cpt/listing/meta_updated_rating', function( $post_id, $rating ) {
+    if ( $rating >= 4.5 ) {
+        $post = get_post( $post_id );
+        
+        wp_mail(
+            get_option( 'admin_email' ),
+            'High Rating Alert',
+            "Listing '{$post->post_title}' achieved {$rating} stars!"
+        );
+    }
+}, 10, 2 );
+```
+
+#### 3. Sync to External API
+
+```php
+add_action( 'sofir/cpt/saved_event', function( $definition ) {
+    // Sync event to external calendar API
+    $events = get_posts( [ 'post_type' => 'event', 'numberposts' => 1 ] );
+    
+    if ( ! empty( $events ) ) {
+        wp_remote_post( 'https://api.example.com/sync', [
+            'body' => [ 'event_data' => $events[0] ],
+        ] );
+    }
+} );
+```
+
+**📖 Dokumentasi Lengkap:** Lihat [CPT_EVENTS_HOOKS.md](./CPT_EVENTS_HOOKS.md) untuk dokumentasi lengkap semua hooks dan contoh penggunaan.
+
+---
+
+## 7. Statistics API
+
+SOFIR menyediakan API untuk mendapatkan statistik lengkap tentang CPT dan Taxonomy.
+
+### Get CPT Statistics
+
+```php
+$manager = \Sofir\Cpt\Manager::instance();
+$stats = $manager->get_cpt_statistics();
+
+// Output:
+// [
+//     'listing' => [
+//         'slug'       => 'listing',
+//         'label'      => 'Listings',
+//         'singular'   => 'Listing',
+//         'published'  => 45,
+//         'draft'      => 3,
+//         'pending'    => 2,
+//         'trash'      => 1,
+//         'total'      => 50,
+//         'fields'     => [ 'location', 'hours', 'rating' ],
+//         'taxonomies' => [ 'listing_category' ],
+//     ],
+// ]
+```
+
+### Get Taxonomy Statistics
+
+```php
+$manager = \Sofir\Cpt\Manager::instance();
+$stats = $manager->get_taxonomy_statistics();
+
+// Output:
+// [
+//     'listing_category' => [
+//         'slug'         => 'listing_category',
+//         'label'        => 'Listing Categories',
+//         'singular'     => 'Listing Category',
+//         'term_count'   => 12,
+//         'object_types' => [ 'listing' ],
+//         'hierarchical' => true,
+//         'filterable'   => true,
+//     ],
+// ]
+```
+
+### Template Management API
+
+```php
+$manager = \Sofir\Cpt\Manager::instance();
+
+// Get template untuk CPT
+$templates = $manager->get_cpt_templates( 'listing' );
+
+// Set template untuk CPT
+$template = [
+    [ 'core/heading', [ 'level' => 1 ] ],
+    [ 'sofir/map', [] ],
+    [ 'core/paragraph', [] ],
+];
+
+$manager->set_cpt_template( 'listing', $template, 'insert' );
+```
+
+### Statistics Dashboard
+
+SOFIR Admin Panel menampilkan statistics dashboard dengan:
+- **Summary Cards**: Total content, users, comments
+- **CPT Details Table**: Published, draft, pending count per CPT
+- **Taxonomy Details Table**: Term count, type, filterable status
+- **Direct Links**: Quick links ke manage content
 
 ---
 
