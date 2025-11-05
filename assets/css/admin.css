@@ -139,17 +139,49 @@
 .sofir-template-card__preview {
     width: 100%;
     aspect-ratio: 4/3;
-    overflow: hidden;
     background: #f5f7fa;
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.sofir-template-card__preview.sofir-template-preview-trigger {
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.sofir-template-card__preview.sofir-template-preview-trigger::after {
+    content: "👁";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 48px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
+}
+
+.sofir-template-card__preview.sofir-template-preview-trigger:hover::after {
+    opacity: 1;
+}
+
+.sofir-template-card__preview.sofir-template-preview-trigger:hover {
+    transform: scale(1.02);
+}
+
+.sofir-template-card__preview.sofir-template-preview-trigger:hover img {
+    opacity: 0.8;
 }
 
 .sofir-template-card__preview img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: opacity 0.3s ease;
 }
 
 .sofir-template-card__content {

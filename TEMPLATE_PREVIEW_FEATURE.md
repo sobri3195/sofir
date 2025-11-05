@@ -20,22 +20,34 @@ All templates now have a live web preview functionality that allows users to see
 #### Frontend (JavaScript)
 - **File**: `assets/js/admin.js`
 - **Button Class**: `.sofir-template-preview`
+- **Trigger Class**: `.sofir-template-preview-trigger` (clickable preview images)
 - Opens full-screen modal with iframe
 - Loads template content with theme styles
 - Responsive design with keyboard navigation (ESC to close)
+- Keyboard support for preview images (Enter/Space keys)
 
 #### Styling (CSS)
 - **File**: `assets/css/admin.css`
 - **Modal Class**: `.sofir-preview-modal`
+- **Preview Trigger Class**: `.sofir-template-preview-trigger`
 - Full-screen overlay with 90vh height
 - Professional header with close button
 - Iframe for isolated preview rendering
+- Hover effects with eye icon and scale transform
+- Smooth transitions and visual feedback
 
 ### Usage
 1. Navigate to SOFIR Templates admin panel
-2. Click "Preview" button on any template card
+2. **Click preview image** or click "Preview" button on any template card
 3. View live rendered template in modal
 4. Press ESC or click close button to exit
+
+### Enhancements
+- **Clickable Preview Images**: Template preview images are now clickable
+- **Visual Feedback**: Eye icon appears on hover over preview images
+- **Keyboard Support**: Press Enter or Space on focused preview image
+- **Accessibility**: Full ARIA labels and keyboard navigation
+- **Smooth Animations**: Scale and opacity transitions on hover
 
 ## Feature 2: Header & Footer Design Templates
 
@@ -155,28 +167,39 @@ All templates now have a live web preview functionality that allows users to see
 2. `includes/class-admin-templates-panel.php`
    - Added header/footer group labels and descriptions
    - Added "Preview" button to all template cards
+   - Made preview images clickable with `.sofir-template-preview-trigger` class
+   - Added accessibility attributes (role, tabindex, aria-label)
    - Added "Copy Pattern" button for pattern context
    - Added pattern context label
 
-3. `includes/sofir-importer.php`
+3. `includes/class-admin-manager.php`
+   - Added `themeStyleUrl` to localized script data for preview modal
+
+4. `includes/sofir-importer.php`
    - Added `handle_ajax_preview()` method
    - Added `handle_ajax_copy_pattern()` method
    - Added `render_blocks_for_preview()` helper
 
-4. `templates/templates.php`
+5. `templates/templates.php`
    - Added 4 header templates
    - Added 4 footer templates
 
 ### JavaScript Files
 1. `assets/js/admin.js`
    - Preview modal functionality
+   - Clickable preview image handler (`handlePreview` function)
+   - Click event delegation for buttons and preview images
+   - Keyboard event handler for Enter/Space keys
    - Copy pattern with clipboard API
-   - Keyboard navigation support
+   - Full keyboard navigation support
 
 ### CSS Files
 1. `assets/css/admin.css`
    - Preview modal styles
    - Copy modal styles
+   - Clickable preview image styles (`.sofir-template-preview-trigger`)
+   - Hover effects with eye icon overlay
+   - Scale and opacity transitions
    - Responsive design
 
 ### New Files Created
@@ -205,10 +228,13 @@ All templates now have a live web preview functionality that allows users to see
 
 ### For Users
 1. **Preview Before Import**: See exactly how templates look
-2. **Ready-to-Use Headers/Footers**: No need to design from scratch
-3. **Quick Copy/Paste**: One click to copy pattern code
-4. **Gutenberg Integration**: Patterns available directly in editor
-5. **Mobile-Friendly**: All features work on mobile devices
+2. **Intuitive Preview**: Click on template images to preview instantly
+3. **Visual Feedback**: Clear hover effects show what's clickable
+4. **Ready-to-Use Headers/Footers**: No need to design from scratch
+5. **Quick Copy/Paste**: One click to copy pattern code
+6. **Gutenberg Integration**: Patterns available directly in editor
+7. **Full Accessibility**: Keyboard navigation and screen reader support
+8. **Mobile-Friendly**: All features work on mobile devices
 
 ### For Developers
 1. **Extensible**: Easy to add more templates

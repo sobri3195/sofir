@@ -146,21 +146,13 @@
         return div.innerHTML;
     }
 
-    document.addEventListener( 'click', function ( event ) {
-        const button = event.target.closest( '.sofir-template-preview' );
-
-        if ( ! button ) {
-            return;
-        }
-
-        event.preventDefault();
-
+    function handlePreview( element ) {
         if ( ! window.ajaxurl ) {
             notify( 'error', 'Ajax endpoint not found.' );
             return;
         }
 
-        const slug = button.dataset.template;
+        const slug = element.dataset.template;
 
         if ( ! slug ) {
             notify( 'error', 'Template slug missing.' );
@@ -172,8 +164,10 @@
         formData.append( 'template', slug );
         formData.append( 'nonce', data.nonce || '' );
 
-        setButtonBusy( button, true );
-        button.textContent = 'Loading Preview…';
+        if ( element.classList.contains( 'button' ) ) {
+            setButtonBusy( element, true );
+            element.textContent = 'Loading Preview…';
+        }
 
         window.fetch( window.ajaxurl, {
             method: 'POST',
@@ -198,9 +192,39 @@
                 notify( 'error', 'Unexpected error while loading preview.' );
             } )
             .finally( function () {
-                setButtonBusy( button, false );
-                button.textContent = 'Preview';
+                if ( element.classList.contains( 'button' ) ) {
+                    setButtonBusy( element, false );
+                    element.textContent = 'Preview';
+                }
             } );
+    }
+
+    document.addEventListener( 'click', function ( event ) {
+        const button = event.target.closest( '.sofir-template-preview' );
+        const trigger = event.target.closest( '.sofir-template-preview-trigger' );
+
+        if ( button ) {
+            event.preventDefault();
+            handlePreview( button );
+        } else if ( trigger ) {
+            event.preventDefault();
+            handlePreview( trigger );
+        }
+    } );
+
+    document.addEventListener( 'keydown', function ( event ) {
+        if ( event.key !== 'Enter' && event.key !== ' ' ) {
+            return;
+        }
+
+        const trigger = event.target.closest( '.sofir-template-preview-trigger' );
+
+        if ( ! trigger ) {
+            return;
+        }
+
+        event.preventDefault();
+        handlePreview( trigger );
     } );
 
     function showPreviewModal( payload ) {
