@@ -19,6 +19,9 @@ use Sofir\Appointments\Manager as AppointmentsManager;
 use Sofir\Rest\Router as RestRouter;
 use Sofir\Seo\Engine as SeoEngine;
 use Sofir\Templates\Manager as TemplateManager;
+use Sofir\GSheets\Manager as GSheetsManager;
+use Sofir\Multivendor\Manager as MultivendorManager;
+use Sofir\Forms\Manager as FormsManager;
 
 class Loader {
     /** @var class-string[] */
@@ -87,6 +90,9 @@ class Loader {
             BlocksElements::class,
             BlocksAssetsManager::class,
             BlocksCompatibility::class,
+            GSheetsManager::class,
+            MultivendorManager::class,
+            FormsManager::class,
         ];
 
         /** @var class-string[] $modules */
