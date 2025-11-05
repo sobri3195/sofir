@@ -51,6 +51,16 @@
    Login & Register Block
    ========================================================================== */
 
+.sofir-login,
+.sofir-register {
+    max-width: 400px;
+    margin: 2em auto;
+    padding: 2em;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
 .sofir-login-register {
     max-width: 400px;
     margin: 2em auto;
@@ -60,18 +70,50 @@
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
+.sofir-form-field {
+    margin-bottom: 1.5em;
+}
+
+.sofir-form-field label {
+    display: block;
+    margin-bottom: 0.5em;
+    font-weight: 600;
+    color: #333;
+}
+
+.sofir-login input[type="text"],
+.sofir-login input[type="email"],
+.sofir-login input[type="password"],
+.sofir-register input[type="text"],
+.sofir-register input[type="email"],
+.sofir-register input[type="password"],
+.sofir-register input[type="tel"],
 .sofir-login-register input[type="text"],
 .sofir-login-register input[type="email"],
 .sofir-login-register input[type="password"],
 .sofir-login-register input[type="tel"] {
     width: 100%;
     padding: 12px;
-    margin-bottom: 1em;
     border: 1px solid #ddd;
     border-radius: 4px;
     font-size: 1em;
+    transition: border-color 0.2s ease;
 }
 
+.sofir-login input:focus,
+.sofir-register input:focus,
+.sofir-login-register input:focus {
+    outline: none;
+    border-color: #007cba;
+    box-shadow: 0 0 0 3px rgba(0, 124, 186, 0.1);
+}
+
+.sofir-form-submit {
+    margin-top: 1.5em;
+}
+
+.sofir-login button,
+.sofir-register button,
 .sofir-login-register button {
     width: 100%;
     padding: 12px;
@@ -82,11 +124,41 @@
     font-size: 1em;
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.3s ease;
+    transition: all 0.2s ease;
 }
 
+.sofir-login button:hover,
+.sofir-register button:hover,
 .sofir-login-register button:hover {
     background: #005a87;
+    transform: translateY(-1px);
+}
+
+.sofir-login button:active,
+.sofir-register button:active,
+.sofir-login-register button:active {
+    transform: translateY(0);
+}
+
+.sofir-login__links {
+    text-align: center;
+    margin-top: 1em;
+    font-size: 0.9em;
+}
+
+.sofir-login__links a {
+    color: #007cba;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.sofir-login__links a:hover {
+    color: #005a87;
+    text-decoration: underline;
+}
+
+.sofir-login--authenticated {
+    text-align: center;
 }
 
 /* ==========================================================================

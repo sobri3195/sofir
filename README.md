@@ -253,8 +253,25 @@ Complete set of custom Gutenberg blocks ready to use:
 **Phone-Only Registration:**
 - Users can register with **just phone number** (no email required)
 - Phone-based login support
-- SMS verification integration ready
-- Alternative email/username login
+- Auto-generated username and secure password
+- SMS/OTP verification integration ready
+- Alternative email/username/password login
+
+**Shortcodes:**
+```
+[sofir_register_form phone_only="true" redirect="/dashboard"]
+[sofir_login_form]
+[sofir_logout_link]
+```
+
+**Gutenberg Blocks:**
+- SOFIR Register Form (with phone-only toggle)
+- SOFIR Login Form
+- User authentication blocks
+
+**REST API Endpoints:**
+- `/wp-json/sofir/v1/auth/register` - User registration
+- `/wp-json/sofir/v1/auth/phone-login` - Phone number login
 
 **Security Features:**
 - Login throttling and rate limiting
@@ -264,12 +281,11 @@ Complete set of custom Gutenberg blocks ready to use:
 - Brute force protection
 - Session management
 - Secure cookie handling
+- Auto-generated secure passwords
 
-**Authentication Shortcodes:**
-- Login form
-- Registration form
-- Password reset form
-- Profile editor
+**Documentation:**
+- See [PHONE_REGISTRATION_GUIDE.md](PHONE_REGISTRATION_GUIDE.md) for Indonesian guide
+- See [PHONE_REGISTRATION_DOCUMENTATION.md](PHONE_REGISTRATION_DOCUMENTATION.md) for English documentation
 
 ### 10. 🔍 SEO Engine
 

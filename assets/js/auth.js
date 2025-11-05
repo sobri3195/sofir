@@ -29,11 +29,15 @@
                     data: data
                 }).then(function(response) {
                     if (response.status === 'success') {
-                        var redirect = formData.get('sofir_redirect') || window.location.href;
+                        var redirect = response.redirect || formData.get('sofir_redirect') || window.location.href;
                         window.location.href = redirect;
                     }
                 }).catch(function(error) {
-                    alert('Registration error: ' + (error.message || 'Unknown error'));
+                    var errorMessage = error.message || 'Unknown error';
+                    if (error.data && error.data.message) {
+                        errorMessage = error.data.message;
+                    }
+                    alert('Registration error: ' + errorMessage);
                 });
             });
         });

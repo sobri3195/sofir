@@ -86,6 +86,24 @@ class Registrar {
                 },
             ]
         );
+
+        \register_block_type(
+            'sofir/register-form',
+            [
+                'attributes'      => [
+                    'phoneOnly' => [ 'type' => 'boolean', 'default' => false ],
+                    'redirect'  => [ 'type' => 'string', 'default' => '' ],
+                ],
+                'render_callback' => function ( array $attributes ): string {
+                    $atts = [
+                        'phone_only' => $attributes['phoneOnly'] ?? false,
+                        'redirect'   => $attributes['redirect'] ?? \home_url(),
+                    ];
+
+                    return AuthEnhancer::instance()->render_register_form( $atts );
+                },
+            ]
+        );
     }
 
     public function register_category( array $categories, $context ): array {
