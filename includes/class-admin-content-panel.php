@@ -226,12 +226,16 @@ class ContentPanel {
     }
 
     private function render_statistics_dashboard( array $post_types ): void {
+        $manager = CptManager::instance();
+        $cpt_stats = $manager->get_cpt_statistics();
+        $tax_stats = $manager->get_taxonomy_statistics();
+
         echo '<div class="sofir-statistics-dashboard" style="margin-bottom: 20px;">';
         echo '<h2>' . \esc_html__( 'Content Statistics', 'sofir' ) . '</h2>';
-        echo '<div class="sofir-stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">';
 
+        echo '<div class="sofir-stats-summary" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">';
+        
         $stats = $this->get_content_statistics( $post_types );
-
         foreach ( $stats as $stat ) {
             echo '<div class="sofir-stat-card" style="background: #fff; padding: 20px; border: 1px solid #ccd0d4; border-radius: 4px; box-shadow: 0 1px 1px rgba(0,0,0,.04);">';
             echo '<div class="sofir-stat-icon" style="font-size: 24px; margin-bottom: 10px;">' . $stat['icon'] . '</div>';
@@ -242,6 +246,63 @@ class ContentPanel {
             }
             echo '</div>';
         }
+        echo '</div>';
+
+        echo '<div class="sofir-stats-detailed" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">';
+        
+        echo '<div class="sofir-card">';
+        echo '<h3>' . \esc_html__( 'Custom Post Types Details', 'sofir' ) . '</h3>';
+        if ( empty( $cpt_stats ) ) {
+            echo '<p>' . \esc_html__( 'No custom post types registered yet.', 'sofir' ) . '</p>';
+        } else {
+            echo '<table class="widefat" style="margin-top: 10px;">';
+            echo '<thead><tr>';
+            echo '<th>' . \esc_html__( 'Post Type', 'sofir' ) . '</th>';
+            echo '<th>' . \esc_html__( 'Published', 'sofir' ) . '</th>';
+            echo '<th>' . \esc_html__( 'Draft', 'sofir' ) . '</th>';
+            echo '<th>' . \esc_html__( 'Fields', 'sofir' ) . '</th>';
+            echo '</tr></thead>';
+            echo '<tbody>';
+            
+            foreach ( $cpt_stats as $slug => $cpt ) {
+                echo '<tr>';
+                echo '<td><strong>' . \esc_html( $cpt['label'] ) . '</strong><br><small>' . \esc_html( $slug ) . '</small></td>';
+                echo '<td>' . \esc_html( $cpt['published'] ) . '</td>';
+                echo '<td>' . \esc_html( $cpt['draft'] ) . '</td>';
+                echo '<td>' . \esc_html( count( $cpt['fields'] ) ) . '</td>';
+                echo '</tr>';
+            }
+            
+            echo '</tbody></table>';
+        }
+        echo '</div>';
+
+        echo '<div class="sofir-card">';
+        echo '<h3>' . \esc_html__( 'Taxonomies Details', 'sofir' ) . '</h3>';
+        if ( empty( $tax_stats ) ) {
+            echo '<p>' . \esc_html__( 'No taxonomies registered yet.', 'sofir' ) . '</p>';
+        } else {
+            echo '<table class="widefat" style="margin-top: 10px;">';
+            echo '<thead><tr>';
+            echo '<th>' . \esc_html__( 'Taxonomy', 'sofir' ) . '</th>';
+            echo '<th>' . \esc_html__( 'Terms', 'sofir' ) . '</th>';
+            echo '<th>' . \esc_html__( 'Type', 'sofir' ) . '</th>';
+            echo '<th>' . \esc_html__( 'Filterable', 'sofir' ) . '</th>';
+            echo '</tr></thead>';
+            echo '<tbody>';
+            
+            foreach ( $tax_stats as $slug => $tax ) {
+                echo '<tr>';
+                echo '<td><strong>' . \esc_html( $tax['label'] ) . '</strong><br><small>' . \esc_html( $slug ) . '</small></td>';
+                echo '<td>' . \esc_html( $tax['term_count'] ) . '</td>';
+                echo '<td>' . ( $tax['hierarchical'] ? \esc_html__( 'Hierarchical', 'sofir' ) : \esc_html__( 'Flat', 'sofir' ) ) . '</td>';
+                echo '<td>' . ( $tax['filterable'] ? '✓' : '—' ) . '</td>';
+                echo '</tr>';
+            }
+            
+            echo '</tbody></table>';
+        }
+        echo '</div>';
 
         echo '</div>';
         echo '</div>';

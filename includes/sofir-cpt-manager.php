@@ -48,6 +48,8 @@ class Manager {
         \add_filter( 'query_vars', [ $this, 'register_query_vars' ] );
         \add_action( 'pre_get_posts', [ $this, 'apply_meta_filters' ] );
         \add_filter( 'the_posts', [ $this, 'filter_open_now' ], 10, 2 );
+        \add_action( 'updated_post_meta', [ $this, 'fire_meta_update_event' ], 10, 4 );
+        \add_action( 'added_post_meta', [ $this, 'fire_meta_update_event' ], 10, 4 );
     }
 
     public function load_definitions(): void {
@@ -384,6 +386,8 @@ class Manager {
         $definitions = \apply_filters( 'sofir/cpt/definitions', $this->post_types );
 
         foreach ( $definitions as $post_type => $definition ) {
+            \do_action( 'sofir/cpt/before_register', $post_type, $definition );
+
             $args        = isset( $definition['args'] ) ? (array) $definition['args'] : [];
             $fields      = isset( $definition['fields'] ) ? (array) $definition['fields'] : [];
             $taxonomies  = isset( $definition['taxonomies'] ) ? (array) $definition['taxonomies'] : [];
@@ -410,10 +414,21 @@ class Manager {
                 $normalized_args['taxonomies'] = array_unique( array_map( 'sanitize_key', $taxonomies ) );
             }
 
+            if ( ! empty( $definition['template'] ) ) {
+                $normalized_args['template'] = $definition['template'];
+            }
+
+            if ( ! empty( $definition['template_lock'] ) ) {
+                $normalized_args['template_lock'] = $definition['template_lock'];
+            }
+
             \register_post_type( $post_type, $normalized_args );
 
             $this->register_meta_fields( $post_type, $fields );
             $this->register_rest_filters( $post_type, $fields );
+
+            \do_action( 'sofir/cpt/registered', $post_type, $definition, $normalized_args );
+            \do_action( "sofir/cpt/registered_{$post_type}", $definition, $normalized_args );
         }
     }
 
@@ -421,6 +436,8 @@ class Manager {
         $definitions = \apply_filters( 'sofir/taxonomy/definitions', $this->taxonomies );
 
         foreach ( $definitions as $taxonomy => $definition ) {
+            \do_action( 'sofir/taxonomy/before_register', $taxonomy, $definition );
+
             $object_types = isset( $definition['object_type'] ) ? (array) $definition['object_type'] : [];
             $args         = isset( $definition['args'] ) ? (array) $definition['args'] : [];
 
@@ -446,6 +463,9 @@ class Manager {
                     'args'        => $normalized_args,
                 ];
             }
+
+            \do_action( 'sofir/taxonomy/registered', $taxonomy, $definition, $normalized_args );
+            \do_action( "sofir/taxonomy/registered_{$taxonomy}", $definition, $normalized_args );
         }
     }
 
@@ -608,6 +628,8 @@ class Manager {
             return;
         }
 
+        \do_action( 'sofir/cpt/before_save', $slug, $payload );
+
         $singular = isset( $payload['singular'] ) ? $this->sanitize_label( $payload['singular'] ) : $this->guess_label( $slug );
         $plural   = isset( $payload['plural'] ) ? $this->sanitize_label( $payload['plural'] ) : $singular . 's';
         $icon     = isset( $payload['menu_icon'] ) ? $this->sanitize_icon( $payload['menu_icon'] ) : 'dashicons-admin-post';
@@ -635,21 +657,41 @@ class Manager {
 
         $fields = $this->prepare_field_selection( $fields_selected, $filters );
 
-        $this->post_types[ $slug ] = [
+        $definition = [
             'args'       => $args,
             'fields'     => $fields,
             'taxonomies' => $taxes,
         ];
 
+        if ( ! empty( $payload['template'] ) && is_array( $payload['template'] ) ) {
+            $definition['template'] = $payload['template'];
+        }
+
+        if ( ! empty( $payload['template_lock'] ) ) {
+            $definition['template_lock'] = \sanitize_key( $payload['template_lock'] );
+        }
+
+        $this->post_types[ $slug ] = $definition;
+
         \update_option( self::OPTION_POST_TYPES, $this->post_types );
+
+        \do_action( 'sofir/cpt/saved', $slug, $definition );
+        \do_action( "sofir/cpt/saved_{$slug}", $definition );
     }
 
     public function delete_post_type( string $slug ): void {
         $slug = \sanitize_key( $slug );
 
+        $definition = $this->post_types[ $slug ] ?? null;
+
+        \do_action( 'sofir/cpt/before_delete', $slug, $definition );
+
         unset( $this->post_types[ $slug ] );
 
         \update_option( self::OPTION_POST_TYPES, $this->post_types );
+
+        \do_action( 'sofir/cpt/deleted', $slug, $definition );
+        \do_action( "sofir/cpt/deleted_{$slug}", $definition );
     }
 
     public function save_taxonomy( array $payload ): void {
@@ -658,6 +700,8 @@ class Manager {
         if ( '' === $slug ) {
             return;
         }
+
+        \do_action( 'sofir/taxonomy/before_save', $slug, $payload );
 
         $singular     = isset( $payload['singular'] ) ? $this->sanitize_label( $payload['singular'] ) : $this->guess_label( $slug );
         $plural       = isset( $payload['plural'] ) ? $this->sanitize_label( $payload['plural'] ) : $singular . 's';
@@ -675,21 +719,33 @@ class Manager {
 
         $filterable = ! empty( $payload['filterable'] );
 
-        $this->taxonomies[ $slug ] = [
+        $definition = [
             'args'        => $args,
             'object_type' => $object_types,
             'filterable'  => $filterable,
         ];
 
+        $this->taxonomies[ $slug ] = $definition;
+
         \update_option( self::OPTION_TAXONOMIES, $this->taxonomies );
+
+        \do_action( 'sofir/taxonomy/saved', $slug, $definition );
+        \do_action( "sofir/taxonomy/saved_{$slug}", $definition );
     }
 
     public function delete_taxonomy( string $slug ): void {
         $slug = \sanitize_key( $slug );
 
+        $definition = $this->taxonomies[ $slug ] ?? null;
+
+        \do_action( 'sofir/taxonomy/before_delete', $slug, $definition );
+
         unset( $this->taxonomies[ $slug ] );
 
         \update_option( self::OPTION_TAXONOMIES, $this->taxonomies );
+
+        \do_action( 'sofir/taxonomy/deleted', $slug, $definition );
+        \do_action( "sofir/taxonomy/deleted_{$slug}", $definition );
     }
 
     /**
@@ -1484,5 +1540,101 @@ class Manager {
         $allowed = [ 'pending', 'confirmed', 'completed', 'cancelled' ];
         
         return in_array( $value, $allowed, true ) ? $value : 'pending';
+    }
+
+    public function fire_meta_update_event( int $meta_id, int $post_id, string $meta_key, $meta_value ): void {
+        if ( ! str_starts_with( $meta_key, self::FILTER_PREFIX ) ) {
+            return;
+        }
+
+        $post_type = \get_post_type( $post_id );
+
+        if ( ! $post_type ) {
+            return;
+        }
+
+        $field_name = str_replace( self::FILTER_PREFIX . $post_type . '_', '', $meta_key );
+
+        \do_action( 'sofir/cpt/meta_updated', $post_id, $post_type, $field_name, $meta_value );
+        \do_action( "sofir/cpt/{$post_type}/meta_updated", $post_id, $field_name, $meta_value );
+        \do_action( "sofir/cpt/{$post_type}/meta_updated_{$field_name}", $post_id, $meta_value );
+    }
+
+    public function get_cpt_templates( string $post_type ): array {
+        $post_type = \sanitize_key( $post_type );
+        $definition = $this->post_types[ $post_type ] ?? null;
+
+        if ( ! $definition || empty( $definition['template'] ) ) {
+            return [];
+        }
+
+        return $definition['template'];
+    }
+
+    public function set_cpt_template( string $post_type, array $template, string $lock = '' ): void {
+        $post_type = \sanitize_key( $post_type );
+
+        if ( ! isset( $this->post_types[ $post_type ] ) ) {
+            return;
+        }
+
+        $this->post_types[ $post_type ]['template'] = $template;
+
+        if ( $lock ) {
+            $this->post_types[ $post_type ]['template_lock'] = $lock;
+        }
+
+        \update_option( self::OPTION_POST_TYPES, $this->post_types );
+    }
+
+    public function get_cpt_statistics(): array {
+        $stats = [];
+
+        foreach ( $this->post_types as $slug => $definition ) {
+            $count = \wp_count_posts( $slug );
+
+            $stats[ $slug ] = [
+                'slug'       => $slug,
+                'label'      => $definition['args']['labels']['name'] ?? ucfirst( $slug ),
+                'singular'   => $definition['args']['labels']['singular_name'] ?? ucfirst( $slug ),
+                'published'  => isset( $count->publish ) ? (int) $count->publish : 0,
+                'draft'      => isset( $count->draft ) ? (int) $count->draft : 0,
+                'pending'    => isset( $count->pending ) ? (int) $count->pending : 0,
+                'trash'      => isset( $count->trash ) ? (int) $count->trash : 0,
+                'total'      => 0,
+                'fields'     => array_keys( $definition['fields'] ?? [] ),
+                'taxonomies' => $definition['taxonomies'] ?? [],
+            ];
+
+            $stats[ $slug ]['total'] = $stats[ $slug ]['published'] + $stats[ $slug ]['draft'] + $stats[ $slug ]['pending'];
+        }
+
+        return $stats;
+    }
+
+    public function get_taxonomy_statistics(): array {
+        $stats = [];
+
+        foreach ( $this->taxonomies as $slug => $definition ) {
+            $terms = \get_terms( [
+                'taxonomy'   => $slug,
+                'hide_empty' => false,
+                'fields'     => 'count',
+            ] );
+
+            $count = is_numeric( $terms ) ? (int) $terms : 0;
+
+            $stats[ $slug ] = [
+                'slug'         => $slug,
+                'label'        => $definition['args']['labels']['name'] ?? ucfirst( $slug ),
+                'singular'     => $definition['args']['labels']['singular_name'] ?? ucfirst( $slug ),
+                'term_count'   => $count,
+                'object_types' => $definition['object_type'] ?? [],
+                'hierarchical' => ! empty( $definition['args']['hierarchical'] ),
+                'filterable'   => ! empty( $definition['filterable'] ),
+            ];
+        }
+
+        return $stats;
     }
 }
