@@ -1,0 +1,119 @@
+.sofir-form-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.sofir-custom-form {
+    background: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.sofir-form-field {
+    margin-bottom: 20px;
+}
+
+.sofir-form-field label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #333;
+}
+
+.sofir-form-field .required {
+    color: #dc3232;
+}
+
+.sofir-form-field input[type="text"],
+.sofir-form-field input[type="email"],
+.sofir-form-field input[type="tel"],
+.sofir-form-field input[type="number"],
+.sofir-form-field input[type="date"],
+.sofir-form-field input[type="time"],
+.sofir-form-field input[type="url"],
+.sofir-form-field textarea,
+.sofir-form-field select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+    transition: border-color 0.2s ease;
+}
+
+.sofir-form-field input:focus,
+.sofir-form-field textarea:focus,
+.sofir-form-field select:focus {
+    outline: none;
+    border-color: #0073aa;
+    box-shadow: 0 0 0 2px rgba(0,115,170,0.1);
+}
+
+.sofir-form-field textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.sofir-form-field input[type="checkbox"],
+.sofir-form-field input[type="radio"] {
+    margin-right: 8px;
+}
+
+.sofir-form-field input[type="file"] {
+    padding: 8px;
+}
+
+.sofir-form-submit {
+    margin-top: 30px;
+}
+
+.sofir-form-submit button {
+    background: #0073aa;
+    color: white;
+    border: none;
+    padding: 14px 32px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.sofir-form-submit button:hover {
+    background: #005a87;
+}
+
+.sofir-form-submit button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+.sofir-form-message {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 4px;
+}
+
+.sofir-form-message.success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.sofir-form-message.error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+@media (max-width: 768px) {
+    .sofir-form-container {
+        padding: 10px;
+    }
+    
+    .sofir-custom-form {
+        padding: 20px;
+    }
+}

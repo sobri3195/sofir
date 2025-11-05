@@ -1,0 +1,264 @@
+.sofir-vendor-dashboard {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.sofir-vendor-dashboard h2 {
+    margin-bottom: 20px;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.sofir-vendor-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 40px;
+}
+
+.sofir-stat-box {
+    background: #fff;
+    padding: 24px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+.sofir-stat-box h3 {
+    margin: 0 0 12px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.sofir-stat-value {
+    font-size: 32px;
+    font-weight: bold;
+    color: #0073aa;
+    margin: 0;
+}
+
+.sofir-vendor-products {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.sofir-product-item {
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.sofir-product-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.sofir-product-item img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.sofir-product-item h4 {
+    margin: 15px;
+    font-size: 18px;
+}
+
+.sofir-product-item p {
+    margin: 0 15px 15px;
+    color: #0073aa;
+    font-weight: bold;
+    font-size: 20px;
+}
+
+.sofir-product-item a {
+    display: inline-block;
+    margin: 0 15px 15px;
+    color: #0073aa;
+    text-decoration: none;
+}
+
+.sofir-product-item a:hover {
+    text-decoration: underline;
+}
+
+.sofir-vendors-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 24px;
+    margin-top: 20px;
+}
+
+.sofir-vendor-card {
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.sofir-vendor-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.sofir-vendor-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.sofir-vendor-card h3 {
+    margin: 20px;
+    font-size: 20px;
+}
+
+.sofir-vendor-card h3 a {
+    color: #333;
+    text-decoration: none;
+}
+
+.sofir-vendor-card h3 a:hover {
+    color: #0073aa;
+}
+
+.sofir-vendor-card p {
+    margin: 0 20px 20px;
+    color: #666;
+}
+
+.sofir-vendor-products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.sofir-product-card {
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease;
+}
+
+.sofir-product-card:hover {
+    transform: translateY(-4px);
+}
+
+.sofir-product-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.sofir-product-card h3 {
+    margin: 15px;
+    font-size: 18px;
+}
+
+.sofir-product-card h3 a {
+    color: #333;
+    text-decoration: none;
+}
+
+.sofir-product-card h3 a:hover {
+    color: #0073aa;
+}
+
+.sofir-product-price {
+    margin: 0 15px 15px;
+    color: #0073aa;
+    font-weight: bold;
+    font-size: 20px;
+}
+
+.sofir-become-vendor-form {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 30px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.sofir-become-vendor-form h3 {
+    margin-top: 0;
+    margin-bottom: 24px;
+}
+
+.sofir-become-vendor-form .form-field {
+    margin-bottom: 20px;
+}
+
+.sofir-become-vendor-form label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.sofir-become-vendor-form .required {
+    color: #dc3232;
+}
+
+.sofir-become-vendor-form input[type="text"],
+.sofir-become-vendor-form textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+.sofir-become-vendor-form input:focus,
+.sofir-become-vendor-form textarea:focus {
+    outline: none;
+    border-color: #0073aa;
+}
+
+.sofir-become-vendor-form button {
+    background: #0073aa;
+    color: white;
+    border: none;
+    padding: 14px 32px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.sofir-become-vendor-form button:hover {
+    background: #005a87;
+}
+
+.sofir-become-vendor-form button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+#vendor-application-message {
+    margin-top: 20px;
+}
+
+@media (max-width: 768px) {
+    .sofir-vendor-stats {
+        grid-template-columns: 1fr;
+    }
+    
+    .sofir-vendor-products,
+    .sofir-vendors-grid,
+    .sofir-vendor-products-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .sofir-vendor-dashboard {
+        padding: 10px;
+    }
+}
