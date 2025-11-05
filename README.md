@@ -103,14 +103,21 @@ Complete set of custom Gutenberg blocks ready to use:
 - FSE (Full Site Editing) template support
 - AJAX-powered installation without page reload
 - Per-page import with automatic link generation
+- **Clickable preview images** with live template preview
+- **Copy pattern** feature for headers/footers (one-click to clipboard)
 - Multiple template categories:
-  - **Blog** - Blog layouts and post templates
-  - **Directory** - Business directory templates
-  - **Landing** - Landing page designs
-  - **Profile** - User profile pages
+  - **Landing** (7 templates) - Startup, agency, restaurant, real estate, event, course, SaaS
+  - **Directory** (6 templates) - City directory, healthcare, fitness, hotel, job board, lawyer
+  - **Blog** (5 templates) - Magazine, tech news, personal, recipe, travel
+  - **Profile** (5 templates) - Business, freelancer, agency, resume, photography
+  - **Ecommerce** (2 templates) - Product catalog, checkout page
+  - **Membership** (2 templates) - Member dashboard, pricing plans
+  - **Header** (4 templates) - Modern, minimal, business, centered designs
+  - **Footer** (4 templates) - Multi-column, simple, business, newsletter designs
 - Custom templates per CPT
 - Import queue management
 - Template preview before installation
+- **Gutenberg-ready header/footer templates** - Ready-to-use, copyable block patterns
 
 ### 4. 🗺️ Directory & Listings
 
