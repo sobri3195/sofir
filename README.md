@@ -233,20 +233,32 @@ Complete set of custom Gutenberg blocks ready to use:
 - Automatic point allocation
 - Configurable point values
 - Point tracking per user
-- Point history and transactions
+- Point history and transactions (up to 50 entries)
 
 **Reward Events:**
-- **Signup Rewards** - Points for new user registration
-- **Login Rewards** - Daily login bonuses
-- **Purchase Rewards** - Points per transaction
-- **Custom Actions** - Points for specific activities
+- **Signup Rewards** - Points for new user registration (default: 100 points)
+- **Login Rewards** - Daily login bonuses (default: 10 points, 1x per day)
+- **Comment Rewards** - Points for approved comments (default: 5 points)
+- **Post Rewards** - Points for publishing posts (default: 20 points)
+- **Purchase Rewards** - Points per transaction (default: 1 point per currency unit)
 
 **Features:**
 - Point redemption system
-- Point expiration (optional)
-- Leaderboard support
-- Point transfers (optional)
-- Reward tiers
+- Reward catalog with customizable items
+- REST API endpoints for points and rewards
+- Shortcodes: `[sofir_loyalty_points]` and `[sofir_loyalty_rewards]`
+- Event hooks for customization
+- Admin UI for configuration
+
+**REST API Endpoints:**
+- `GET /wp-json/sofir/v1/loyalty/points/{user_id}` - Get user points
+- `GET /wp-json/sofir/v1/loyalty/history/{user_id}` - Get points history
+- `POST /wp-json/sofir/v1/loyalty/redeem` - Redeem rewards
+- `GET /wp-json/sofir/v1/loyalty/rewards` - Get available rewards
+
+**Documentation:**
+- See [LOYALTY_PROGRAM_GUIDE.md](LOYALTY_PROGRAM_GUIDE.md) for Indonesian guide
+- See [LOYALTY_PROGRAM_DOCUMENTATION.md](LOYALTY_PROGRAM_DOCUMENTATION.md) for English documentation
 
 ### 9. 🔐 User Authentication & Security
 

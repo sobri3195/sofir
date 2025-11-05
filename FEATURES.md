@@ -79,12 +79,23 @@ SOFIR is a comprehensive WordPress plugin that provides a complete solution for 
 ### 7. Loyalty Program
 
 - ✅ Points-based rewards system
-- ✅ Signup rewards
-- ✅ Login rewards
-- ✅ Purchase rewards
+- ✅ Signup rewards (100 points default)
+- ✅ Login rewards (10 points/day default)
+- ✅ Comment rewards (5 points default)
+- ✅ Post rewards (20 points default)
+- ✅ Purchase rewards (1 point per currency unit)
 - ✅ Point tracking per user
+- ✅ Point history (50 entries)
 - ✅ Point redemption system
 - ✅ Configurable point values
+- ✅ REST API endpoints
+- ✅ Shortcodes: `[sofir_loyalty_points]`, `[sofir_loyalty_rewards]`
+- ✅ Admin UI for settings
+- ✅ Event hooks for customization
+
+**Documentation:**
+- See [LOYALTY_PROGRAM_GUIDE.md](LOYALTY_PROGRAM_GUIDE.md) for Indonesian guide
+- See [LOYALTY_PROGRAM_DOCUMENTATION.md](LOYALTY_PROGRAM_DOCUMENTATION.md) for English documentation
 
 ### 8. User Authentication
 

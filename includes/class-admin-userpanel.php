@@ -2,6 +2,7 @@
 namespace Sofir\Admin;
 
 use Sofir\Membership\Manager as MembershipManager;
+use Sofir\Loyalty\Manager as LoyaltyManager;
 
 class UserPanel {
     private static ?UserPanel $instance = null;
@@ -107,6 +108,49 @@ class UserPanel {
         echo '<p class="description">' . \esc_html__( 'Integrate with Stripe or WooCommerce by mapping checkout completion to the SOFIR membership hooks.', 'sofir' ) . '</p>';
         echo '</div>';
 
+        $this->render_loyalty_settings();
+
+        echo '</div>';
+    }
+
+    private function render_loyalty_settings(): void {
+        $loyalty_manager = LoyaltyManager::instance();
+        $loyalty_settings = $loyalty_manager->get_settings();
+
+        echo '<div class="sofir-card">';
+        echo '<h2>' . \esc_html__( 'Loyalty Program', 'sofir' ) . '</h2>';
+        echo '<form method="post" action="' . \esc_url( \admin_url( 'admin-post.php' ) ) . '">';
+        echo '<input type="hidden" name="action" value="sofir_save_loyalty_settings" />';
+        \wp_nonce_field( 'sofir_loyalty_settings', '_sofir_nonce' );
+
+        echo '<label class="sofir-toggle">';
+        echo '<input type="checkbox" name="loyalty_enabled" value="1" ' . \checked( $loyalty_settings['enabled'] ?? true, true, false ) . ' />';
+        echo ' <span>' . \esc_html__( 'Enable Loyalty Program', 'sofir' ) . '</span>';
+        echo '</label>';
+
+        echo '<h3>' . \esc_html__( 'Point Rewards', 'sofir' ) . '</h3>';
+        echo '<div class="sofir-field-group">';
+        echo '<label class="sofir-field"><span>' . \esc_html__( 'Sign Up Bonus (points)', 'sofir' ) . '</span><input type="number" name="points_signup" value="' . \esc_attr( $loyalty_settings['points_signup'] ?? 100 ) . '" min="0" /></label>';
+        echo '<label class="sofir-field"><span>' . \esc_html__( 'Daily Login Bonus (points)', 'sofir' ) . '</span><input type="number" name="points_login" value="' . \esc_attr( $loyalty_settings['points_login'] ?? 10 ) . '" min="0" /></label>';
+        echo '<label class="sofir-field"><span>' . \esc_html__( 'Comment Posted (points)', 'sofir' ) . '</span><input type="number" name="points_comment" value="' . \esc_attr( $loyalty_settings['points_comment'] ?? 5 ) . '" min="0" /></label>';
+        echo '<label class="sofir-field"><span>' . \esc_html__( 'Post Published (points)', 'sofir' ) . '</span><input type="number" name="points_post" value="' . \esc_attr( $loyalty_settings['points_post'] ?? 20 ) . '" min="0" /></label>';
+        echo '<label class="sofir-field"><span>' . \esc_html__( 'Points per Currency Unit (purchase)', 'sofir' ) . '</span><input type="number" step="0.01" name="points_per_currency" value="' . \esc_attr( $loyalty_settings['points_per_currency'] ?? 1 ) . '" min="0" /></label>';
+        echo '</div>';
+
+        echo '<p class="submit"><button type="submit" class="button button-primary">' . \esc_html__( 'Save Loyalty Settings', 'sofir' ) . '</button></p>';
+        echo '</form>';
+
+        echo '<hr />';
+        echo '<h3>' . \esc_html__( 'Shortcodes', 'sofir' ) . '</h3>';
+        echo '<p><code>[sofir_loyalty_points]</code> - ' . \esc_html__( 'Display user\'s loyalty points balance', 'sofir' ) . '</p>';
+        echo '<p><code>[sofir_loyalty_rewards]</code> - ' . \esc_html__( 'Display available rewards catalog', 'sofir' ) . '</p>';
+
+        echo '<h3>' . \esc_html__( 'REST API Endpoints', 'sofir' ) . '</h3>';
+        echo '<p><code>GET /wp-json/sofir/v1/loyalty/points/{user_id}</code> - ' . \esc_html__( 'Get user points', 'sofir' ) . '</p>';
+        echo '<p><code>GET /wp-json/sofir/v1/loyalty/history/{user_id}</code> - ' . \esc_html__( 'Get user points history', 'sofir' ) . '</p>';
+        echo '<p><code>POST /wp-json/sofir/v1/loyalty/redeem</code> - ' . \esc_html__( 'Redeem a reward', 'sofir' ) . '</p>';
+        echo '<p><code>GET /wp-json/sofir/v1/loyalty/rewards</code> - ' . \esc_html__( 'Get all available rewards', 'sofir' ) . '</p>';
+
         echo '</div>';
     }
 
@@ -115,6 +159,7 @@ class UserPanel {
             'plan_saved'                => \__( 'Membership plan saved.', 'sofir' ),
             'plan_deleted'              => \__( 'Membership plan deleted.', 'sofir' ),
             'membership_settings_saved' => \__( 'Membership settings updated.', 'sofir' ),
+            'loyalty_settings_saved'    => \__( 'Loyalty program settings saved.', 'sofir' ),
         ];
 
         if ( empty( $messages[ $notice ] ) ) {
