@@ -89,12 +89,13 @@ class Manager {
                 $handle,
                 'SOFIR_ADMIN_DATA',
                 [
-                    'tabs'      => $this->get_tabs(),
-                    'nonce'     => \wp_create_nonce( 'sofir_admin' ),
-                    'restRoot'  => \esc_url_raw( \rest_url( 'sofir/v1' ) ),
-                    'assetsUrl' => SOFIR_ASSETS_URL,
-                    'version'   => SOFIR_VERSION,
-                    'templates' => $this->get_templates_payload(),
+                    'tabs'          => $this->get_tabs(),
+                    'nonce'         => \wp_create_nonce( 'sofir_admin' ),
+                    'restRoot'      => \esc_url_raw( \rest_url( 'sofir/v1' ) ),
+                    'assetsUrl'     => SOFIR_ASSETS_URL,
+                    'version'       => SOFIR_VERSION,
+                    'templates'     => $this->get_templates_payload(),
+                    'themeStyleUrl' => \get_stylesheet_uri(),
                 ]
             );
         }

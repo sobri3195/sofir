@@ -42,7 +42,7 @@ class TemplatesPanel {
                 echo '<article class="sofir-template-card" data-template="' . \esc_attr( $template['slug'] ) . '">';
 
                 if ( $preview_url ) {
-                    echo '<div class="sofir-template-card__preview">';
+                    echo '<div class="sofir-template-card__preview sofir-template-preview-trigger" data-template="' . \esc_attr( $template['slug'] ) . '" role="button" tabindex="0" aria-label="' . \esc_attr__( 'Preview template', 'sofir' ) . '">';
                     echo '<img src="' . \esc_url( $preview_url ) . '" alt="' . \esc_attr( $template['title'] ) . '" loading="lazy" />';
                     echo '</div>';
                 }
