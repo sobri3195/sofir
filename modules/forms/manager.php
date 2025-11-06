@@ -18,6 +18,7 @@ class Manager {
         \add_action( 'rest_api_init', [ $this, 'register_rest_routes' ] );
         \add_action( 'admin_post_sofir_submit_form', [ $this, 'handle_form_submission' ] );
         \add_action( 'admin_post_nopriv_sofir_submit_form', [ $this, 'handle_form_submission' ] );
+        \add_action( 'add_meta_boxes', [ $this, 'add_submission_meta_boxes' ] );
         \add_shortcode( 'sofir_form', [ $this, 'render_form' ] );
     }
 
@@ -495,17 +496,49 @@ class Manager {
         $settings = \get_post_meta( $form_id, 'sofir_form_settings', true ) ?: [];
 
         $submission_data = [];
+        $attachments = [];
+        
         foreach ( $fields as $index => $field ) {
             $name = 'field_' . $index;
-            $value = $_POST[ $name ] ?? '';
+            $type = $field['type'] ?? 'text';
             
-            if ( \is_array( $value ) ) {
-                $value = \implode( ', ', \array_map( 'sanitize_text_field', $value ) );
+            if ( 'file' === $type && isset( $_FILES[ $name ] ) && ! empty( $_FILES[ $name ]['name'] ) ) {
+                require_once ABSPATH . 'wp-admin/includes/file.php';
+                require_once ABSPATH . 'wp-admin/includes/media.php';
+                require_once ABSPATH . 'wp-admin/includes/image.php';
+                
+                $file = $_FILES[ $name ];
+                $upload = \wp_handle_upload( $file, [ 'test_form' => false ] );
+                
+                if ( isset( $upload['file'] ) ) {
+                    $attachment_id = \wp_insert_attachment( [
+                        'post_mime_type' => $upload['type'],
+                        'post_title' => \sanitize_file_name( $file['name'] ),
+                        'post_content' => '',
+                        'post_status' => 'inherit',
+                    ], $upload['file'] );
+                    
+                    \wp_update_attachment_metadata( $attachment_id, \wp_generate_attachment_metadata( $attachment_id, $upload['file'] ) );
+                    
+                    $file_url = \wp_get_attachment_url( $attachment_id );
+                    $submission_data[ $field['label'] ?? $name ] = $file_url;
+                    $attachments[] = [
+                        'id' => $attachment_id,
+                        'url' => $file_url,
+                        'name' => \basename( $upload['file'] ),
+                    ];
+                }
             } else {
-                $value = \sanitize_text_field( $value );
-            }
+                $value = $_POST[ $name ] ?? '';
+                
+                if ( \is_array( $value ) ) {
+                    $value = \implode( ', ', \array_map( 'sanitize_text_field', $value ) );
+                } else {
+                    $value = \sanitize_text_field( $value );
+                }
 
-            $submission_data[ $field['label'] ?? $name ] = $value;
+                $submission_data[ $field['label'] ?? $name ] = $value;
+            }
         }
 
         $submission_id = \wp_insert_post( [
@@ -516,6 +549,7 @@ class Manager {
 
         \update_post_meta( $submission_id, 'form_id', $form_id );
         \update_post_meta( $submission_id, 'submission_data', $submission_data );
+        \update_post_meta( $submission_id, 'submission_attachments', $attachments );
         \update_post_meta( $submission_id, 'submission_ip', $_SERVER['REMOTE_ADDR'] ?? '' );
         \update_post_meta( $submission_id, 'submission_user_agent', $_SERVER['HTTP_USER_AGENT'] ?? '' );
 
@@ -531,6 +565,13 @@ class Manager {
             foreach ( $submission_data as $label => $value ) {
                 $message .= $label . ': ' . $value . "\n";
             }
+            
+            if ( ! empty( $attachments ) ) {
+                $message .= "\n" . \__( 'Attachments:', 'sofir' ) . "\n";
+                foreach ( $attachments as $attachment ) {
+                    $message .= '- ' . $attachment['name'] . ': ' . $attachment['url'] . "\n";
+                }
+            }
 
             \wp_mail( $to, $subject, $message );
         }
@@ -539,6 +580,93 @@ class Manager {
 
         \wp_redirect( \add_query_arg( 'form_submitted', '1', \wp_get_referer() ) );
         exit;
+    }
+
+    public function add_submission_meta_boxes(): void {
+        \add_meta_box(
+            'sofir_submission_data',
+            \__( 'Submission Data', 'sofir' ),
+            [ $this, 'render_submission_data_meta_box' ],
+            'sofir_submission',
+            'normal',
+            'high'
+        );
+    }
+
+    public function render_submission_data_meta_box( \WP_Post $post ): void {
+        $submission_data = \get_post_meta( $post->ID, 'submission_data', true );
+        $attachments = \get_post_meta( $post->ID, 'submission_attachments', true );
+        $form_id = \get_post_meta( $post->ID, 'form_id', true );
+        $ip = \get_post_meta( $post->ID, 'submission_ip', true );
+        $user_agent = \get_post_meta( $post->ID, 'submission_user_agent', true );
+        $user_id = \get_post_meta( $post->ID, 'submission_user_id', true );
+
+        echo '<div style="background: #fff; padding: 15px;">';
+        
+        if ( $form_id ) {
+            $form = \get_post( $form_id );
+            if ( $form ) {
+                echo '<p><strong>' . \esc_html__( 'Form:', 'sofir' ) . '</strong> ';
+                echo '<a href="' . \esc_url( \admin_url( 'admin.php?page=sofir-forms-new&form_id=' . $form_id ) ) . '">' . \esc_html( $form->post_title ) . '</a></p>';
+            }
+        }
+
+        if ( $user_id ) {
+            $user = \get_userdata( $user_id );
+            if ( $user ) {
+                echo '<p><strong>' . \esc_html__( 'Submitted by:', 'sofir' ) . '</strong> ';
+                echo '<a href="' . \esc_url( \admin_url( 'user-edit.php?user_id=' . $user_id ) ) . '">' . \esc_html( $user->display_name ) . '</a></p>';
+            }
+        }
+
+        echo '<h3>' . \esc_html__( 'Form Data', 'sofir' ) . '</h3>';
+        
+        if ( ! empty( $submission_data ) && \is_array( $submission_data ) ) {
+            echo '<table class="widefat striped" style="margin-top: 10px;">';
+            echo '<thead><tr><th>' . \esc_html__( 'Field', 'sofir' ) . '</th><th>' . \esc_html__( 'Value', 'sofir' ) . '</th></tr></thead>';
+            echo '<tbody>';
+            
+            foreach ( $submission_data as $label => $value ) {
+                echo '<tr>';
+                echo '<td style="width: 30%; font-weight: bold;">' . \esc_html( $label ) . '</td>';
+                
+                if ( \filter_var( $value, FILTER_VALIDATE_URL ) && \preg_match( '/\.(jpg|jpeg|png|gif|pdf|doc|docx|txt)$/i', $value ) ) {
+                    echo '<td><a href="' . \esc_url( $value ) . '" target="_blank">' . \esc_html( \basename( $value ) ) . '</a> <span class="dashicons dashicons-download"></span></td>';
+                } else {
+                    echo '<td>' . \nl2br( \esc_html( $value ) ) . '</td>';
+                }
+                
+                echo '</tr>';
+            }
+            
+            echo '</tbody></table>';
+        } else {
+            echo '<p>' . \esc_html__( 'No submission data available.', 'sofir' ) . '</p>';
+        }
+
+        if ( ! empty( $attachments ) && \is_array( $attachments ) ) {
+            echo '<h3 style="margin-top: 20px;">' . \esc_html__( 'Attachments', 'sofir' ) . '</h3>';
+            echo '<ul style="list-style: none; padding: 0;">';
+            
+            foreach ( $attachments as $attachment ) {
+                echo '<li style="margin: 10px 0;">';
+                echo '<span class="dashicons dashicons-media-default"></span> ';
+                echo '<a href="' . \esc_url( $attachment['url'] ) . '" target="_blank">' . \esc_html( $attachment['name'] ) . '</a>';
+                echo ' <a href="' . \esc_url( $attachment['url'] ) . '" download class="button button-small">' . \esc_html__( 'Download', 'sofir' ) . '</a>';
+                echo '</li>';
+            }
+            
+            echo '</ul>';
+        }
+
+        echo '<h3 style="margin-top: 20px;">' . \esc_html__( 'Submission Details', 'sofir' ) . '</h3>';
+        echo '<table class="widefat">';
+        echo '<tr><td style="width: 30%; font-weight: bold;">' . \esc_html__( 'IP Address', 'sofir' ) . '</td><td>' . \esc_html( $ip ) . '</td></tr>';
+        echo '<tr><td style="width: 30%; font-weight: bold;">' . \esc_html__( 'User Agent', 'sofir' ) . '</td><td>' . \esc_html( $user_agent ) . '</td></tr>';
+        echo '<tr><td style="width: 30%; font-weight: bold;">' . \esc_html__( 'Submitted At', 'sofir' ) . '</td><td>' . \esc_html( \get_the_date( 'Y-m-d H:i:s', $post->ID ) ) . '</td></tr>';
+        echo '</table>';
+        
+        echo '</div>';
     }
 
     public function register_rest_routes(): void {
