@@ -19,6 +19,9 @@ class Manager {
         \add_action( 'rest_api_init', [ $this, 'register_rest_routes' ] );
         \add_action( 'sofir/payment/status_changed', [ $this, 'calculate_commission' ], 10, 2 );
         \add_filter( 'wp_insert_post_data', [ $this, 'assign_vendor_to_product' ], 10, 2 );
+        \add_filter( 'the_content', [ $this, 'render_vendor_single_template' ] );
+        \add_action( 'add_meta_boxes', [ $this, 'add_product_meta_boxes' ] );
+        \add_action( 'save_post_vendor_product', [ $this, 'save_product_meta' ] );
         \add_shortcode( 'sofir_vendor_dashboard', [ $this, 'render_vendor_dashboard' ] );
         \add_shortcode( 'sofir_vendor_products', [ $this, 'render_vendor_products' ] );
         \add_shortcode( 'sofir_vendors_list', [ $this, 'render_vendors_list' ] );
@@ -66,13 +69,98 @@ class Manager {
                 'label' => \__( 'Vendor Products', 'sofir' ),
                 'public' => true,
                 'show_in_rest' => true,
-                'supports' => [ 'title', 'editor', 'thumbnail', 'custom-fields' ],
+                'supports' => [ 'title', 'editor', 'thumbnail' ],
                 'has_archive' => true,
                 'rewrite' => [ 'slug' => 'products' ],
                 'menu_icon' => 'dashicons-products',
                 'show_in_menu' => false,
             ]
         );
+    }
+
+    public function add_product_meta_boxes(): void {
+        \add_meta_box(
+            'vendor_product_details',
+            \__( 'Product Details', 'sofir' ),
+            [ $this, 'render_product_meta_box' ],
+            'vendor_product',
+            'normal',
+            'high'
+        );
+    }
+
+    public function render_product_meta_box( \WP_Post $post ): void {
+        \wp_nonce_field( 'vendor_product_meta', 'vendor_product_meta_nonce' );
+
+        $price = \get_post_meta( $post->ID, 'product_price', true );
+        $sku = \get_post_meta( $post->ID, 'product_sku', true );
+        $stock = \get_post_meta( $post->ID, 'product_stock', true );
+        $vendor_id = \get_post_meta( $post->ID, 'vendor_id', true );
+
+        ?>
+        <table class="form-table">
+            <tr>
+                <th><label for="product_price"><?php \esc_html_e( 'Price', 'sofir' ); ?></label></th>
+                <td>
+                    <input type="text" id="product_price" name="product_price" value="<?php echo \esc_attr( $price ); ?>" class="regular-text" placeholder="Rp 100.000" />
+                    <p class="description"><?php \esc_html_e( 'Product price (e.g., Rp 100.000 or $50)', 'sofir' ); ?></p>
+                </td>
+            </tr>
+            <tr>
+                <th><label for="product_sku"><?php \esc_html_e( 'SKU', 'sofir' ); ?></label></th>
+                <td>
+                    <input type="text" id="product_sku" name="product_sku" value="<?php echo \esc_attr( $sku ); ?>" class="regular-text" placeholder="PROD-001" />
+                    <p class="description"><?php \esc_html_e( 'Product SKU (Stock Keeping Unit)', 'sofir' ); ?></p>
+                </td>
+            </tr>
+            <tr>
+                <th><label for="product_stock"><?php \esc_html_e( 'Stock', 'sofir' ); ?></label></th>
+                <td>
+                    <input type="number" id="product_stock" name="product_stock" value="<?php echo \esc_attr( $stock ); ?>" class="regular-text" min="0" placeholder="10" />
+                    <p class="description"><?php \esc_html_e( 'Available stock quantity', 'sofir' ); ?></p>
+                </td>
+            </tr>
+            <?php if ( $vendor_id ) : ?>
+                <?php $vendor = \get_post( $vendor_id ); ?>
+                <?php if ( $vendor ) : ?>
+                    <tr>
+                        <th><?php \esc_html_e( 'Vendor Store', 'sofir' ); ?></th>
+                        <td>
+                            <a href="<?php echo \esc_url( \get_edit_post_link( $vendor_id ) ); ?>">
+                                <?php echo \esc_html( $vendor->post_title ); ?>
+                            </a>
+                        </td>
+                    </tr>
+                <?php endif; ?>
+            <?php endif; ?>
+        </table>
+        <?php
+    }
+
+    public function save_product_meta( int $post_id ): void {
+        if ( ! isset( $_POST['vendor_product_meta_nonce'] ) || ! \wp_verify_nonce( $_POST['vendor_product_meta_nonce'], 'vendor_product_meta' ) ) {
+            return;
+        }
+
+        if ( \defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+            return;
+        }
+
+        if ( ! \current_user_can( 'edit_post', $post_id ) ) {
+            return;
+        }
+
+        if ( isset( $_POST['product_price'] ) ) {
+            \update_post_meta( $post_id, 'product_price', \sanitize_text_field( $_POST['product_price'] ) );
+        }
+
+        if ( isset( $_POST['product_sku'] ) ) {
+            \update_post_meta( $post_id, 'product_sku', \sanitize_text_field( $_POST['product_sku'] ) );
+        }
+
+        if ( isset( $_POST['product_stock'] ) ) {
+            \update_post_meta( $post_id, 'product_stock', (int) $_POST['product_stock'] );
+        }
     }
 
     public function add_vendor_menu(): void {
@@ -696,6 +784,141 @@ class Manager {
         echo '</div>';
         
         return (string) ob_get_clean();
+    }
+
+    public function render_vendor_single_template( string $content ): string {
+        global $post;
+
+        if ( ! \is_singular( [ 'vendor_store', 'vendor_product' ] ) || ! $post ) {
+            return $content;
+        }
+
+        if ( 'vendor_store' === $post->post_type ) {
+            $vendor_id = $post->ID;
+            $owner_id = \get_post_meta( $vendor_id, 'vendor_owner', true );
+            $owner = \get_userdata( $owner_id );
+            $commission = \get_post_meta( $vendor_id, 'vendor_commission', true );
+            
+            $products = \get_posts( [
+                'post_type' => 'vendor_product',
+                'meta_key' => 'vendor_id',
+                'meta_value' => $vendor_id,
+                'posts_per_page' => -1,
+            ] );
+
+            ob_start();
+            ?>
+            <div class="sofir-vendor-single">
+                <?php if ( \has_post_thumbnail( $vendor_id ) ) : ?>
+                    <div class="vendor-logo">
+                        <?php echo \get_the_post_thumbnail( $vendor_id, 'large' ); ?>
+                    </div>
+                <?php endif; ?>
+
+                <div class="vendor-content">
+                    <?php echo $content; ?>
+                </div>
+
+                <div class="vendor-meta">
+                    <?php if ( $owner ) : ?>
+                        <p><strong><?php \esc_html_e( 'Store Owner:', 'sofir' ); ?></strong> <?php echo \esc_html( $owner->display_name ); ?></p>
+                    <?php endif; ?>
+                    <p><strong><?php \esc_html_e( 'Total Products:', 'sofir' ); ?></strong> <?php echo \count( $products ); ?></p>
+                </div>
+
+                <h2><?php \esc_html_e( 'Products from this Vendor', 'sofir' ); ?></h2>
+                <div class="sofir-vendor-products-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; margin-top: 20px;">
+                    <?php
+                    if ( $products ) {
+                        foreach ( $products as $product ) {
+                            ?>
+                            <div class="sofir-product-card" style="background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 15px; text-align: center;">
+                                <?php if ( \has_post_thumbnail( $product->ID ) ) : ?>
+                                    <a href="<?php echo \esc_url( \get_permalink( $product->ID ) ); ?>" style="display: block; margin-bottom: 10px;">
+                                        <?php echo \get_the_post_thumbnail( $product->ID, 'medium', [ 'style' => 'width: 100%; height: auto; border-radius: 4px;' ] ); ?>
+                                    </a>
+                                <?php endif; ?>
+                                <h3 style="margin: 10px 0; font-size: 18px;">
+                                    <a href="<?php echo \esc_url( \get_permalink( $product->ID ) ); ?>" style="text-decoration: none; color: #333;">
+                                        <?php echo \esc_html( $product->post_title ); ?>
+                                    </a>
+                                </h3>
+                                <?php
+                                $price = \get_post_meta( $product->ID, 'product_price', true );
+                                if ( $price ) :
+                                ?>
+                                    <p class="sofir-product-price" style="color: #0073aa; font-size: 20px; font-weight: bold; margin: 10px 0;">
+                                        <?php echo \esc_html( $price ); ?>
+                                    </p>
+                                <?php endif; ?>
+                                <a href="<?php echo \esc_url( \get_permalink( $product->ID ) ); ?>" class="button" style="display: inline-block; padding: 8px 16px; text-decoration: none;">
+                                    <?php \esc_html_e( 'View Product', 'sofir' ); ?>
+                                </a>
+                            </div>
+                            <?php
+                        }
+                    } else {
+                        echo '<p>' . \esc_html__( 'No products available yet.', 'sofir' ) . '</p>';
+                    }
+                    ?>
+                </div>
+            </div>
+            <?php
+            return (string) ob_get_clean();
+        }
+
+        if ( 'vendor_product' === $post->post_type ) {
+            $vendor_id = \get_post_meta( $post->ID, 'vendor_id', true );
+            $price = \get_post_meta( $post->ID, 'product_price', true );
+            $sku = \get_post_meta( $post->ID, 'product_sku', true );
+            $stock = \get_post_meta( $post->ID, 'product_stock', true );
+
+            ob_start();
+            ?>
+            <div class="sofir-product-single">
+                <?php if ( \has_post_thumbnail( $post->ID ) ) : ?>
+                    <div class="product-image" style="margin-bottom: 20px; text-align: center;">
+                        <?php echo \get_the_post_thumbnail( $post->ID, 'large', [ 'style' => 'max-width: 100%; height: auto; border-radius: 8px;' ] ); ?>
+                    </div>
+                <?php endif; ?>
+
+                <div class="product-content" style="margin-bottom: 20px;">
+                    <?php echo $content; ?>
+                </div>
+
+                <div class="product-meta" style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                    <?php if ( $price ) : ?>
+                        <p style="font-size: 28px; color: #0073aa; font-weight: bold; margin: 10px 0;">
+                            <strong><?php \esc_html_e( 'Price:', 'sofir' ); ?></strong> <?php echo \esc_html( $price ); ?>
+                        </p>
+                    <?php endif; ?>
+
+                    <?php if ( $sku ) : ?>
+                        <p><strong><?php \esc_html_e( 'SKU:', 'sofir' ); ?></strong> <?php echo \esc_html( $sku ); ?></p>
+                    <?php endif; ?>
+
+                    <?php if ( $stock ) : ?>
+                        <p><strong><?php \esc_html_e( 'Stock:', 'sofir' ); ?></strong> <?php echo \esc_html( $stock ); ?></p>
+                    <?php endif; ?>
+
+                    <?php if ( $vendor_id ) : ?>
+                        <?php $vendor = \get_post( $vendor_id ); ?>
+                        <?php if ( $vendor ) : ?>
+                            <p>
+                                <strong><?php \esc_html_e( 'Sold by:', 'sofir' ); ?></strong> 
+                                <a href="<?php echo \esc_url( \get_permalink( $vendor_id ) ); ?>" style="color: #0073aa; text-decoration: none;">
+                                    <?php echo \esc_html( $vendor->post_title ); ?>
+                                </a>
+                            </p>
+                        <?php endif; ?>
+                    <?php endif; ?>
+                </div>
+            </div>
+            <?php
+            return (string) ob_get_clean();
+        }
+
+        return $content;
     }
 
     public function render_become_vendor_form(): string {

@@ -141,15 +141,60 @@ class UserPanel {
         echo '</form>';
 
         echo '<hr />';
-        echo '<h3>' . \esc_html__( 'Shortcodes', 'sofir' ) . '</h3>';
-        echo '<p><code>[sofir_loyalty_points]</code> - ' . \esc_html__( 'Display user\'s loyalty points balance', 'sofir' ) . '</p>';
-        echo '<p><code>[sofir_loyalty_rewards]</code> - ' . \esc_html__( 'Display available rewards catalog', 'sofir' ) . '</p>';
+        echo '<div style="background: #f0f6fc; border-left: 4px solid #2271b1; padding: 20px; margin-top: 20px; border-radius: 4px;">';
+        echo '<h3 style="margin-top: 0;">' . \esc_html__( '📖 Cara Menggunakan Loyalty Program', 'sofir' ) . '</h3>';
+        
+        echo '<h4>' . \esc_html__( '1. Shortcodes', 'sofir' ) . '</h4>';
+        echo '<div style="background: #fff; padding: 12px; border-radius: 4px; margin-bottom: 15px;">';
+        echo '<p style="margin: 5px 0;"><strong><code>[sofir_loyalty_points]</code></strong></p>';
+        echo '<p style="margin: 5px 0 0 20px; color: #666;">' . \esc_html__( 'Menampilkan saldo poin loyalty user yang sedang login. Taruh di halaman profile atau member area.', 'sofir' ) . '</p>';
+        echo '</div>';
+        
+        echo '<div style="background: #fff; padding: 12px; border-radius: 4px; margin-bottom: 15px;">';
+        echo '<p style="margin: 5px 0;"><strong><code>[sofir_loyalty_rewards]</code></strong></p>';
+        echo '<p style="margin: 5px 0 0 20px; color: #666;">' . \esc_html__( 'Menampilkan katalog reward yang bisa ditukar dengan poin. User bisa klik tombol "Redeem" untuk menukar poin.', 'sofir' ) . '</p>';
+        echo '</div>';
 
-        echo '<h3>' . \esc_html__( 'REST API Endpoints', 'sofir' ) . '</h3>';
-        echo '<p><code>GET /wp-json/sofir/v1/loyalty/points/{user_id}</code> - ' . \esc_html__( 'Get user points', 'sofir' ) . '</p>';
-        echo '<p><code>GET /wp-json/sofir/v1/loyalty/history/{user_id}</code> - ' . \esc_html__( 'Get user points history', 'sofir' ) . '</p>';
-        echo '<p><code>POST /wp-json/sofir/v1/loyalty/redeem</code> - ' . \esc_html__( 'Redeem a reward', 'sofir' ) . '</p>';
-        echo '<p><code>GET /wp-json/sofir/v1/loyalty/rewards</code> - ' . \esc_html__( 'Get all available rewards', 'sofir' ) . '</p>';
+        echo '<h4>' . \esc_html__( '2. Cara Kerja Sistem Poin', 'sofir' ) . '</h4>';
+        echo '<ul style="margin-left: 20px;">';
+        echo '<li><strong>' . \esc_html__( 'Sign Up:', 'sofir' ) . '</strong> ' . \esc_html__( 'User otomatis mendapat poin saat pertama kali registrasi', 'sofir' ) . '</li>';
+        echo '<li><strong>' . \esc_html__( 'Daily Login:', 'sofir' ) . '</strong> ' . \esc_html__( 'Poin diberikan maksimal 1x per hari saat login', 'sofir' ) . '</li>';
+        echo '<li><strong>' . \esc_html__( 'Comment:', 'sofir' ) . '</strong> ' . \esc_html__( 'Poin diberikan saat komentar disetujui (bukan spam)', 'sofir' ) . '</li>';
+        echo '<li><strong>' . \esc_html__( 'Post Published:', 'sofir' ) . '</strong> ' . \esc_html__( 'Poin diberikan saat user publish post/artikel', 'sofir' ) . '</li>';
+        echo '<li><strong>' . \esc_html__( 'Purchase:', 'sofir' ) . '</strong> ' . \esc_html__( 'Poin otomatis dihitung dari total pembelian (terintegrasi dengan Payment Gateway)', 'sofir' ) . '</li>';
+        echo '</ul>';
+
+        echo '<h4>' . \esc_html__( '3. REST API Endpoints', 'sofir' ) . '</h4>';
+        echo '<p style="color: #666; font-size: 13px;">' . \esc_html__( 'Gunakan REST API untuk integrasi dengan aplikasi mobile atau sistem eksternal:', 'sofir' ) . '</p>';
+        echo '<ul style="list-style: none; padding-left: 0;">';
+        echo '<li style="padding: 8px; background: #fff; margin-bottom: 5px; border-radius: 4px;"><code style="color: #10b981;">GET</code> <code>/wp-json/sofir/v1/loyalty/points/{user_id}</code></li>';
+        echo '<li style="padding: 8px; background: #fff; margin-bottom: 5px; border-radius: 4px;"><code style="color: #10b981;">GET</code> <code>/wp-json/sofir/v1/loyalty/history/{user_id}</code></li>';
+        echo '<li style="padding: 8px; background: #fff; margin-bottom: 5px; border-radius: 4px;"><code style="color: #f59e0b;">POST</code> <code>/wp-json/sofir/v1/loyalty/redeem</code></li>';
+        echo '<li style="padding: 8px; background: #fff; margin-bottom: 5px; border-radius: 4px;"><code style="color: #10b981;">GET</code> <code>/wp-json/sofir/v1/loyalty/rewards</code></li>';
+        echo '</ul>';
+
+        echo '<h4>' . \esc_html__( '4. Default Rewards', 'sofir' ) . '</h4>';
+        echo '<p style="color: #666;">' . \esc_html__( 'Sistem sudah dilengkapi 3 reward default:', 'sofir' ) . '</p>';
+        echo '<ul style="margin-left: 20px;">';
+        echo '<li><strong>Diskon 10%</strong> - 500 poin</li>';
+        echo '<li><strong>Diskon 20%</strong> - 1000 poin</li>';
+        echo '<li><strong>Gratis Ongkir</strong> - 750 poin</li>';
+        echo '</ul>';
+        echo '<p style="color: #666; font-size: 13px;">' . \esc_html__( 'Reward bisa dikustomisasi melalui kode di modules/loyalty/manager.php', 'sofir' ) . '</p>';
+
+        echo '<h4>' . \esc_html__( '5. Contoh Penempatan', 'sofir' ) . '</h4>';
+        echo '<ol style="margin-left: 20px;">';
+        echo '<li>' . \esc_html__( 'Buat halaman baru dengan nama "My Rewards"', 'sofir' ) . '</li>';
+        echo '<li>' . \esc_html__( 'Tambahkan shortcode <code>[sofir_loyalty_points]</code> di bagian atas', 'sofir' ) . '</li>';
+        echo '<li>' . \esc_html__( 'Tambahkan shortcode <code>[sofir_loyalty_rewards]</code> di bawahnya', 'sofir' ) . '</li>';
+        echo '<li>' . \esc_html__( 'Publish halaman dan tambahkan link ke menu atau member area', 'sofir' ) . '</li>';
+        echo '</ol>';
+
+        echo '<div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 12px; margin-top: 15px; border-radius: 4px;">';
+        echo '<strong>💡 Tips:</strong> ' . \esc_html__( 'Integrasikan dengan Payment Gateway SOFIR (Duitku, Xendit, Midtrans) untuk memberikan poin otomatis saat user melakukan pembelian!', 'sofir' );
+        echo '</div>';
+
+        echo '</div>';
 
         echo '</div>';
     }
