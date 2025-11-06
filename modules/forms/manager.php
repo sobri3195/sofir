@@ -19,6 +19,8 @@ class Manager {
         \add_action( 'admin_post_sofir_submit_form', [ $this, 'handle_form_submission' ] );
         \add_action( 'admin_post_nopriv_sofir_submit_form', [ $this, 'handle_form_submission' ] );
         \add_action( 'add_meta_boxes', [ $this, 'add_submission_meta_boxes' ] );
+        \add_action( 'add_meta_boxes', [ $this, 'add_form_meta_boxes' ] );
+        \add_action( 'admin_init', [ $this, 'redirect_form_edit' ] );
         \add_shortcode( 'sofir_form', [ $this, 'render_form' ] );
     }
 
@@ -580,6 +582,40 @@ class Manager {
 
         \wp_redirect( \add_query_arg( 'form_submitted', '1', \wp_get_referer() ) );
         exit;
+    }
+
+    public function redirect_form_edit(): void {
+        global $pagenow;
+        
+        if ( 'post.php' === $pagenow && isset( $_GET['post'] ) ) {
+            $post_id = (int) $_GET['post'];
+            $post = \get_post( $post_id );
+            
+            if ( $post && 'sofir_form' === $post->post_type && isset( $_GET['action'] ) && 'edit' === $_GET['action'] ) {
+                \wp_redirect( \admin_url( 'admin.php?page=sofir-forms-new&form_id=' . $post_id ) );
+                exit;
+            }
+        }
+    }
+
+    public function add_form_meta_boxes(): void {
+        \add_meta_box(
+            'sofir_form_builder_info',
+            \__( 'Form Builder', 'sofir' ),
+            [ $this, 'render_form_builder_meta_box' ],
+            'sofir_form',
+            'normal',
+            'high'
+        );
+    }
+
+    public function render_form_builder_meta_box( \WP_Post $post ): void {
+        echo '<div style="padding: 15px; background: #f0f0f1; border-left: 4px solid #2271b1;">';
+        echo '<p style="margin: 0 0 10px 0;"><strong>' . \esc_html__( 'Use the Form Builder to edit this form.', 'sofir' ) . '</strong></p>';
+        echo '<a href="' . \esc_url( \admin_url( 'admin.php?page=sofir-forms-new&form_id=' . $post->ID ) ) . '" class="button button-primary">';
+        echo \esc_html__( 'Open Form Builder', 'sofir' );
+        echo '</a>';
+        echo '</div>';
     }
 
     public function add_submission_meta_boxes(): void {
