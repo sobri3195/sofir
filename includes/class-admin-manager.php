@@ -4,6 +4,7 @@ namespace Sofir\Admin;
 use Sofir\Admin\ContentPanel;
 use Sofir\Admin\SeoPanel;
 use Sofir\Admin\TemplatesPanel;
+use Sofir\Admin\LibraryPanel;
 use Sofir\Admin\UserPanel;
 use Sofir\Admin\Wizard;
 use Sofir\Templates\Manager as TemplateManager;
@@ -29,11 +30,13 @@ class Manager {
 
         \add_action( 'sofir/admin/tab/content', [ $this, 'render_content_tab' ] );
         \add_action( 'sofir/admin/tab/templates', [ $this, 'render_templates_tab' ] );
+        \add_action( 'sofir/admin/tab/library', [ $this, 'render_library_tab' ] );
         \add_action( 'sofir/admin/tab/enhancement', [ $this, 'render_enhancement_tab' ] );
         \add_action( 'sofir/admin/tab/seo', [ $this, 'render_seo_tab' ] );
         \add_action( 'sofir/admin/tab/users', [ $this, 'render_users_tab' ] );
 
         ContentPanel::instance()->boot();
+        LibraryPanel::instance()->boot();
         Wizard::instance()->boot();
     }
 
@@ -137,6 +140,10 @@ class Manager {
         TemplatesPanel::instance()->render();
     }
 
+    public function render_library_tab(): void {
+        LibraryPanel::instance()->render();
+    }
+
     public function render_enhancement_tab(): void {
         echo '<p>' . \esc_html__( 'Aktifkan modul login, keamanan, performa, dan dashboard pengguna.', 'sofir' ) . '</p>';
     }
@@ -153,6 +160,7 @@ class Manager {
         $tabs = [
             'content'     => \__( 'Content', 'sofir' ),
             'templates'   => \__( 'Templates', 'sofir' ),
+            'library'     => \__( 'Library', 'sofir' ),
             'enhancement' => \__( 'Enhancement', 'sofir' ),
             'seo'         => \__( 'SEO', 'sofir' ),
             'users'       => \__( 'Users', 'sofir' ),
