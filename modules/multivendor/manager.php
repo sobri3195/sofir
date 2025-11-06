@@ -59,7 +59,7 @@ class Manager {
                 'has_archive' => true,
                 'rewrite' => [ 'slug' => 'vendors' ],
                 'menu_icon' => 'dashicons-store',
-                'show_in_menu' => false,
+                'show_in_menu' => 'sofir-multivendor',
             ]
         );
 
@@ -73,7 +73,7 @@ class Manager {
                 'has_archive' => true,
                 'rewrite' => [ 'slug' => 'products' ],
                 'menu_icon' => 'dashicons-products',
-                'show_in_menu' => false,
+                'show_in_menu' => 'sofir-multivendor',
             ]
         );
     }

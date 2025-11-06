@@ -17,6 +17,7 @@ class LibraryPanel {
     public function boot(): void {
         \add_action( 'admin_post_sofir_export_cpt', [ $this, 'handle_export_cpt' ] );
         \add_action( 'admin_post_sofir_import_cpt', [ $this, 'handle_import_cpt' ] );
+        \add_action( 'admin_post_sofir_install_ready_cpt', [ $this, 'handle_install_ready_cpt' ] );
         \add_action( 'wp_ajax_sofir_get_export_preview', [ $this, 'handle_export_preview_ajax' ] );
     }
 
@@ -78,6 +79,14 @@ class LibraryPanel {
         }
         echo '</div>';
         echo '</form>';
+        echo '</div>';
+
+        echo '<div class="sofir-card">';
+        echo '<h2>🎁 ' . \esc_html__( 'Ready-to-Use CPT Library', 'sofir' ) . '</h2>';
+        echo '<p>' . \esc_html__( 'Template CPT siap pakai untuk berbagai jenis website. Klik tombol untuk langsung menginstall.', 'sofir' ) . '</p>';
+        
+        $this->render_ready_templates();
+        
         echo '</div>';
 
         echo '<div class="sofir-card">';
@@ -221,9 +230,306 @@ class LibraryPanel {
         \wp_send_json_success( [ 'preview' => $preview ] );
     }
 
+    public function handle_install_ready_cpt(): void {
+        $this->verify_request( 'sofir_install_ready_cpt' );
+
+        $template_key = isset( $_POST['template'] ) ? \sanitize_key( $_POST['template'] ) : '';
+        
+        if ( empty( $template_key ) ) {
+            \wp_die( \esc_html__( 'Template tidak valid.', 'sofir' ) );
+        }
+
+        $templates = $this->get_ready_templates();
+        
+        if ( ! isset( $templates[ $template_key ] ) ) {
+            \wp_die( \esc_html__( 'Template tidak ditemukan.', 'sofir' ) );
+        }
+
+        $template = $templates[ $template_key ];
+        $manager = CptManager::instance();
+        
+        foreach ( $template['cpts'] as $cpt_slug => $cpt_config ) {
+            $manager->save_post_type( $cpt_config );
+        }
+        
+        foreach ( $template['taxonomies'] as $tax_slug => $tax_config ) {
+            $manager->save_taxonomy( $tax_config );
+        }
+
+        \flush_rewrite_rules();
+
+        $redirect = \add_query_arg(
+            [
+                'page'           => 'sofir-dashboard',
+                'tab'            => 'library',
+                'sofir_notice'   => 'ready_template_installed',
+                'template_name'  => urlencode( $template['name'] ),
+            ],
+            \admin_url( 'admin.php' )
+        );
+
+        \wp_safe_redirect( $redirect );
+        exit;
+    }
+
+    private function render_ready_templates(): void {
+        $templates = $this->get_ready_templates();
+        $manager = CptManager::instance();
+        $existing_cpts = array_keys( $manager->get_post_types() );
+        
+        echo '<div class="sofir-ready-templates" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; margin: 20px 0;">';
+        
+        foreach ( $templates as $key => $template ) {
+            $is_installed = false;
+            foreach ( $template['cpts'] as $cpt_slug => $cpt_config ) {
+                if ( in_array( $cpt_slug, $existing_cpts, true ) ) {
+                    $is_installed = true;
+                    break;
+                }
+            }
+            
+            $badge_style = $is_installed ? 'background: #00a32a; color: #fff;' : 'background: #0073aa; color: #fff;';
+            $button_text = $is_installed ? '✓ Sudah Terinstall' : '+ Install Template';
+            $button_disabled = $is_installed ? ' disabled' : '';
+            
+            echo '<div class="sofir-template-card" style="background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 20px; position: relative;">';
+            echo '<div style="position: absolute; top: 10px; right: 10px; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: bold; ' . $badge_style . '">';
+            echo \esc_html( $template['badge'] );
+            echo '</div>';
+            
+            echo '<div style="font-size: 32px; margin-bottom: 15px;">' . $template['icon'] . '</div>';
+            echo '<h3 style="margin: 10px 0; font-size: 16px;">' . \esc_html( $template['name'] ) . '</h3>';
+            echo '<p style="font-size: 13px; color: #666; margin: 10px 0;">' . \esc_html( $template['description'] ) . '</p>';
+            
+            echo '<ul style="margin: 15px 0; padding-left: 20px; font-size: 12px; color: #666;">';
+            foreach ( $template['features'] as $feature ) {
+                echo '<li>' . \esc_html( $feature ) . '</li>';
+            }
+            echo '</ul>';
+            
+            echo '<form method="post" action="' . \esc_url( \admin_url( 'admin-post.php' ) ) . '" style="margin-top: 15px;">';
+            echo '<input type="hidden" name="action" value="sofir_install_ready_cpt" />';
+            echo '<input type="hidden" name="template" value="' . \esc_attr( $key ) . '" />';
+            \wp_nonce_field( 'sofir_install_ready_cpt', '_sofir_nonce' );
+            echo '<button type="submit" class="button button-primary" style="width: 100%;"' . $button_disabled . '>' . \esc_html( $button_text ) . '</button>';
+            echo '</form>';
+            
+            echo '</div>';
+        }
+        
+        echo '</div>';
+    }
+
+    private function get_ready_templates(): array {
+        $manager = CptManager::instance();
+        $field_catalog = $manager->get_field_catalog();
+        
+        return [
+            'business_directory' => [
+                'name' => \__( 'Business Directory', 'sofir' ),
+                'icon' => '🏢',
+                'badge' => \__( 'Popular', 'sofir' ),
+                'description' => \__( 'Direktori bisnis lengkap dengan lokasi, rating, jam buka, dan kontak.', 'sofir' ),
+                'features' => [
+                    \__( 'Lokasi & peta', 'sofir' ),
+                    \__( 'Rating & review', 'sofir' ),
+                    \__( 'Jam operasional', 'sofir' ),
+                    \__( 'Filter pencarian', 'sofir' ),
+                ],
+                'cpts' => [
+                    'listing' => [
+                        'slug' => 'listing',
+                        'singular' => \__( 'Listing', 'sofir' ),
+                        'plural' => \__( 'Listings', 'sofir' ),
+                        'menu_icon' => 'dashicons-location-alt',
+                        'rewrite' => 'listings',
+                        'supports' => [ 'title', 'editor', 'thumbnail', 'excerpt', 'comments', 'custom-fields', 'revisions' ],
+                        'has_archive' => true,
+                        'fields' => [ 'location', 'hours', 'rating', 'status', 'price', 'contact', 'gallery', 'attributes' ],
+                        'filters' => [ 'location', 'rating', 'status', 'price', 'attribute', 'open_now' ],
+                        'taxonomies' => [ 'listing_category', 'listing_location' ],
+                    ],
+                ],
+                'taxonomies' => [
+                    'listing_category' => [
+                        'slug' => 'listing_category',
+                        'singular' => \__( 'Category', 'sofir' ),
+                        'plural' => \__( 'Categories', 'sofir' ),
+                        'object_types' => [ 'listing' ],
+                        'hierarchical' => true,
+                        'filterable' => true,
+                    ],
+                    'listing_location' => [
+                        'slug' => 'listing_location',
+                        'singular' => \__( 'Location', 'sofir' ),
+                        'plural' => \__( 'Locations', 'sofir' ),
+                        'object_types' => [ 'listing' ],
+                        'hierarchical' => false,
+                        'filterable' => true,
+                    ],
+                ],
+            ],
+            'accommodation' => [
+                'name' => \__( 'Hotel & Accommodation', 'sofir' ),
+                'icon' => '🏨',
+                'badge' => \__( 'New', 'sofir' ),
+                'description' => \__( 'Website hotel atau penginapan dengan harga, rating, lokasi, dan galeri foto.', 'sofir' ),
+                'features' => [
+                    \__( 'Harga per malam', 'sofir' ),
+                    \__( 'Galeri foto', 'sofir' ),
+                    \__( 'Rating & review', 'sofir' ),
+                    \__( 'Filter lokasi', 'sofir' ),
+                ],
+                'cpts' => [
+                    'listing' => [
+                        'slug' => 'listing',
+                        'singular' => \__( 'Property', 'sofir' ),
+                        'plural' => \__( 'Properties', 'sofir' ),
+                        'menu_icon' => 'dashicons-admin-home',
+                        'rewrite' => 'properties',
+                        'supports' => [ 'title', 'editor', 'thumbnail', 'excerpt', 'comments', 'revisions' ],
+                        'has_archive' => true,
+                        'fields' => [ 'location', 'rating', 'price', 'contact', 'gallery', 'attributes' ],
+                        'filters' => [ 'location', 'rating', 'price', 'attribute' ],
+                        'taxonomies' => [ 'listing_category', 'listing_location' ],
+                    ],
+                ],
+                'taxonomies' => [
+                    'listing_category' => [
+                        'slug' => 'listing_category',
+                        'singular' => \__( 'Property Type', 'sofir' ),
+                        'plural' => \__( 'Property Types', 'sofir' ),
+                        'object_types' => [ 'listing' ],
+                        'hierarchical' => true,
+                        'filterable' => true,
+                    ],
+                    'listing_location' => [
+                        'slug' => 'listing_location',
+                        'singular' => \__( 'Location', 'sofir' ),
+                        'plural' => \__( 'Locations', 'sofir' ),
+                        'object_types' => [ 'listing' ],
+                        'hierarchical' => false,
+                        'filterable' => true,
+                    ],
+                ],
+            ],
+            'news_blog' => [
+                'name' => \__( 'News & Blog', 'sofir' ),
+                'icon' => '📰',
+                'badge' => \__( 'Simple', 'sofir' ),
+                'description' => \__( 'Website berita atau blog dengan artikel, kategori, dan komentar.', 'sofir' ),
+                'features' => [
+                    \__( 'Artikel lengkap', 'sofir' ),
+                    \__( 'Featured image', 'sofir' ),
+                    \__( 'Komentar', 'sofir' ),
+                    \__( 'Kategori', 'sofir' ),
+                ],
+                'cpts' => [
+                    'article' => [
+                        'slug' => 'article',
+                        'singular' => \__( 'Article', 'sofir' ),
+                        'plural' => \__( 'Articles', 'sofir' ),
+                        'menu_icon' => 'dashicons-media-document',
+                        'rewrite' => 'articles',
+                        'supports' => [ 'title', 'editor', 'thumbnail', 'excerpt', 'author', 'revisions', 'comments' ],
+                        'has_archive' => true,
+                        'fields' => [ 'attributes' ],
+                        'filters' => [ 'attribute' ],
+                        'taxonomies' => [],
+                    ],
+                ],
+                'taxonomies' => [],
+            ],
+            'events' => [
+                'name' => \__( 'Events & Calendar', 'sofir' ),
+                'icon' => '📅',
+                'badge' => \__( 'Popular', 'sofir' ),
+                'description' => \__( 'Website event dengan tanggal, lokasi, kapasitas, dan pendaftaran.', 'sofir' ),
+                'features' => [
+                    \__( 'Tanggal & waktu', 'sofir' ),
+                    \__( 'Kapasitas peserta', 'sofir' ),
+                    \__( 'Lokasi event', 'sofir' ),
+                    \__( 'Filter tanggal', 'sofir' ),
+                ],
+                'cpts' => [
+                    'event' => [
+                        'slug' => 'event',
+                        'singular' => \__( 'Event', 'sofir' ),
+                        'plural' => \__( 'Events', 'sofir' ),
+                        'menu_icon' => 'dashicons-calendar',
+                        'rewrite' => 'events',
+                        'supports' => [ 'title', 'editor', 'thumbnail', 'excerpt', 'author', 'revisions', 'comments' ],
+                        'has_archive' => true,
+                        'fields' => [ 'event_date', 'event_capacity', 'location', 'contact', 'gallery', 'status', 'attributes' ],
+                        'filters' => [ 'event_after', 'location', 'capacity_min', 'status' ],
+                        'taxonomies' => [ 'event_category', 'event_tag' ],
+                    ],
+                ],
+                'taxonomies' => [
+                    'event_category' => [
+                        'slug' => 'event_category',
+                        'singular' => \__( 'Event Category', 'sofir' ),
+                        'plural' => \__( 'Event Categories', 'sofir' ),
+                        'object_types' => [ 'event' ],
+                        'hierarchical' => true,
+                        'filterable' => true,
+                    ],
+                    'event_tag' => [
+                        'slug' => 'event_tag',
+                        'singular' => \__( 'Event Tag', 'sofir' ),
+                        'plural' => \__( 'Event Tags', 'sofir' ),
+                        'object_types' => [ 'event' ],
+                        'hierarchical' => false,
+                        'filterable' => true,
+                    ],
+                ],
+            ],
+            'appointments' => [
+                'name' => \__( 'Appointments & Booking', 'sofir' ),
+                'icon' => '⏰',
+                'badge' => \__( 'Pro', 'sofir' ),
+                'description' => \__( 'Sistem booking appointment dengan status, provider, dan client.', 'sofir' ),
+                'features' => [
+                    \__( 'Tanggal & waktu', 'sofir' ),
+                    \__( 'Status booking', 'sofir' ),
+                    \__( 'Provider & client', 'sofir' ),
+                    \__( 'Filter status', 'sofir' ),
+                ],
+                'cpts' => [
+                    'appointment' => [
+                        'slug' => 'appointment',
+                        'singular' => \__( 'Appointment', 'sofir' ),
+                        'plural' => \__( 'Appointments', 'sofir' ),
+                        'menu_icon' => 'dashicons-clock',
+                        'rewrite' => 'appointments',
+                        'supports' => [ 'title', 'editor', 'thumbnail', 'author', 'revisions' ],
+                        'has_archive' => true,
+                        'fields' => [ 'appointment_datetime', 'appointment_duration', 'appointment_status', 'appointment_provider', 'appointment_client', 'contact', 'attributes' ],
+                        'filters' => [ 'appointment_after', 'appointment_status', 'provider_id', 'client_id' ],
+                        'taxonomies' => [ 'appointment_service' ],
+                    ],
+                ],
+                'taxonomies' => [
+                    'appointment_service' => [
+                        'slug' => 'appointment_service',
+                        'singular' => \__( 'Service', 'sofir' ),
+                        'plural' => \__( 'Services', 'sofir' ),
+                        'object_types' => [ 'appointment' ],
+                        'hierarchical' => true,
+                        'filterable' => true,
+                    ],
+                ],
+            ],
+        ];
+    }
+
     private function render_notice( string $notice ): void {
         $messages = [
             'cpt_imported' => isset( $_GET['sofir_message'] ) ? urldecode( $_GET['sofir_message'] ) : \__( 'CPT package imported successfully.', 'sofir' ),
+            'ready_template_installed' => sprintf(
+                \__( 'Template "%s" berhasil diinstall! Silakan refresh permalink di Settings → Permalinks.', 'sofir' ),
+                isset( $_GET['template_name'] ) ? urldecode( $_GET['template_name'] ) : 'CPT'
+            ),
         ];
 
         $message = $messages[ $notice ] ?? '';
