@@ -14,7 +14,6 @@ class Manager {
 
     public function boot(): void {
         \add_action( 'init', [ $this, 'register_form_cpt' ] );
-        \add_action( 'init', [ $this, 'register_submission_cpt' ] );
         \add_action( 'admin_menu', [ $this, 'add_forms_menu' ] );
         \add_action( 'rest_api_init', [ $this, 'register_rest_routes' ] );
         \add_action( 'admin_post_sofir_submit_form', [ $this, 'handle_form_submission' ] );
