@@ -1637,4 +1637,263 @@ class Manager {
 
         return $stats;
     }
+
+    public function export_cpt_package( array $post_types ): array {
+        $package = [
+            'version'    => '1.0.0',
+            'plugin'     => 'SOFIR',
+            'timestamp'  => current_time( 'mysql' ),
+            'post_types' => [],
+            'taxonomies' => [],
+            'posts'      => [],
+            'terms'      => [],
+            'meta'       => [],
+        ];
+
+        foreach ( $post_types as $post_type ) {
+            $post_type = \sanitize_key( $post_type );
+
+            if ( ! isset( $this->post_types[ $post_type ] ) ) {
+                continue;
+            }
+
+            $package['post_types'][ $post_type ] = $this->post_types[ $post_type ];
+
+            $related_taxonomies = $this->post_types[ $post_type ]['taxonomies'] ?? [];
+            foreach ( $related_taxonomies as $taxonomy ) {
+                if ( ! isset( $this->taxonomies[ $taxonomy ] ) ) {
+                    continue;
+                }
+
+                $package['taxonomies'][ $taxonomy ] = $this->taxonomies[ $taxonomy ];
+
+                $terms = \get_terms( [
+                    'taxonomy'   => $taxonomy,
+                    'hide_empty' => false,
+                ] );
+
+                if ( ! \is_wp_error( $terms ) && ! empty( $terms ) ) {
+                    foreach ( $terms as $term ) {
+                        $package['terms'][] = [
+                            'taxonomy'    => $taxonomy,
+                            'name'        => $term->name,
+                            'slug'        => $term->slug,
+                            'description' => $term->description,
+                            'parent'      => $term->parent,
+                        ];
+                    }
+                }
+            }
+
+            $posts = \get_posts( [
+                'post_type'      => $post_type,
+                'posts_per_page' => -1,
+                'post_status'    => 'any',
+            ] );
+
+            foreach ( $posts as $post ) {
+                $post_data = [
+                    'ID'           => $post->ID,
+                    'post_title'   => $post->post_title,
+                    'post_content' => $post->post_content,
+                    'post_excerpt' => $post->post_excerpt,
+                    'post_status'  => $post->post_status,
+                    'post_type'    => $post->post_type,
+                    'post_author'  => $post->post_author,
+                    'post_date'    => $post->post_date,
+                    'post_name'    => $post->post_name,
+                    'menu_order'   => $post->menu_order,
+                    'thumbnail'    => \get_post_thumbnail_id( $post->ID ),
+                    'taxonomies'   => [],
+                ];
+
+                foreach ( $related_taxonomies as $taxonomy ) {
+                    $terms = \wp_get_post_terms( $post->ID, $taxonomy, [ 'fields' => 'slugs' ] );
+                    if ( ! \is_wp_error( $terms ) && ! empty( $terms ) ) {
+                        $post_data['taxonomies'][ $taxonomy ] = $terms;
+                    }
+                }
+
+                $package['posts'][] = $post_data;
+
+                $meta = \get_post_meta( $post->ID );
+                foreach ( $meta as $key => $values ) {
+                    if ( str_starts_with( $key, '_' ) && $key !== '_thumbnail_id' ) {
+                        continue;
+                    }
+
+                    $package['meta'][] = [
+                        'post_id'    => $post->ID,
+                        'meta_key'   => $key,
+                        'meta_value' => $values[0] ?? '',
+                    ];
+                }
+            }
+        }
+
+        return $package;
+    }
+
+    public function import_cpt_package( array $package ): array {
+        $results = [
+            'post_types_imported' => 0,
+            'taxonomies_imported' => 0,
+            'terms_imported'      => 0,
+            'posts_imported'      => 0,
+            'errors'              => [],
+        ];
+
+        if ( empty( $package['version'] ) || empty( $package['plugin'] ) ) {
+            $results['errors'][] = \__( 'Invalid package format', 'sofir' );
+            return $results;
+        }
+
+        $post_id_map = [];
+
+        if ( ! empty( $package['post_types'] ) ) {
+            foreach ( $package['post_types'] as $slug => $definition ) {
+                $this->post_types[ $slug ] = $definition;
+                $results['post_types_imported']++;
+            }
+            \update_option( self::OPTION_POST_TYPES, $this->post_types );
+        }
+
+        if ( ! empty( $package['taxonomies'] ) ) {
+            foreach ( $package['taxonomies'] as $slug => $definition ) {
+                $this->taxonomies[ $slug ] = $definition;
+                $results['taxonomies_imported']++;
+            }
+            \update_option( self::OPTION_TAXONOMIES, $this->taxonomies );
+        }
+
+        $this->register_dynamic_post_types();
+        $this->register_dynamic_taxonomies();
+
+        if ( ! empty( $package['terms'] ) ) {
+            foreach ( $package['terms'] as $term_data ) {
+                $term_exists = \term_exists( $term_data['slug'], $term_data['taxonomy'] );
+                
+                if ( $term_exists ) {
+                    continue;
+                }
+
+                $term = \wp_insert_term(
+                    $term_data['name'],
+                    $term_data['taxonomy'],
+                    [
+                        'slug'        => $term_data['slug'],
+                        'description' => $term_data['description'] ?? '',
+                        'parent'      => $term_data['parent'] ?? 0,
+                    ]
+                );
+
+                if ( ! \is_wp_error( $term ) ) {
+                    $results['terms_imported']++;
+                }
+            }
+        }
+
+        if ( ! empty( $package['posts'] ) ) {
+            foreach ( $package['posts'] as $post_data ) {
+                $old_id = $post_data['ID'];
+                unset( $post_data['ID'] );
+                unset( $post_data['thumbnail'] );
+                unset( $post_data['taxonomies'] );
+
+                $existing = \get_posts( [
+                    'post_type'      => $post_data['post_type'],
+                    'name'           => $post_data['post_name'],
+                    'posts_per_page' => 1,
+                    'post_status'    => 'any',
+                ] );
+
+                if ( ! empty( $existing ) ) {
+                    $post_id_map[ $old_id ] = $existing[0]->ID;
+                    continue;
+                }
+
+                $new_id = \wp_insert_post( $post_data );
+
+                if ( ! \is_wp_error( $new_id ) && $new_id > 0 ) {
+                    $post_id_map[ $old_id ] = $new_id;
+                    $results['posts_imported']++;
+                }
+            }
+        }
+
+        if ( ! empty( $package['meta'] ) ) {
+            foreach ( $package['meta'] as $meta_data ) {
+                $old_post_id = $meta_data['post_id'];
+                $new_post_id = $post_id_map[ $old_post_id ] ?? 0;
+
+                if ( $new_post_id > 0 ) {
+                    \update_post_meta( $new_post_id, $meta_data['meta_key'], \maybe_unserialize( $meta_data['meta_value'] ) );
+                }
+            }
+        }
+
+        if ( ! empty( $package['posts'] ) ) {
+            foreach ( $package['posts'] as $post_data ) {
+                $old_id = $post_data['ID'];
+                $new_id = $post_id_map[ $old_id ] ?? 0;
+
+                if ( $new_id > 0 && ! empty( $post_data['taxonomies'] ) ) {
+                    foreach ( $post_data['taxonomies'] as $taxonomy => $term_slugs ) {
+                        \wp_set_post_terms( $new_id, $term_slugs, $taxonomy );
+                    }
+                }
+            }
+        }
+
+        \flush_rewrite_rules();
+
+        return $results;
+    }
+
+    public function get_export_preview( array $post_types ): array {
+        $preview = [];
+
+        foreach ( $post_types as $post_type ) {
+            $post_type = \sanitize_key( $post_type );
+
+            if ( ! isset( $this->post_types[ $post_type ] ) ) {
+                continue;
+            }
+
+            $post_count = \wp_count_posts( $post_type );
+            $total = ( $post_count->publish ?? 0 ) + ( $post_count->draft ?? 0 ) + ( $post_count->pending ?? 0 );
+
+            $taxonomies_info = [];
+            $related_taxonomies = $this->post_types[ $post_type ]['taxonomies'] ?? [];
+            
+            foreach ( $related_taxonomies as $taxonomy ) {
+                $terms = \get_terms( [
+                    'taxonomy'   => $taxonomy,
+                    'hide_empty' => false,
+                ] );
+
+                $term_list = [];
+                if ( ! \is_wp_error( $terms ) && ! empty( $terms ) ) {
+                    foreach ( $terms as $term ) {
+                        $term_list[] = $term->name;
+                    }
+                }
+
+                $taxonomies_info[ $taxonomy ] = [
+                    'label' => $this->taxonomies[ $taxonomy ]['args']['labels']['name'] ?? $taxonomy,
+                    'count' => count( $term_list ),
+                    'terms' => $term_list,
+                ];
+            }
+
+            $preview[ $post_type ] = [
+                'label'       => $this->post_types[ $post_type ]['args']['labels']['name'] ?? $post_type,
+                'post_count'  => $total,
+                'fields'      => array_keys( $this->post_types[ $post_type ]['fields'] ?? [] ),
+                'taxonomies'  => $taxonomies_info,
+            ];
+        }
+
+        return $preview;
+    }
 }
