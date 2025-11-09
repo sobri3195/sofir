@@ -83,7 +83,25 @@ class LibraryPanel {
 
         echo '<div class="sofir-card">';
         echo '<h2>🎁 ' . \esc_html__( 'Ready-to-Use CPT Library', 'sofir' ) . '</h2>';
-        echo '<p>' . \esc_html__( 'Template CPT siap pakai untuk berbagai jenis website. Klik tombol untuk langsung menginstall.', 'sofir' ) . '</p>';
+        echo '<p style="font-size: 14px; line-height: 1.6; margin-bottom: 12px;">' . \esc_html__( 'Template CPT siap pakai untuk berbagai jenis website. One-click install meliputi:', 'sofir' ) . '</p>';
+        echo '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 20px;">';
+        echo '<div style="padding: 12px; background: #f0f6fc; border-left: 3px solid #0073aa; border-radius: 4px;">';
+        echo '<strong style="color: #0073aa;">📦 Post Types & Fields</strong><br>';
+        echo '<small style="color: #666;">' . \esc_html__( 'CPT, metadata, dan custom fields', 'sofir' ) . '</small>';
+        echo '</div>';
+        echo '<div style="padding: 12px; background: #f0f6fc; border-left: 3px solid #0073aa; border-radius: 4px;">';
+        echo '<strong style="color: #0073aa;">🏷 Taxonomies & Filters</strong><br>';
+        echo '<small style="color: #666;">' . \esc_html__( 'Kategori dan filter pencarian', 'sofir' ) . '</small>';
+        echo '</div>';
+        echo '<div style="padding: 12px; background: #f0f6fc; border-left: 3px solid #0073aa; border-radius: 4px;">';
+        echo '<strong style="color: #0073aa;">📄 Sample Pages</strong><br>';
+        echo '<small style="color: #666;">' . \esc_html__( 'Single & archive templates', 'sofir' ) . '</small>';
+        echo '</div>';
+        echo '<div style="padding: 12px; background: #f0f6fc; border-left: 3px solid #0073aa; border-radius: 4px;">';
+        echo '<strong style="color: #0073aa;">🔗 Navigation Menu</strong><br>';
+        echo '<small style="color: #666;">' . \esc_html__( 'Menu otomatis untuk pages', 'sofir' ) . '</small>';
+        echo '</div>';
+        echo '</div>';
         
         $this->render_ready_templates();
         
@@ -123,23 +141,33 @@ class LibraryPanel {
         echo '<h2>📚 ' . \esc_html__( 'CPT Library Guide', 'sofir' ) . '</h2>';
         echo '<div style="line-height: 1.8;">';
         echo '<h3>' . \esc_html__( 'Apa itu CPT Library?', 'sofir' ) . '</h3>';
-        echo '<p>' . \esc_html__( 'CPT Library adalah sistem ekspor/impor yang memungkinkan Anda membagikan atau memindahkan Custom Post Type antar website WordPress dengan mudah.', 'sofir' ) . '</p>';
+        echo '<p>' . \esc_html__( 'CPT Library adalah sistem one-click install yang memungkinkan Anda membuat website lengkap dengan Custom Post Type, template pages, dan navigation menu hanya dalam sekali klik.', 'sofir' ) . '</p>';
         
-        echo '<h3>' . \esc_html__( 'Yang Diekspor:', 'sofir' ) . '</h3>';
+        echo '<h3>' . \esc_html__( 'Ready-to-Use Templates:', 'sofir' ) . '</h3>';
         echo '<ul style="margin-left: 20px;">';
-        echo '<li>✓ ' . \esc_html__( 'Definisi Custom Post Type (CPT)', 'sofir' ) . '</li>';
-        echo '<li>✓ ' . \esc_html__( 'Field & metadata configuration', 'sofir' ) . '</li>';
-        echo '<li>✓ ' . \esc_html__( 'Taxonomies & terms', 'sofir' ) . '</li>';
-        echo '<li>✓ ' . \esc_html__( 'Filter & query settings', 'sofir' ) . '</li>';
-        echo '<li>✓ ' . \esc_html__( 'Konten posts (opsional)', 'sofir' ) . '</li>';
+        echo '<li>🏢 ' . \esc_html__( '<strong>Business Directory</strong> - Direktori bisnis dengan lokasi & rating', 'sofir' ) . '</li>';
+        echo '<li>🏨 ' . \esc_html__( '<strong>Hotel & Accommodation</strong> - Website penginapan dengan harga & galeri', 'sofir' ) . '</li>';
+        echo '<li>📰 ' . \esc_html__( '<strong>News & Blog</strong> - Website berita dengan artikel & kategori', 'sofir' ) . '</li>';
+        echo '<li>📅 ' . \esc_html__( '<strong>Events & Calendar</strong> - Website event dengan tanggal & kapasitas', 'sofir' ) . '</li>';
+        echo '<li>⏰ ' . \esc_html__( '<strong>Appointments</strong> - Sistem booking dengan status & provider', 'sofir' ) . '</li>';
+        echo '<li>🛒 ' . \esc_html__( '<strong>Toko Online</strong> - E-commerce dengan produk & multi-vendor', 'sofir' ) . '</li>';
+        echo '</ul>';
+
+        echo '<h3>' . \esc_html__( 'Yang Diinstall Otomatis:', 'sofir' ) . '</h3>';
+        echo '<ul style="margin-left: 20px;">';
+        echo '<li>✓ ' . \esc_html__( '<strong>Custom Post Types</strong> - Post type dengan field & metadata', 'sofir' ) . '</li>';
+        echo '<li>✓ ' . \esc_html__( '<strong>Taxonomies</strong> - Kategori dan tags untuk filter', 'sofir' ) . '</li>';
+        echo '<li>✓ ' . \esc_html__( '<strong>Fields & Filters</strong> - Custom fields dan query filters', 'sofir' ) . '</li>';
+        echo '<li>✓ ' . \esc_html__( '<strong>Sample Pages</strong> - Archive dan single page templates', 'sofir' ) . '</li>';
+        echo '<li>✓ ' . \esc_html__( '<strong>Navigation Menu</strong> - Menu dengan link ke pages & archive', 'sofir' ) . '</li>';
         echo '</ul>';
 
         echo '<h3>' . \esc_html__( 'Use Cases:', 'sofir' ) . '</h3>';
         echo '<ul style="margin-left: 20px;">';
-        echo '<li>🚀 ' . \esc_html__( 'Clone website dengan struktur CPT yang sama', 'sofir' ) . '</li>';
-        echo '<li>💼 ' . \esc_html__( 'Bagikan template CPT ke client atau tim', 'sofir' ) . '</li>';
-        echo '<li>🔄 ' . \esc_html__( 'Backup & restore CPT configuration', 'sofir' ) . '</li>';
-        echo '<li>🌐 ' . \esc_html__( 'Migrasi dari development ke production', 'sofir' ) . '</li>';
+        echo '<li>🚀 ' . \esc_html__( 'Launch website baru dalam hitungan menit', 'sofir' ) . '</li>';
+        echo '<li>💼 ' . \esc_html__( 'Setup website client dengan cepat', 'sofir' ) . '</li>';
+        echo '<li>🔄 ' . \esc_html__( 'Clone struktur website ke multi-site', 'sofir' ) . '</li>';
+        echo '<li>🌐 ' . \esc_html__( 'Ekspor/impor CPT untuk backup & restore', 'sofir' ) . '</li>';
         echo '</ul>';
         echo '</div>';
         echo '</div>';
@@ -247,6 +275,7 @@ class LibraryPanel {
 
         $template = $templates[ $template_key ];
         $manager = CptManager::instance();
+        $installer = new ReadyCptInstaller();
         
         foreach ( $template['cpts'] as $cpt_slug => $cpt_config ) {
             $manager->save_post_type( $cpt_config );
@@ -255,6 +284,9 @@ class LibraryPanel {
         foreach ( $template['taxonomies'] as $tax_slug => $tax_config ) {
             $manager->save_taxonomy( $tax_config );
         }
+
+        $installer->install_template_pages( $template_key, $template );
+        $installer->create_menu_items( $template_key, $template );
 
         \flush_rewrite_rules();
 
@@ -277,7 +309,7 @@ class LibraryPanel {
         $manager = CptManager::instance();
         $existing_cpts = array_keys( $manager->get_post_types() );
         
-        echo '<div class="sofir-ready-templates" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; margin: 20px 0;">';
+        echo '<div class="sofir-ready-templates" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin: 20px 0;">';
         
         foreach ( $templates as $key => $template ) {
             $is_installed = false;
@@ -289,29 +321,62 @@ class LibraryPanel {
             }
             
             $badge_style = $is_installed ? 'background: #00a32a; color: #fff;' : 'background: #0073aa; color: #fff;';
-            $button_text = $is_installed ? '✓ Sudah Terinstall' : '+ Install Template';
+            $button_text = $is_installed ? '✓ Sudah Terinstall' : '🚀 Install Sekarang';
             $button_disabled = $is_installed ? ' disabled' : '';
             
-            echo '<div class="sofir-template-card" style="background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 20px; position: relative;">';
+            echo '<div class="sofir-template-card" style="background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 20px; position: relative; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform=\'translateY(-4px)\'; this.style.boxShadow=\'0 4px 12px rgba(0,0,0,0.15)\';" onmouseout="this.style.transform=\'translateY(0)\'; this.style.boxShadow=\'0 2px 4px rgba(0,0,0,0.1)\';">';
             echo '<div style="position: absolute; top: 10px; right: 10px; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: bold; ' . $badge_style . '">';
             echo \esc_html( $template['badge'] );
             echo '</div>';
             
-            echo '<div style="font-size: 32px; margin-bottom: 15px;">' . $template['icon'] . '</div>';
-            echo '<h3 style="margin: 10px 0; font-size: 16px;">' . \esc_html( $template['name'] ) . '</h3>';
-            echo '<p style="font-size: 13px; color: #666; margin: 10px 0;">' . \esc_html( $template['description'] ) . '</p>';
+            echo '<div style="font-size: 42px; margin-bottom: 15px;">' . $template['icon'] . '</div>';
+            echo '<h3 style="margin: 10px 0; font-size: 17px; font-weight: 600;">' . \esc_html( $template['name'] ) . '</h3>';
+            echo '<p style="font-size: 13px; color: #666; margin: 10px 0; line-height: 1.5;">' . \esc_html( $template['description'] ) . '</p>';
             
-            echo '<ul style="margin: 15px 0; padding-left: 20px; font-size: 12px; color: #666;">';
+            echo '<div style="background: #f5f5f5; border-radius: 6px; padding: 12px; margin: 15px 0;">';
+            echo '<p style="margin: 0 0 8px 0; font-size: 11px; font-weight: bold; color: #666; text-transform: uppercase;">' . \esc_html__( 'Fitur Utama:', 'sofir' ) . '</p>';
+            echo '<ul style="margin: 0; padding-left: 18px; font-size: 12px; color: #555; line-height: 1.8;">';
             foreach ( $template['features'] as $feature ) {
                 echo '<li>' . \esc_html( $feature ) . '</li>';
             }
             echo '</ul>';
+            echo '</div>';
+            
+            $cpt_count = count( $template['cpts'] );
+            $tax_count = count( $template['taxonomies'] );
+            $template_count = isset( $template['templates'] ) ? count( $template['templates'] ) : 0;
+            
+            echo '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 15px 0; padding: 12px; background: #f9f9f9; border-radius: 6px;">';
+            echo '<div style="text-align: center;">';
+            echo '<div style="font-size: 20px; font-weight: bold; color: #0073aa;">' . $cpt_count . '</div>';
+            echo '<div style="font-size: 10px; color: #666; text-transform: uppercase;">' . \esc_html__( 'CPT', 'sofir' ) . '</div>';
+            echo '</div>';
+            echo '<div style="text-align: center; border-left: 1px solid #ddd; border-right: 1px solid #ddd;">';
+            echo '<div style="font-size: 20px; font-weight: bold; color: #0073aa;">' . $tax_count . '</div>';
+            echo '<div style="font-size: 10px; color: #666; text-transform: uppercase;">' . \esc_html__( 'Taxonomies', 'sofir' ) . '</div>';
+            echo '</div>';
+            echo '<div style="text-align: center;">';
+            echo '<div style="font-size: 20px; font-weight: bold; color: #0073aa;">' . $template_count . '</div>';
+            echo '<div style="font-size: 10px; color: #666; text-transform: uppercase;">' . \esc_html__( 'Pages', 'sofir' ) . '</div>';
+            echo '</div>';
+            echo '</div>';
+            
+            if ( ! $is_installed ) {
+                echo '<div style="margin: 15px 0; padding: 10px; background: #e8f5f9; border-left: 3px solid #0073aa; border-radius: 4px;">';
+                echo '<p style="margin: 0; font-size: 11px; line-height: 1.6; color: #555;">';
+                echo '<strong>' . \esc_html__( 'One-click install meliputi:', 'sofir' ) . '</strong><br>';
+                echo '✓ Post Types & Fields<br>';
+                echo '✓ Taxonomies & Filters<br>';
+                echo '✓ Sample Pages & Menu';
+                echo '</p>';
+                echo '</div>';
+            }
             
             echo '<form method="post" action="' . \esc_url( \admin_url( 'admin-post.php' ) ) . '" style="margin-top: 15px;">';
             echo '<input type="hidden" name="action" value="sofir_install_ready_cpt" />';
             echo '<input type="hidden" name="template" value="' . \esc_attr( $key ) . '" />';
             \wp_nonce_field( 'sofir_install_ready_cpt', '_sofir_nonce' );
-            echo '<button type="submit" class="button button-primary" style="width: 100%;"' . $button_disabled . '>' . \esc_html( $button_text ) . '</button>';
+            echo '<button type="submit" class="button button-primary" style="width: 100%; height: 40px; font-weight: 600;"' . $button_disabled . '>' . \esc_html( $button_text ) . '</button>';
             echo '</form>';
             
             echo '</div>';
@@ -350,6 +415,7 @@ class LibraryPanel {
                         'taxonomies' => [ 'listing_category', 'listing_location' ],
                     ],
                 ],
+                'templates' => [ 'city-directory', 'web-directory-dashboard' ],
                 'taxonomies' => [
                     'listing_category' => [
                         'slug' => 'listing_category',
@@ -394,6 +460,7 @@ class LibraryPanel {
                         'taxonomies' => [ 'listing_category', 'listing_location' ],
                     ],
                 ],
+                'templates' => [ 'hotel-booking' ],
                 'taxonomies' => [
                     'listing_category' => [
                         'slug' => 'listing_category',
@@ -438,6 +505,7 @@ class LibraryPanel {
                         'taxonomies' => [],
                     ],
                 ],
+                'templates' => [ 'modern-magazine', 'tech-news-portal', 'personal-blog' ],
                 'taxonomies' => [],
             ],
             'events' => [
@@ -465,6 +533,7 @@ class LibraryPanel {
                         'taxonomies' => [ 'event_category', 'event_tag' ],
                     ],
                 ],
+                'templates' => [ 'event-registration' ],
                 'taxonomies' => [
                     'event_category' => [
                         'slug' => 'event_category',
@@ -509,6 +578,7 @@ class LibraryPanel {
                         'taxonomies' => [ 'appointment_service' ],
                     ],
                 ],
+                'templates' => [ 'healthcare-network' ],
                 'taxonomies' => [
                     'appointment_service' => [
                         'slug' => 'appointment_service',
@@ -520,21 +590,99 @@ class LibraryPanel {
                     ],
                 ],
             ],
+            'online_store' => [
+                'name' => \__( 'Toko Online / E-Commerce', 'sofir' ),
+                'icon' => '🛒',
+                'badge' => \__( 'Popular', 'sofir' ),
+                'description' => \__( 'Website toko online lengkap dengan produk, kategori, harga, stok, dan multi-vendor.', 'sofir' ),
+                'features' => [
+                    \__( 'Produk & SKU', 'sofir' ),
+                    \__( 'Harga & stok', 'sofir' ),
+                    \__( 'Vendor stores', 'sofir' ),
+                    \__( 'Filter produk', 'sofir' ),
+                ],
+                'cpts' => [
+                    'vendor_store' => [
+                        'slug' => 'vendor_store',
+                        'singular' => \__( 'Store', 'sofir' ),
+                        'plural' => \__( 'Stores', 'sofir' ),
+                        'menu_icon' => 'dashicons-store',
+                        'rewrite' => 'stores',
+                        'supports' => [ 'title', 'editor', 'thumbnail', 'excerpt', 'author', 'revisions' ],
+                        'has_archive' => true,
+                        'fields' => [ 'location', 'contact', 'rating', 'hours', 'attributes' ],
+                        'filters' => [ 'location', 'rating' ],
+                        'taxonomies' => [ 'store_category' ],
+                    ],
+                    'vendor_product' => [
+                        'slug' => 'vendor_product',
+                        'singular' => \__( 'Product', 'sofir' ),
+                        'plural' => \__( 'Products', 'sofir' ),
+                        'menu_icon' => 'dashicons-products',
+                        'rewrite' => 'products',
+                        'supports' => [ 'title', 'editor', 'thumbnail', 'excerpt', 'author', 'revisions' ],
+                        'has_archive' => true,
+                        'fields' => [ 'price', 'gallery', 'attributes' ],
+                        'filters' => [ 'price', 'attribute', 'vendor_id' ],
+                        'taxonomies' => [ 'product_category', 'product_tag' ],
+                    ],
+                ],
+                'templates' => [ 'product-catalog' ],
+                'taxonomies' => [
+                    'store_category' => [
+                        'slug' => 'store_category',
+                        'singular' => \__( 'Store Category', 'sofir' ),
+                        'plural' => \__( 'Store Categories', 'sofir' ),
+                        'object_types' => [ 'vendor_store' ],
+                        'hierarchical' => true,
+                        'filterable' => true,
+                    ],
+                    'product_category' => [
+                        'slug' => 'product_category',
+                        'singular' => \__( 'Product Category', 'sofir' ),
+                        'plural' => \__( 'Product Categories', 'sofir' ),
+                        'object_types' => [ 'vendor_product' ],
+                        'hierarchical' => true,
+                        'filterable' => true,
+                    ],
+                    'product_tag' => [
+                        'slug' => 'product_tag',
+                        'singular' => \__( 'Product Tag', 'sofir' ),
+                        'plural' => \__( 'Product Tags', 'sofir' ),
+                        'object_types' => [ 'vendor_product' ],
+                        'hierarchical' => false,
+                        'filterable' => true,
+                    ],
+                ],
+            ],
         ];
     }
 
     private function render_notice( string $notice ): void {
-        $messages = [
-            'cpt_imported' => isset( $_GET['sofir_message'] ) ? urldecode( $_GET['sofir_message'] ) : \__( 'CPT package imported successfully.', 'sofir' ),
-            'ready_template_installed' => sprintf(
-                \__( 'Template "%s" berhasil diinstall! Silakan refresh permalink di Settings → Permalinks.', 'sofir' ),
-                isset( $_GET['template_name'] ) ? urldecode( $_GET['template_name'] ) : 'CPT'
-            ),
-        ];
-
-        $message = $messages[ $notice ] ?? '';
-
-        if ( $message ) {
+        if ( 'ready_template_installed' === $notice ) {
+            $template_name = isset( $_GET['template_name'] ) ? urldecode( $_GET['template_name'] ) : 'CPT';
+            
+            echo '<div class="notice notice-success is-dismissible">';
+            echo '<h3 style="margin: 0.5em 0;">✅ ' . \esc_html( sprintf( \__( 'Template "%s" Berhasil Diinstall!', 'sofir' ), $template_name ) ) . '</h3>';
+            echo '<p style="margin: 0.5em 0;"><strong>' . \esc_html__( 'Yang telah diinstall:', 'sofir' ) . '</strong></p>';
+            echo '<ul style="margin: 0.5em 0 1em 20px;">';
+            echo '<li>✓ ' . \esc_html__( 'Custom Post Types (CPT)', 'sofir' ) . '</li>';
+            echo '<li>✓ ' . \esc_html__( 'Taxonomies & Terms', 'sofir' ) . '</li>';
+            echo '<li>✓ ' . \esc_html__( 'Custom Fields & Metadata', 'sofir' ) . '</li>';
+            echo '<li>✓ ' . \esc_html__( 'Filters & Query Settings', 'sofir' ) . '</li>';
+            echo '<li>✓ ' . \esc_html__( 'Sample Pages dengan Template', 'sofir' ) . '</li>';
+            echo '<li>✓ ' . \esc_html__( 'Navigation Menu', 'sofir' ) . '</li>';
+            echo '</ul>';
+            echo '<p style="margin: 0.5em 0;"><strong>' . \esc_html__( 'Langkah selanjutnya:', 'sofir' ) . '</strong></p>';
+            echo '<ol style="margin: 0.5em 0 1em 20px;">';
+            echo '<li>' . \esc_html__( 'Refresh permalink di', 'sofir' ) . ' <a href="' . \esc_url( \admin_url( 'options-permalink.php' ) ) . '"><strong>Settings → Permalinks</strong></a></li>';
+            echo '<li>' . \esc_html__( 'Buat konten pertama Anda di menu CPT yang baru ditambahkan', 'sofir' ) . '</li>';
+            echo '<li>' . \esc_html__( 'Atur menu navigasi di', 'sofir' ) . ' <a href="' . \esc_url( \admin_url( 'nav-menus.php' ) ) . '"><strong>Appearance → Menus</strong></a></li>';
+            echo '<li>' . \esc_html__( 'Lihat preview pages yang telah dibuat', 'sofir' ) . '</li>';
+            echo '</ol>';
+            echo '</div>';
+        } elseif ( 'cpt_imported' === $notice ) {
+            $message = isset( $_GET['sofir_message'] ) ? urldecode( $_GET['sofir_message'] ) : \__( 'CPT package imported successfully.', 'sofir' );
             echo '<div class="notice notice-success is-dismissible"><p>' . \esc_html( $message ) . '</p></div>';
         }
     }
@@ -691,6 +839,98 @@ class CptExporter {
         }
 
         return $terms;
+    }
+}
+
+class ReadyCptInstaller {
+    public function install_template_pages( string $template_key, array $template ): void {
+        $templates_manager = \Sofir\Templates\Manager::instance();
+        $installed_pages = [];
+        
+        if ( empty( $template['templates'] ) ) {
+            return;
+        }
+        
+        foreach ( $template['templates'] as $template_slug ) {
+            $page_template = $templates_manager->get_template( $template_slug );
+            
+            if ( ! $page_template ) {
+                continue;
+            }
+            
+            $existing_page = \get_page_by_path( $template_slug, OBJECT, 'page' );
+            
+            if ( $existing_page ) {
+                continue;
+            }
+            
+            $content = $templates_manager->get_template_content( $page_template );
+            
+            if ( empty( $content ) ) {
+                continue;
+            }
+            
+            $page_id = \wp_insert_post( [
+                'post_type'    => 'page',
+                'post_title'   => $page_template['title'],
+                'post_content' => $content,
+                'post_status'  => 'publish',
+                'post_name'    => $template_slug,
+            ] );
+            
+            if ( $page_id && ! is_wp_error( $page_id ) ) {
+                \update_post_meta( $page_id, '_sofir_template', $template_slug );
+                \update_post_meta( $page_id, '_sofir_library_template', $template_key );
+                $installed_pages[] = $page_id;
+            }
+        }
+        
+        if ( ! empty( $installed_pages ) ) {
+            \update_option( 'sofir_library_' . $template_key . '_pages', $installed_pages );
+        }
+    }
+    
+    public function create_menu_items( string $template_key, array $template ): void {
+        $menu_name = $template['name'];
+        $menu_slug = 'sofir-' . $template_key;
+        
+        $menu_exists = \wp_get_nav_menu_object( $menu_slug );
+        
+        if ( $menu_exists ) {
+            return;
+        }
+        
+        $menu_id = \wp_create_nav_menu( $menu_name );
+        
+        if ( is_wp_error( $menu_id ) ) {
+            return;
+        }
+        
+        $installed_pages = \get_option( 'sofir_library_' . $template_key . '_pages', [] );
+        
+        foreach ( $installed_pages as $page_id ) {
+            \wp_update_nav_menu_item( $menu_id, 0, [
+                'menu-item-object-id'   => $page_id,
+                'menu-item-object'      => 'page',
+                'menu-item-type'        => 'post_type',
+                'menu-item-status'      => 'publish',
+            ] );
+        }
+        
+        foreach ( $template['cpts'] as $cpt_slug => $cpt_config ) {
+            if ( empty( $cpt_config['has_archive'] ) ) {
+                continue;
+            }
+            
+            \wp_update_nav_menu_item( $menu_id, 0, [
+                'menu-item-title'       => $cpt_config['plural'],
+                'menu-item-url'         => \home_url( '/' . $cpt_config['rewrite'] ),
+                'menu-item-status'      => 'publish',
+                'menu-item-type'        => 'custom',
+            ] );
+        }
+        
+        \update_option( 'sofir_library_' . $template_key . '_menu', $menu_id );
     }
 }
 
