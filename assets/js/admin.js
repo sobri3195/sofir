@@ -370,4 +370,52 @@
             }
         } );
     }
+
+    document.addEventListener( 'click', function ( event ) {
+        const button = event.target.closest( '.sofir-copy-webhook' );
+        if ( ! button ) {
+            return;
+        }
+
+        event.preventDefault();
+
+        const url = button.dataset.url;
+        if ( ! url ) {
+            return;
+        }
+
+        if ( navigator.clipboard && navigator.clipboard.writeText ) {
+            navigator.clipboard.writeText( url ).then( function () {
+                const originalText = button.textContent;
+                button.textContent = '✓ Copied!';
+                button.style.backgroundColor = '#00a32a';
+                button.style.color = '#fff';
+
+                setTimeout( function () {
+                    button.textContent = originalText;
+                    button.style.backgroundColor = '';
+                    button.style.color = '';
+                }, 2000 );
+            } ).catch( function ( error ) {
+                console.error( 'Copy failed:', error );
+                alert( 'Failed to copy. Please copy manually.' );
+            } );
+        } else {
+            const input = button.parentElement.parentElement.querySelector( 'input[readonly]' );
+            if ( input ) {
+                input.select();
+                try {
+                    document.execCommand( 'copy' );
+                    const originalText = button.textContent;
+                    button.textContent = '✓ Copied!';
+                    setTimeout( function () {
+                        button.textContent = originalText;
+                    }, 2000 );
+                } catch ( error ) {
+                    console.error( 'Copy failed:', error );
+                    alert( 'Failed to copy. Please copy manually.' );
+                }
+            }
+        }
+    } );
 } )();
