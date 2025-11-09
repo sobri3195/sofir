@@ -69,9 +69,17 @@ class AssetsManager {
         );
 
         \wp_enqueue_script(
+            'sofir-blocks-register',
+            SOFIR_ASSETS_URL . 'js/blocks-register.js',
+            [ 'wp-blocks', 'wp-element', 'wp-editor', 'wp-block-editor', 'wp-components', 'wp-i18n', 'wp-server-side-render' ],
+            SOFIR_VERSION,
+            true
+        );
+
+        \wp_enqueue_script(
             'sofir-blocks-editor',
             SOFIR_ASSETS_URL . 'js/blocks-editor.js',
-            [ 'wp-blocks', 'wp-element', 'wp-editor', 'wp-components', 'wp-i18n' ],
+            [ 'wp-blocks', 'wp-element', 'wp-editor', 'wp-components', 'wp-i18n', 'sofir-blocks-register' ],
             SOFIR_VERSION,
             true
         );
