@@ -15,17 +15,39 @@ class Manager {
     public function boot(): void {
         \add_action( 'init', [ $this, 'register_vendor_role' ] );
         \add_action( 'init', [ $this, 'register_vendor_cpt' ] );
+        \add_action( 'init', [ $this, 'flush_rewrite_rules_on_first_activation' ] );
+        \add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_frontend_assets' ] );
         \add_action( 'admin_menu', [ $this, 'add_vendor_menu' ] );
         \add_action( 'rest_api_init', [ $this, 'register_rest_routes' ] );
         \add_action( 'sofir/payment/status_changed', [ $this, 'calculate_commission' ], 10, 2 );
         \add_filter( 'wp_insert_post_data', [ $this, 'assign_vendor_to_product' ], 10, 2 );
-        \add_filter( 'the_content', [ $this, 'render_vendor_single_template' ] );
+        \add_filter( 'the_content', [ $this, 'render_vendor_single_template' ], 20 );
         \add_action( 'add_meta_boxes', [ $this, 'add_product_meta_boxes' ] );
         \add_action( 'save_post_vendor_product', [ $this, 'save_product_meta' ] );
         \add_shortcode( 'sofir_vendor_dashboard', [ $this, 'render_vendor_dashboard' ] );
         \add_shortcode( 'sofir_vendor_products', [ $this, 'render_vendor_products' ] );
         \add_shortcode( 'sofir_vendors_list', [ $this, 'render_vendors_list' ] );
         \add_shortcode( 'sofir_become_vendor', [ $this, 'render_become_vendor_form' ] );
+    }
+
+    public function enqueue_frontend_assets(): void {
+        if ( \is_singular( [ 'vendor_store', 'vendor_product' ] ) || \is_post_type_archive( [ 'vendor_store', 'vendor_product' ] ) ) {
+            \wp_enqueue_style(
+                'sofir-multivendor',
+                \plugins_url( 'assets/css/multivendor.css', dirname( __DIR__ ) ),
+                [],
+                '1.0.0'
+            );
+        }
+    }
+
+    public function flush_rewrite_rules_on_first_activation(): void {
+        if ( \get_option( 'sofir_multivendor_rewrite_flushed' ) ) {
+            return;
+        }
+
+        \flush_rewrite_rules();
+        \update_option( 'sofir_multivendor_rewrite_flushed', '1' );
     }
 
     public function register_vendor_role(): void {
@@ -54,12 +76,16 @@ class Manager {
             [
                 'label' => \__( 'Vendor Stores', 'sofir' ),
                 'public' => true,
+                'publicly_queryable' => true,
+                'show_ui' => true,
+                'show_in_menu' => 'sofir-multivendor',
                 'show_in_rest' => true,
                 'supports' => [ 'title', 'editor', 'thumbnail', 'custom-fields' ],
                 'has_archive' => true,
-                'rewrite' => [ 'slug' => 'vendors' ],
+                'rewrite' => [ 'slug' => 'vendors', 'with_front' => false ],
                 'menu_icon' => 'dashicons-store',
-                'show_in_menu' => 'sofir-multivendor',
+                'capability_type' => 'post',
+                'map_meta_cap' => true,
             ]
         );
 
@@ -68,12 +94,16 @@ class Manager {
             [
                 'label' => \__( 'Vendor Products', 'sofir' ),
                 'public' => true,
+                'publicly_queryable' => true,
+                'show_ui' => true,
+                'show_in_menu' => 'sofir-multivendor',
                 'show_in_rest' => true,
                 'supports' => [ 'title', 'editor', 'thumbnail' ],
                 'has_archive' => true,
-                'rewrite' => [ 'slug' => 'products' ],
+                'rewrite' => [ 'slug' => 'products', 'with_front' => false ],
                 'menu_icon' => 'dashicons-products',
-                'show_in_menu' => 'sofir-multivendor',
+                'capability_type' => 'post',
+                'map_meta_cap' => true,
             ]
         );
     }
@@ -789,7 +819,11 @@ class Manager {
     public function render_vendor_single_template( string $content ): string {
         global $post;
 
-        if ( ! \is_singular( [ 'vendor_store', 'vendor_product' ] ) || ! $post ) {
+        if ( ! $post || ! \is_singular() ) {
+            return $content;
+        }
+
+        if ( ! \in_array( $post->post_type, [ 'vendor_store', 'vendor_product' ], true ) ) {
             return $content;
         }
 
@@ -827,19 +861,19 @@ class Manager {
                 </div>
 
                 <h2><?php \esc_html_e( 'Products from this Vendor', 'sofir' ); ?></h2>
-                <div class="sofir-vendor-products-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; margin-top: 20px;">
+                <div class="sofir-vendor-products-grid">
                     <?php
                     if ( $products ) {
                         foreach ( $products as $product ) {
                             ?>
-                            <div class="sofir-product-card" style="background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 15px; text-align: center;">
+                            <div class="sofir-product-card">
                                 <?php if ( \has_post_thumbnail( $product->ID ) ) : ?>
-                                    <a href="<?php echo \esc_url( \get_permalink( $product->ID ) ); ?>" style="display: block; margin-bottom: 10px;">
-                                        <?php echo \get_the_post_thumbnail( $product->ID, 'medium', [ 'style' => 'width: 100%; height: auto; border-radius: 4px;' ] ); ?>
+                                    <a href="<?php echo \esc_url( \get_permalink( $product->ID ) ); ?>">
+                                        <?php echo \get_the_post_thumbnail( $product->ID, 'medium' ); ?>
                                     </a>
                                 <?php endif; ?>
-                                <h3 style="margin: 10px 0; font-size: 18px;">
-                                    <a href="<?php echo \esc_url( \get_permalink( $product->ID ) ); ?>" style="text-decoration: none; color: #333;">
+                                <h3>
+                                    <a href="<?php echo \esc_url( \get_permalink( $product->ID ) ); ?>">
                                         <?php echo \esc_html( $product->post_title ); ?>
                                     </a>
                                 </h3>
@@ -847,11 +881,11 @@ class Manager {
                                 $price = \get_post_meta( $product->ID, 'product_price', true );
                                 if ( $price ) :
                                 ?>
-                                    <p class="sofir-product-price" style="color: #0073aa; font-size: 20px; font-weight: bold; margin: 10px 0;">
+                                    <p class="sofir-product-price">
                                         <?php echo \esc_html( $price ); ?>
                                     </p>
                                 <?php endif; ?>
-                                <a href="<?php echo \esc_url( \get_permalink( $product->ID ) ); ?>" class="button" style="display: inline-block; padding: 8px 16px; text-decoration: none;">
+                                <a href="<?php echo \esc_url( \get_permalink( $product->ID ) ); ?>" class="button">
                                     <?php \esc_html_e( 'View Product', 'sofir' ); ?>
                                 </a>
                             </div>
@@ -877,16 +911,16 @@ class Manager {
             ?>
             <div class="sofir-product-single">
                 <?php if ( \has_post_thumbnail( $post->ID ) ) : ?>
-                    <div class="product-image" style="margin-bottom: 20px; text-align: center;">
-                        <?php echo \get_the_post_thumbnail( $post->ID, 'large', [ 'style' => 'max-width: 100%; height: auto; border-radius: 8px;' ] ); ?>
+                    <div class="product-image">
+                        <?php echo \get_the_post_thumbnail( $post->ID, 'large' ); ?>
                     </div>
                 <?php endif; ?>
 
-                <div class="product-content" style="margin-bottom: 20px;">
+                <div class="product-content">
                     <?php echo $content; ?>
                 </div>
 
-                <div class="product-meta" style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                <div class="product-meta">
                     <?php if ( $price ) : ?>
                         <p style="font-size: 28px; color: #0073aa; font-weight: bold; margin: 10px 0;">
                             <strong><?php \esc_html_e( 'Price:', 'sofir' ); ?></strong> <?php echo \esc_html( $price ); ?>
@@ -906,7 +940,7 @@ class Manager {
                         <?php if ( $vendor ) : ?>
                             <p>
                                 <strong><?php \esc_html_e( 'Sold by:', 'sofir' ); ?></strong> 
-                                <a href="<?php echo \esc_url( \get_permalink( $vendor_id ) ); ?>" style="color: #0073aa; text-decoration: none;">
+                                <a href="<?php echo \esc_url( \get_permalink( $vendor_id ) ); ?>">
                                     <?php echo \esc_html( $vendor->post_title ); ?>
                                 </a>
                             </p>
