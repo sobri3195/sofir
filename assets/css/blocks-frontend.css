@@ -177,6 +177,109 @@
 }
 
 /* ==========================================================================
+   Post Feed Block Grid Layouts
+   ========================================================================== */
+
+.sofir-post-feed {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.sofir-post-feed-grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+}
+
+.sofir-post-feed-grid.sofir-post-feed-columns-1 {
+    grid-template-columns: 1fr;
+}
+
+.sofir-post-feed-grid.sofir-post-feed-columns-2 {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.sofir-post-feed-grid.sofir-post-feed-columns-3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.sofir-post-feed-grid.sofir-post-feed-columns-4 {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.sofir-post-feed-list {
+    grid-template-columns: 1fr;
+}
+
+.sofir-post-item {
+    overflow: hidden;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.sofir-post-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.sofir-post-thumbnail img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.sofir-post-content {
+    padding: 1.5rem;
+}
+
+.sofir-post-title {
+    margin: 0 0 0.75rem;
+    font-size: 1.25rem;
+    line-height: 1.4;
+}
+
+.sofir-post-title a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.sofir-post-title a:hover {
+    color: #007cba;
+}
+
+.sofir-post-meta {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.875rem;
+    color: #666;
+}
+
+.sofir-post-excerpt {
+    color: #444;
+    line-height: 1.6;
+}
+
+@media (max-width: 1024px) {
+    .sofir-post-feed-grid.sofir-post-feed-columns-4 {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .sofir-post-feed-grid.sofir-post-feed-columns-3,
+    .sofir-post-feed-grid.sofir-post-feed-columns-4 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .sofir-post-feed-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ==========================================================================
    Print Optimizations
    ========================================================================== */
 
