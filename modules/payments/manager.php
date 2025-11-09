@@ -80,7 +80,7 @@ class Manager {
             \add_query_arg(
                 [
                     'page' => 'sofir-dashboard',
-                    'tab' => 'content',
+                    'tab' => 'payments',
                     'sofir_notice' => 'payment_settings_saved',
                 ],
                 \admin_url( 'admin.php' )
