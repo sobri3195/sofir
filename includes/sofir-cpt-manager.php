@@ -748,6 +748,34 @@ class Manager {
         \do_action( "sofir/taxonomy/deleted_{$slug}", $definition );
     }
 
+    public function restore_default_post_types(): void {
+        \do_action( 'sofir/cpt/before_restore_defaults' );
+
+        $defaults = $this->get_seed_post_types();
+        
+        foreach ( $defaults as $slug => $definition ) {
+            $this->post_types[ $slug ] = $definition;
+        }
+
+        \update_option( self::OPTION_POST_TYPES, $this->post_types );
+
+        \do_action( 'sofir/cpt/restored_defaults', $defaults );
+    }
+
+    public function restore_default_taxonomies(): void {
+        \do_action( 'sofir/taxonomy/before_restore_defaults' );
+
+        $defaults = $this->get_seed_taxonomies();
+        
+        foreach ( $defaults as $slug => $definition ) {
+            $this->taxonomies[ $slug ] = $definition;
+        }
+
+        \update_option( self::OPTION_TAXONOMIES, $this->taxonomies );
+
+        \do_action( 'sofir/taxonomy/restored_defaults', $defaults );
+    }
+
     /**
      * @param array<string, array> $fields
      */
