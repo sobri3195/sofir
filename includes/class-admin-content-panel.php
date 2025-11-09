@@ -20,6 +20,7 @@ class ContentPanel {
         \add_action( 'admin_post_sofir_delete_cpt', [ $this, 'handle_delete_cpt' ] );
         \add_action( 'admin_post_sofir_save_taxonomy', [ $this, 'handle_save_taxonomy' ] );
         \add_action( 'admin_post_sofir_delete_taxonomy', [ $this, 'handle_delete_taxonomy' ] );
+        \add_action( 'admin_post_sofir_restore_default_cpts', [ $this, 'handle_restore_default_cpts' ] );
     }
 
     public function render(): void {
@@ -104,6 +105,20 @@ class ContentPanel {
 
         echo '<div class="sofir-card">';
         echo '<h2>' . \esc_html__( 'Registered Post Types', 'sofir' ) . '</h2>';
+        echo '<div style="margin-bottom: 15px;">';
+        $restore_url = \wp_nonce_url(
+            \add_query_arg(
+                [ 'action' => 'sofir_restore_default_cpts' ],
+                \admin_url( 'admin-post.php' )
+            ),
+            'sofir_restore_default_cpts',
+            '_sofir_nonce'
+        );
+        echo '<a href="' . \esc_url( $restore_url ) . '" class="button button-secondary" onclick="return confirm(\'' . \esc_js( \__( 'Apakah Anda yakin ingin mengembalikan CPT default (listing, profile, article, event, appointment)? CPT yang sudah ada tidak akan dihapus.', 'sofir' ) ) . '\');">';
+        echo '🔄 ' . \esc_html__( 'Restore Default CPTs', 'sofir' );
+        echo '</a>';
+        echo '<p class="description" style="margin-top: 10px;">' . \esc_html__( 'Mengembalikan 5 CPT default: listing, profile, article, event, dan appointment beserta taxonomies-nya.', 'sofir' ) . '</p>';
+        echo '</div>';
         if ( empty( $post_types ) ) {
             echo '<p>' . \esc_html__( 'Belum ada post type terdaftar.', 'sofir' ) . '</p>';
         } else {
@@ -417,6 +432,18 @@ class ContentPanel {
         $this->redirect_with_notice( 'content', 'taxonomy_deleted' );
     }
 
+    public function handle_restore_default_cpts(): void {
+        $this->verify_request( 'sofir_restore_default_cpts' );
+
+        $manager = CptManager::instance();
+        $manager->restore_default_post_types();
+        $manager->restore_default_taxonomies();
+
+        \flush_rewrite_rules();
+
+        $this->redirect_with_notice( 'content', 'defaults_restored' );
+    }
+
     private function render_notice( string $notice ): void {
         $messages = [
             'saved'            => \__( 'Post type saved successfully.', 'sofir' ),
@@ -425,6 +452,7 @@ class ContentPanel {
             'taxonomy_deleted' => \__( 'Taxonomy deleted.', 'sofir' ),
             'directory_settings_saved' => \__( 'Directory settings updated.', 'sofir' ),
             'cpt_imported'     => isset( $_GET['sofir_message'] ) ? urldecode( $_GET['sofir_message'] ) : \__( 'CPT package imported successfully.', 'sofir' ),
+            'defaults_restored' => \__( 'Default CPTs and taxonomies have been restored successfully. Please refresh the page to see the menu items.', 'sofir' ),
         ];
 
         $message = $messages[ $notice ] ?? '';

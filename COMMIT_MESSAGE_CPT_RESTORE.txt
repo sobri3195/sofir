@@ -1,0 +1,64 @@
+feat: Add restore default CPTs feature to recover missing menus
+
+## Problem
+Users reported that CPT menus (listing, profile, article, event, appointment) 
+disappeared from WordPress admin sidebar after they were accidentally deleted 
+through the SOFIR admin interface.
+
+## Solution
+Implemented a "Restore Default CPTs" feature that allows users to recover 
+all 5 default custom post types and their taxonomies with a single click.
+
+## Changes
+
+### CptManager (includes/sofir-cpt-manager.php)
+- Added `restore_default_post_types()` method
+- Added `restore_default_taxonomies()` method
+- Both methods restore seed data from `get_seed_post_types()` and `get_seed_taxonomies()`
+- Fire action hooks for extensibility
+
+### ContentPanel (includes/class-admin-content-panel.php)
+- Added `handle_restore_default_cpts()` handler
+- Added "🔄 Restore Default CPTs" button in UI
+- Added confirmation dialog before restoration
+- Added informative description and success message
+- Registered admin_post action hook
+
+## Features
+- ✅ One-click restoration of 5 default CPTs
+- ✅ Restores all associated taxonomies
+- ✅ Non-destructive (doesn't delete existing CPTs)
+- ✅ Auto-flush rewrite rules after restoration
+- ✅ Confirmation dialog for safety
+- ✅ Nonce verification for security
+- ✅ Capability check (manage_options only)
+- ✅ Event hooks for developers
+
+## Restored CPTs
+1. listing - Business/location directory with 8 fields
+2. profile - User profiles with 4 fields
+3. article - Blog/news content with attributes
+4. event - Event management with date, capacity, location
+5. appointment - Appointment booking with datetime, provider, client
+
+## Restored Taxonomies
+- listing_category, listing_location
+- profile_category
+- event_category, event_tag
+- appointment_service
+
+## Documentation
+- CPT_MENUS_RESTORE_FIX.md - Technical documentation
+- PANDUAN_RESTORE_CPT_MENU.md - User guide in Indonesian
+
+## Testing
+✅ Syntax validation passed
+✅ Non-destructive restoration verified
+✅ Rewrite rules flush properly
+✅ UI elements render correctly
+✅ Security checks in place
+
+## Backward Compatibility
+✅ No breaking changes
+✅ Existing CPTs preserved
+✅ Custom CPTs unaffected
