@@ -4,7 +4,6 @@ namespace Sofir;
 use Sofir\Admin\Manager as AdminManager;
 use Sofir\Cpt\Manager as CptManager;
 use Sofir\Ai\Builder as AiBuilder;
-use Sofir\Blocks\Registrar as BlocksRegistrar;
 use Sofir\Blocks\Elements as BlocksElements;
 use Sofir\Blocks\AssetsManager as BlocksAssetsManager;
 use Sofir\Blocks\Compatibility as BlocksCompatibility;
@@ -86,7 +85,6 @@ class Loader {
             LoyaltyManager::class,
             AppointmentsManager::class,
             AiBuilder::class,
-            BlocksRegistrar::class,
             BlocksElements::class,
             BlocksAssetsManager::class,
             BlocksCompatibility::class,

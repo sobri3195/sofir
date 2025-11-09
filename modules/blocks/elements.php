@@ -497,11 +497,17 @@ class Elements {
                     'postType' => [ 'type' => 'string', 'default' => 'post' ],
                     'postsPerPage' => [ 'type' => 'number', 'default' => 10 ],
                     'layout' => [ 'type' => 'string', 'default' => 'grid' ],
+                    'columns' => [ 'type' => 'number', 'default' => 3 ],
+                    'showExcerpt' => [ 'type' => 'boolean', 'default' => true ],
+                    'showMeta' => [ 'type' => 'boolean', 'default' => true ],
                 ],
                 'render_callback' => function ( array $attributes ): string {
                     $post_type = $attributes['postType'] ?? 'post';
                     $per_page = $attributes['postsPerPage'] ?? 10;
                     $layout = $attributes['layout'] ?? 'grid';
+                    $columns = $attributes['columns'] ?? 3;
+                    $show_excerpt = $attributes['showExcerpt'] ?? true;
+                    $show_meta = $attributes['showMeta'] ?? true;
                     
                     $query = new \WP_Query( [
                         'post_type' => $post_type,
@@ -510,7 +516,7 @@ class Elements {
                     ] );
                     
                     ob_start();
-                    echo '<div class="sofir-post-feed sofir-post-feed-' . \esc_attr( $layout ) . '">';
+                    echo '<div class="sofir-post-feed sofir-post-feed-' . \esc_attr( $layout ) . ' sofir-post-feed-columns-' . \esc_attr( $columns ) . '">';
                     
                     if ( $query->have_posts() ) {
                         while ( $query->have_posts() ) {
@@ -519,8 +525,21 @@ class Elements {
                             if ( \has_post_thumbnail() ) {
                                 echo '<div class="sofir-post-thumbnail">' . \get_the_post_thumbnail( null, 'medium' ) . '</div>';
                             }
-                            echo '<h3><a href="' . \esc_url( \get_permalink() ) . '">' . \get_the_title() . '</a></h3>';
-                            echo '<div class="sofir-post-excerpt">' . \get_the_excerpt() . '</div>';
+                            echo '<div class="sofir-post-content">';
+                            echo '<h3 class="sofir-post-title"><a href="' . \esc_url( \get_permalink() ) . '">' . \get_the_title() . '</a></h3>';
+                            
+                            if ( $show_meta ) {
+                                echo '<div class="sofir-post-meta">';
+                                echo '<span class="sofir-post-date">' . \get_the_date() . '</span>';
+                                echo '<span class="sofir-post-author">' . \get_the_author() . '</span>';
+                                echo '</div>';
+                            }
+                            
+                            if ( $show_excerpt ) {
+                                echo '<div class="sofir-post-excerpt">' . \get_the_excerpt() . '</div>';
+                            }
+                            
+                            echo '</div>';
                             echo '</article>';
                         }
                         \wp_reset_postdata();
@@ -632,12 +651,17 @@ class Elements {
             [
                 'attributes'      => [
                     'postId' => [ 'type' => 'number', 'default' => 0 ],
+                    'averageRating' => [ 'type' => 'number', 'default' => 0 ],
                 ],
                 'render_callback' => function ( array $attributes ): string {
                     $post_id = $attributes['postId'] ?? \get_the_ID();
+                    $average = $attributes['averageRating'] ?? \get_post_meta( $post_id, 'sofir_review_average', true );
                     
-                    $average = \get_post_meta( $post_id, 'sofir_review_average', true );
-                    $comments = \get_comments_number( $post_id );
+                    if ( ! $average && $post_id ) {
+                        $average = \get_post_meta( $post_id, 'sofir_review_average', true );
+                    }
+                    
+                    $comments = $post_id ? \get_comments_number( $post_id ) : 0;
                     
                     if ( ! $average ) {
                         return '';
@@ -647,7 +671,9 @@ class Elements {
                     echo '<div class="sofir-review-stats">';
                     echo '<div class="sofir-rating-average">' . \esc_html( \number_format_i18n( (float) $average, 1 ) ) . '</div>';
                     echo '<div class="sofir-rating-stars">' . str_repeat( '⭐', (int) round( (float) $average ) ) . '</div>';
-                    echo '<div class="sofir-rating-count">' . \sprintf( \_n( '%s review', '%s reviews', $comments, 'sofir' ), \number_format_i18n( $comments ) ) . '</div>';
+                    if ( $comments > 0 ) {
+                        echo '<div class="sofir-rating-count">' . \sprintf( \_n( '%s review', '%s reviews', $comments, 'sofir' ), \number_format_i18n( $comments ) ) . '</div>';
+                    }
                     echo '</div>';
                     
                     return (string) ob_get_clean();
@@ -717,15 +743,18 @@ class Elements {
                 'attributes'      => [
                     'postType' => [ 'type' => 'string', 'default' => 'post' ],
                     'advancedFilters' => [ 'type' => 'boolean', 'default' => false ],
+                    'showFilters' => [ 'type' => 'boolean', 'default' => false ],
+                    'placeholder' => [ 'type' => 'string', 'default' => 'Search...' ],
                 ],
                 'render_callback' => function ( array $attributes ): string {
                     $post_type = $attributes['postType'] ?? 'post';
-                    $advanced = $attributes['advancedFilters'] ?? false;
+                    $advanced = $attributes['advancedFilters'] ?? $attributes['showFilters'] ?? false;
+                    $placeholder = $attributes['placeholder'] ?? \__( 'Search...', 'sofir' );
                     
                     ob_start();
                     echo '<form class="sofir-search-form" method="get" action="' . \esc_url( \home_url( '/' ) ) . '">';
                     echo '<input type="hidden" name="post_type" value="' . \esc_attr( $post_type ) . '" />';
-                    echo '<input type="search" name="s" placeholder="' . \esc_attr__( 'Search...', 'sofir' ) . '" />';
+                    echo '<input type="search" name="s" placeholder="' . \esc_attr( $placeholder ) . '" />';
                     
                     if ( $advanced ) {
                         $taxonomies = \get_object_taxonomies( $post_type, 'objects' );
@@ -804,10 +833,15 @@ class Elements {
                 'attributes'      => [
                     'taxonomy' => [ 'type' => 'string', 'default' => 'category' ],
                     'limit' => [ 'type' => 'number', 'default' => 10 ],
+                    'numberOfTerms' => [ 'type' => 'number', 'default' => 10 ],
+                    'showCount' => [ 'type' => 'boolean', 'default' => true ],
+                    'layout' => [ 'type' => 'string', 'default' => 'grid' ],
                 ],
                 'render_callback' => function ( array $attributes ): string {
                     $taxonomy = $attributes['taxonomy'] ?? 'category';
-                    $limit = $attributes['limit'] ?? 10;
+                    $limit = $attributes['numberOfTerms'] ?? $attributes['limit'] ?? 10;
+                    $show_count = $attributes['showCount'] ?? true;
+                    $layout = $attributes['layout'] ?? 'grid';
                     
                     $terms = \get_terms( [
                         'taxonomy' => $taxonomy,
@@ -820,11 +854,13 @@ class Elements {
                     }
                     
                     ob_start();
-                    echo '<div class="sofir-term-feed">';
+                    echo '<div class="sofir-term-feed sofir-term-feed-' . \esc_attr( $layout ) . '">';
                     foreach ( $terms as $term ) {
                         echo '<div class="sofir-term-item">';
                         echo '<a href="' . \esc_url( \get_term_link( $term ) ) . '">' . \esc_html( $term->name ) . '</a>';
-                        echo '<span class="sofir-term-count">(' . \esc_html( $term->count ) . ')</span>';
+                        if ( $show_count ) {
+                            echo '<span class="sofir-term-count">(' . \esc_html( $term->count ) . ')</span>';
+                        }
                         echo '</div>';
                     }
                     echo '</div>';
