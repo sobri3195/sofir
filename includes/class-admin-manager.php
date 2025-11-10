@@ -36,6 +36,7 @@ class Manager {
         \add_action( 'sofir/admin/tab/payments', [ $this, 'render_payments_tab' ] );
         \add_action( 'sofir/admin/tab/seo', [ $this, 'render_seo_tab' ] );
         \add_action( 'sofir/admin/tab/users', [ $this, 'render_users_tab' ] );
+        \add_action( 'sofir/admin/tab/tools', [ $this, 'render_tools_tab' ] );
 
         ContentPanel::instance()->boot();
         LibraryPanel::instance()->boot();
@@ -163,6 +164,53 @@ class Manager {
         UserPanel::instance()->render();
     }
 
+    public function render_tools_tab(): void {
+        if ( isset( $_POST['sofir_refresh_cpt'] ) && \check_admin_referer( 'sofir_refresh_cpt' ) ) {
+            \delete_option( 'sofir_cpt_definitions_version' );
+            \delete_option( 'sofir_multivendor_rewrite_version' );
+            \delete_option( 'sofir_multivendor_flush_notice_dismissed' );
+            \flush_rewrite_rules();
+            
+            echo '<div class="notice notice-success"><p><strong>' . \esc_html__( 'Berhasil!', 'sofir' ) . '</strong> ' . \esc_html__( 'CPT definitions dan rewrite rules telah di-refresh. Menu CPT sekarang akan tampil.', 'sofir' ) . '</p></div>';
+        }
+        
+        ?>
+        <div class="sofir-tools-panel">
+            <h2><?php \esc_html_e( 'SOFIR Tools', 'sofir' ); ?></h2>
+            
+            <div class="sofir-tool-card" style="background: #fff; padding: 20px; margin: 20px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <h3><?php \esc_html_e( 'Refresh CPT Definitions', 'sofir' ); ?></h3>
+                <p><?php \esc_html_e( 'Jika menu CPT (Listing, Profile, Article, Event, Appointment) tidak tampil di sidebar admin, atau jika halaman vendor tidak tampil, gunakan tool ini untuk memperbarui definisi CPT dan rewrite rules.', 'sofir' ); ?></p>
+                
+                <form method="post">
+                    <?php \wp_nonce_field( 'sofir_refresh_cpt' ); ?>
+                    <input type="hidden" name="sofir_refresh_cpt" value="1" />
+                    <button type="submit" class="button button-primary">
+                        <?php \esc_html_e( 'Refresh CPT Definitions', 'sofir' ); ?>
+                    </button>
+                </form>
+                
+                <hr style="margin: 20px 0;" />
+                
+                <h4><?php \esc_html_e( 'Yang akan dilakukan:', 'sofir' ); ?></h4>
+                <ul style="list-style: disc; padding-left: 20px;">
+                    <li><?php \esc_html_e( 'Memperbarui setting show_in_menu untuk semua CPT bawaan', 'sofir' ); ?></li>
+                    <li><?php \esc_html_e( 'Flush rewrite rules untuk vendor store dan vendor product', 'sofir' ); ?></li>
+                    <li><?php \esc_html_e( 'Reset version check untuk memaksa update otomatis', 'sofir' ); ?></li>
+                </ul>
+            </div>
+            
+            <div class="sofir-tool-card" style="background: #fff; padding: 20px; margin: 20px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <h3><?php \esc_html_e( 'Permalinks', 'sofir' ); ?></h3>
+                <p><?php \esc_html_e( 'Jika setelah refresh CPT masih ada masalah dengan URL, kunjungi halaman Permalinks dan klik Save Changes.', 'sofir' ); ?></p>
+                <a href="<?php echo \esc_url( \admin_url( 'options-permalink.php' ) ); ?>" class="button">
+                    <?php \esc_html_e( 'Pergi ke Permalinks', 'sofir' ); ?>
+                </a>
+            </div>
+        </div>
+        <?php
+    }
+
     private function get_tabs(): array {
         $tabs = [
             'content'     => \__( 'Content', 'sofir' ),
@@ -172,6 +220,7 @@ class Manager {
             'payments'    => \__( 'Payments', 'sofir' ),
             'seo'         => \__( 'SEO', 'sofir' ),
             'users'       => \__( 'Users', 'sofir' ),
+            'tools'       => \__( 'Tools', 'sofir' ),
         ];
 
         /** @var array<string, string> $tabs */

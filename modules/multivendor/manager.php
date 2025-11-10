@@ -14,10 +14,11 @@ class Manager {
 
     public function boot(): void {
         \add_action( 'init', [ $this, 'register_vendor_role' ] );
-        \add_action( 'init', [ $this, 'register_vendor_cpt' ] );
-        \add_action( 'init', [ $this, 'flush_rewrite_rules_on_first_activation' ] );
+        \add_action( 'init', [ $this, 'register_vendor_cpt' ], 10 );
+        \add_action( 'init', [ $this, 'flush_rewrite_rules_on_activation' ], 999 );
         \add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_frontend_assets' ] );
         \add_action( 'admin_menu', [ $this, 'add_vendor_menu' ] );
+        \add_action( 'admin_notices', [ $this, 'show_flush_rewrite_notice' ] );
         \add_action( 'rest_api_init', [ $this, 'register_rest_routes' ] );
         \add_action( 'sofir/payment/status_changed', [ $this, 'calculate_commission' ], 10, 2 );
         \add_filter( 'wp_insert_post_data', [ $this, 'assign_vendor_to_product' ], 10, 2 );
@@ -41,13 +42,58 @@ class Manager {
         }
     }
 
-    public function flush_rewrite_rules_on_first_activation(): void {
-        if ( \get_option( 'sofir_multivendor_rewrite_flushed' ) ) {
+    public function flush_rewrite_rules_on_activation(): void {
+        $version = \get_option( 'sofir_multivendor_rewrite_version', '0' );
+        $current_version = '1.0.1';
+
+        if ( $version !== $current_version ) {
+            \flush_rewrite_rules();
+            \update_option( 'sofir_multivendor_rewrite_version', $current_version );
+            \delete_option( 'sofir_multivendor_flush_notice_dismissed' );
+        }
+    }
+
+    public function show_flush_rewrite_notice(): void {
+        if ( ! \current_user_can( 'manage_options' ) ) {
             return;
         }
 
-        \flush_rewrite_rules();
-        \update_option( 'sofir_multivendor_rewrite_flushed', '1' );
+        if ( \get_option( 'sofir_multivendor_flush_notice_dismissed' ) ) {
+            return;
+        }
+
+        if ( isset( $_GET['sofir_dismiss_flush_notice'] ) && \check_admin_referer( 'sofir_dismiss_flush_notice' ) ) {
+            \update_option( 'sofir_multivendor_flush_notice_dismissed', '1' );
+            \wp_safe_redirect( \remove_query_arg( [ 'sofir_dismiss_flush_notice', '_wpnonce' ] ) );
+            exit;
+        }
+
+        $screen = \get_current_screen();
+        if ( ! $screen || ! in_array( $screen->id, [ 'toplevel_page_sofir-multivendor', 'edit-vendor_store', 'edit-vendor_product', 'vendor_store', 'vendor_product' ], true ) ) {
+            return;
+        }
+
+        $dismiss_url = \wp_nonce_url(
+            \add_query_arg( 'sofir_dismiss_flush_notice', '1' ),
+            'sofir_dismiss_flush_notice'
+        );
+
+        ?>
+        <div class="notice notice-info is-dismissible">
+            <p>
+                <strong><?php \esc_html_e( 'SOFIR Multi-Vendor:', 'sofir' ); ?></strong>
+                <?php \esc_html_e( 'Jika halaman vendor store dan vendor product tidak tampil, silakan kunjungi Settings → Permalinks dan klik "Save Changes" untuk memperbarui rewrite rules.', 'sofir' ); ?>
+            </p>
+            <p>
+                <a href="<?php echo \esc_url( \admin_url( 'options-permalink.php' ) ); ?>" class="button button-primary">
+                    <?php \esc_html_e( 'Pergi ke Permalinks', 'sofir' ); ?>
+                </a>
+                <a href="<?php echo \esc_url( $dismiss_url ); ?>" class="button">
+                    <?php \esc_html_e( 'Dismiss', 'sofir' ); ?>
+                </a>
+            </p>
+        </div>
+        <?php
     }
 
     public function register_vendor_role(): void {

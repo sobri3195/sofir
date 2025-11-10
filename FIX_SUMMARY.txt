@@ -1,0 +1,60 @@
+========================================
+SOFIR - Fix CPT Menu & Vendor Pages
+========================================
+
+MASALAH:
+1. Menu CPT (Listing, Profile, Article, Event, Appointment) tidak tampil di admin sidebar
+2. Halaman vendor store dan vendor product tidak bisa diakses (404)
+
+SOLUSI:
+1. ✅ Menambahkan show_in_menu => true di semua seed CPT
+2. ✅ Auto-update system dengan version check
+3. ✅ Admin notice untuk vendor pages
+4. ✅ Tools tab untuk manual refresh
+5. ✅ Flush rewrite rules otomatis
+
+FILE YANG DIUBAH:
+1. includes/sofir-cpt-manager.php
+   - Added show_in_menu => true di 5 seed CPT
+   - Added check_and_update_definitions() method
+   - Added version tracking (1.0.2)
+
+2. modules/multivendor/manager.php
+   - Changed to version-based flush system
+   - Added admin notice dengan dismiss
+   - Version tracking (1.0.1)
+
+3. includes/class-admin-manager.php
+   - Added Tools tab
+   - Added render_tools_tab() dengan refresh form
+   - Added tools ke tabs array
+
+4. includes/sofir-cpt-force-refresh.php (NEW)
+   - Helper function untuk force refresh
+
+5. CPT_MENU_FIX.md (NEW)
+   - Dokumentasi lengkap
+
+6. CHANGELOG_FIX_CPT_VENDOR.md (NEW)
+   - Changelog detail dalam Bahasa Indonesia
+
+CARA MENGGUNAKAN:
+1. Auto: Plugin akan auto-update saat user buka admin
+2. Manual: SOFIR → Tools → Refresh CPT Definitions
+3. Backup: Settings → Permalinks → Save Changes
+
+TESTING:
+✅ Menu Listings tampil
+✅ Menu Profiles tampil
+✅ Menu Articles tampil
+✅ Menu Events tampil
+✅ Menu Appointments tampil
+✅ /vendors/ berfungsi
+✅ /products/ berfungsi
+✅ Single vendor pages berfungsi
+✅ Auto-update berjalan
+✅ Tools tab berfungsi
+✅ Admin notice tampil
+✅ No syntax errors
+
+STATUS: COMPLETE ✅

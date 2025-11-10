@@ -43,6 +43,7 @@ class Manager {
 
     public function boot(): void {
         \add_action( 'init', [ $this, 'load_definitions' ], 0 );
+        \add_action( 'init', [ $this, 'check_and_update_definitions' ], 0 );
         \add_action( 'init', [ $this, 'register_dynamic_post_types' ], 1 );
         \add_action( 'init', [ $this, 'register_dynamic_taxonomies' ], 2 );
         \add_filter( 'query_vars', [ $this, 'register_query_vars' ] );
@@ -60,6 +61,30 @@ class Manager {
         $this->post_types = $this->load_or_seed_option( self::OPTION_POST_TYPES, $this->get_seed_post_types() );
         $this->taxonomies = $this->load_or_seed_option( self::OPTION_TAXONOMIES, $this->get_seed_taxonomies() );
         $this->definitions_loaded = true;
+    }
+
+    public function check_and_update_definitions(): void {
+        $version = \get_option( 'sofir_cpt_definitions_version', '0' );
+        $current_version = '1.0.2';
+
+        if ( $version !== $current_version ) {
+            $this->load_definitions();
+            $seeds = $this->get_seed_post_types();
+
+            foreach ( $seeds as $slug => $seed_definition ) {
+                if ( ! isset( $this->post_types[ $slug ] ) ) {
+                    continue;
+                }
+
+                if ( isset( $seed_definition['args']['show_in_menu'] ) ) {
+                    $this->post_types[ $slug ]['args']['show_in_menu'] = $seed_definition['args']['show_in_menu'];
+                }
+            }
+
+            \update_option( self::OPTION_POST_TYPES, $this->post_types );
+            \update_option( 'sofir_cpt_definitions_version', $current_version );
+            \flush_rewrite_rules();
+        }
     }
 
     /**
@@ -1019,6 +1044,7 @@ class Manager {
                     'menu_icon' => 'dashicons-location-alt',
                     'rewrite'   => [ 'slug' => 'listings' ],
                     'supports'  => [ 'title', 'editor', 'thumbnail', 'excerpt', 'comments', 'custom-fields', 'revisions' ],
+                    'show_in_menu' => true,
                 ],
                 'fields'     => $this->prepare_field_selection( [ 'location', 'hours', 'rating', 'status', 'price', 'contact', 'gallery', 'attributes' ], [ 'location', 'rating', 'status', 'price', 'attribute', 'open_now' ] ),
                 'taxonomies' => [ 'listing_category', 'listing_location' ],
@@ -1029,6 +1055,7 @@ class Manager {
                     'menu_icon' => 'dashicons-id',
                     'rewrite'   => [ 'slug' => 'profiles' ],
                     'supports'  => [ 'title', 'editor', 'thumbnail', 'excerpt', 'revisions' ],
+                    'show_in_menu' => true,
                 ],
                 'fields'     => $this->prepare_field_selection( [ 'location', 'contact', 'status', 'attributes' ], [ 'location', 'status' ] ),
                 'taxonomies' => [ 'profile_category' ],
@@ -1039,6 +1066,7 @@ class Manager {
                     'menu_icon' => 'dashicons-media-document',
                     'rewrite'   => [ 'slug' => 'articles' ],
                     'supports'  => [ 'title', 'editor', 'thumbnail', 'excerpt', 'author', 'revisions', 'comments' ],
+                    'show_in_menu' => true,
                 ],
                 'fields' => $this->prepare_field_selection( [ 'attributes' ], [ 'attribute' ] ),
             ],
@@ -1048,6 +1076,7 @@ class Manager {
                     'menu_icon' => 'dashicons-calendar',
                     'rewrite'   => [ 'slug' => 'events' ],
                     'supports'  => [ 'title', 'editor', 'thumbnail', 'excerpt', 'author', 'revisions', 'comments' ],
+                    'show_in_menu' => true,
                 ],
                 'fields'     => $this->prepare_field_selection( [ 'event_date', 'event_capacity', 'location', 'contact', 'gallery', 'status', 'attributes' ], [ 'event_after', 'location', 'capacity_min', 'status' ] ),
                 'taxonomies' => [ 'event_category', 'event_tag' ],
@@ -1058,6 +1087,7 @@ class Manager {
                     'menu_icon' => 'dashicons-clock',
                     'rewrite'   => [ 'slug' => 'appointments' ],
                     'supports'  => [ 'title', 'editor', 'thumbnail', 'author', 'revisions' ],
+                    'show_in_menu' => true,
                 ],
                 'fields'     => $this->prepare_field_selection( [ 'appointment_datetime', 'appointment_duration', 'appointment_status', 'appointment_provider', 'appointment_client', 'contact', 'attributes' ], [ 'appointment_after', 'appointment_status', 'provider_id', 'client_id' ] ),
                 'taxonomies' => [ 'appointment_service' ],
