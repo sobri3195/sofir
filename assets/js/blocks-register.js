@@ -51,7 +51,9 @@
             actionType: { type: 'string', default: 'button' },
             actionLabel: { type: 'string', default: 'Click Me' },
             actionUrl: { type: 'string', default: '' },
-            actionClass: { type: 'string', default: '' }
+            actionClass: { type: 'string', default: '' },
+            buttonStyle: { type: 'string', default: 'filled' },
+            rounded: { type: 'boolean', default: false }
         }, function(props) {
             return el(PanelBody, { title: __('Action Settings', 'sofir') },
                 el(TextControl, {
@@ -63,6 +65,20 @@
                     label: __('URL', 'sofir'),
                     value: props.attributes.actionUrl,
                     onChange: function(val) { props.setAttributes({ actionUrl: val }); }
+                }),
+                el(SelectControl, {
+                    label: __('Button Style', 'sofir'),
+                    value: props.attributes.buttonStyle,
+                    onChange: function(val) { props.setAttributes({ buttonStyle: val }); },
+                    options: [
+                        { label: __('Filled', 'sofir'), value: 'filled' },
+                        { label: __('Outline', 'sofir'), value: 'outline' }
+                    ]
+                }),
+                el(ToggleControl, {
+                    label: __('Rounded', 'sofir'),
+                    checked: props.attributes.rounded,
+                    onChange: function(val) { props.setAttributes({ rounded: val }); }
                 })
             );
         });

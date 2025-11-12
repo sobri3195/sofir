@@ -80,11 +80,30 @@ class Elements {
                     'actionLabel' => [ 'type' => 'string', 'default' => 'Click Me' ],
                     'actionUrl' => [ 'type' => 'string', 'default' => '' ],
                     'actionClass' => [ 'type' => 'string', 'default' => '' ],
+                    'buttonStyle' => [ 'type' => 'string', 'default' => 'filled' ],
+                    'rounded' => [ 'type' => 'boolean', 'default' => false ],
                 ],
                 'render_callback' => function ( array $attributes ): string {
                     $label = $attributes['actionLabel'] ?? 'Click Me';
                     $url = $attributes['actionUrl'] ?? '#';
-                    $class = 'sofir-action-button ' . ( $attributes['actionClass'] ?? '' );
+                    $button_style = $attributes['buttonStyle'] ?? 'filled';
+                    $rounded = $attributes['rounded'] ?? false;
+                    
+                    $classes = [ 'sofir-action-button' ];
+                    
+                    if ( 'outline' === $button_style ) {
+                        $classes[] = 'sofir-action-button-outline';
+                    }
+                    
+                    if ( $rounded ) {
+                        $classes[] = 'sofir-action-button-rounded';
+                    }
+                    
+                    if ( ! empty( $attributes['actionClass'] ) ) {
+                        $classes[] = $attributes['actionClass'];
+                    }
+                    
+                    $class = \implode( ' ', $classes );
                     
                     return sprintf(
                         '<div class="sofir-action-block"><a href="%s" class="%s">%s</a></div>',
@@ -101,16 +120,44 @@ class Elements {
         \register_block_type(
             'sofir/cart-summary',
             [
+                'api_version'     => 2,
+                'category'        => 'sofir',
                 'render_callback' => function (): string {
-                    if ( ! class_exists( 'PaymentsManager' ) ) {
-                        return '';
+                    $cart_items = \WP_Session_Tokens::get_instance( \get_current_user_id() );
+                    
+                    if ( isset( $_SESSION['sofir_cart'] ) && is_array( $_SESSION['sofir_cart'] ) ) {
+                        $cart = $_SESSION['sofir_cart'];
+                    } else {
+                        $cart = [];
                     }
                     
                     ob_start();
                     echo '<div class="sofir-cart-summary">';
-                    echo '<h3>' . \esc_html__( 'Cart Summary', 'sofir' ) . '</h3>';
-                    echo '<div class="sofir-cart-items" id="sofir-cart-items"></div>';
-                    echo '<div class="sofir-cart-total"><strong>' . \esc_html__( 'Total:', 'sofir' ) . '</strong> <span id="sofir-cart-total-amount">0</span></div>';
+                    echo '<h3 class="sofir-cart-title">' . \esc_html__( 'Cart Summary', 'sofir' ) . '</h3>';
+                    
+                    if ( empty( $cart ) ) {
+                        echo '<div class="sofir-cart-empty">';
+                        echo '<p>' . \esc_html__( 'Your cart is empty', 'sofir' ) . '</p>';
+                        echo '</div>';
+                    } else {
+                        echo '<div class="sofir-cart-items" id="sofir-cart-items">';
+                        $total = 0;
+                        foreach ( $cart as $item ) {
+                            $item_total = ( $item['price'] ?? 0 ) * ( $item['quantity'] ?? 1 );
+                            $total += $item_total;
+                            echo '<div class="sofir-cart-item">';
+                            echo '<span class="sofir-cart-item-name">' . \esc_html( $item['name'] ?? '' ) . '</span>';
+                            echo '<span class="sofir-cart-item-quantity">x' . \esc_html( $item['quantity'] ?? 1 ) . '</span>';
+                            echo '<span class="sofir-cart-item-price">' . \esc_html( \number_format( $item_total, 0, ',', '.' ) ) . '</span>';
+                            echo '</div>';
+                        }
+                        echo '</div>';
+                        echo '<div class="sofir-cart-total">';
+                        echo '<strong>' . \esc_html__( 'Total:', 'sofir' ) . '</strong> ';
+                        echo '<span class="sofir-cart-total-amount" id="sofir-cart-total-amount">' . \esc_html( \number_format( $total, 0, ',', '.' ) ) . '</span>';
+                        echo '</div>';
+                    }
+                    
                     echo '</div>';
                     
                     return (string) ob_get_clean();
