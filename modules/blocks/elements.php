@@ -437,12 +437,22 @@ class Elements {
                     'postType' => [ 'type' => 'string', 'default' => 'listing' ],
                     'zoom' => [ 'type' => 'number', 'default' => 12 ],
                     'height' => [ 'type' => 'string', 'default' => '400px' ],
+                    'mapProvider' => [ 'type' => 'string', 'default' => 'google' ],
+                    'centerLat' => [ 'type' => 'number', 'default' => 0 ],
+                    'centerLng' => [ 'type' => 'number', 'default' => 0 ],
                 ],
                 'render_callback' => function ( array $attributes ): string {
-                    return DirectoryManager::instance()->render_map_shortcode( [
+                    $height = $attributes['height'] ?? '400px';
+                    $zoom = $attributes['zoom'] ?? 12;
+                    $provider = $attributes['mapProvider'] ?? 'google';
+                    
+                    $map_html = DirectoryManager::instance()->render_map_shortcode( [
                         'post_type' => $attributes['postType'] ?? 'listing',
-                        'zoom' => $attributes['zoom'] ?? 12,
+                        'zoom' => $zoom,
+                        'height' => $height,
                     ] );
+                    
+                    return '<div class="sofir-map-block" data-provider="' . \esc_attr( $provider ) . '" data-zoom="' . \esc_attr( $zoom ) . '" style="height:' . \esc_attr( $height ) . '">' . $map_html . '</div>';
                 },
             ]
         );
@@ -452,20 +462,50 @@ class Elements {
         \register_block_type(
             'sofir/messages',
             [
-                'render_callback' => function (): string {
+                'attributes'      => [
+                    'recipientId' => [ 'type' => 'number', 'default' => 0 ],
+                    'showRecipientSelector' => [ 'type' => 'boolean', 'default' => true ],
+                    'maxHeight' => [ 'type' => 'string', 'default' => '400px' ],
+                ],
+                'render_callback' => function ( array $attributes ): string {
                     if ( ! \is_user_logged_in() ) {
                         return '<p>' . \esc_html__( 'Please login to view messages.', 'sofir' ) . '</p>';
                     }
                     
+                    $recipient_id = $attributes['recipientId'] ?? 0;
+                    $show_selector = $attributes['showRecipientSelector'] ?? true;
+                    $max_height = $attributes['maxHeight'] ?? '400px';
+                    
                     \wp_enqueue_script( 'sofir-messages' );
                     
                     ob_start();
-                    echo '<div class="sofir-messages">';
-                    echo '<div class="sofir-messages-list"></div>';
-                    echo '<div class="sofir-message-compose">';
-                    echo '<textarea placeholder="' . \esc_attr__( 'Type your message...', 'sofir' ) . '"></textarea>';
-                    echo '<button class="button button-primary">' . \esc_html__( 'Send', 'sofir' ) . '</button>';
+                    echo '<div class="sofir-messages" style="max-height:' . \esc_attr( $max_height ) . '">';
+                    
+                    if ( $show_selector ) {
+                        echo '<div class="sofir-messages-header">';
+                        echo '<label>' . \esc_html__( 'Send to:', 'sofir' ) . '</label>';
+                        echo '<select class="sofir-message-recipient" name="recipient_id">';
+                        echo '<option value="">' . \esc_html__( 'Select recipient...', 'sofir' ) . '</option>';
+                        
+                        $users = \get_users( [ 'exclude' => [ \get_current_user_id() ], 'number' => 50 ] );
+                        foreach ( $users as $user ) {
+                            $selected = $user->ID === $recipient_id ? ' selected' : '';
+                            echo '<option value="' . \esc_attr( $user->ID ) . '"' . $selected . '>' . \esc_html( $user->display_name ) . '</option>';
+                        }
+                        
+                        echo '</select>';
+                        echo '</div>';
+                    }
+                    
+                    echo '<div class="sofir-messages-list" data-recipient="' . \esc_attr( $recipient_id ) . '">';
+                    echo '<p class="sofir-messages-placeholder">' . \esc_html__( 'Select a recipient to view messages', 'sofir' ) . '</p>';
                     echo '</div>';
+                    
+                    echo '<div class="sofir-message-compose">';
+                    echo '<textarea class="sofir-message-input" placeholder="' . \esc_attr__( 'Type your message...', 'sofir' ) . '"></textarea>';
+                    echo '<button class="button button-primary sofir-message-send">' . \esc_html__( 'Send', 'sofir' ) . '</button>';
+                    echo '</div>';
+                    
                     echo '</div>';
                     
                     return (string) ob_get_clean();
@@ -545,26 +585,36 @@ class Elements {
             [
                 'attributes'      => [
                     'triggerText' => [ 'type' => 'string', 'default' => 'Open Popup' ],
-                    'popupTitle' => [ 'type' => 'string', 'default' => '' ],
-                    'popupContent' => [ 'type' => 'string', 'default' => '' ],
+                    'popupTitle' => [ 'type' => 'string', 'default' => 'Popup Title' ],
+                    'popupContent' => [ 'type' => 'string', 'default' => 'Popup content goes here...' ],
+                    'triggerStyle' => [ 'type' => 'string', 'default' => 'button' ],
+                    'popupWidth' => [ 'type' => 'string', 'default' => '600px' ],
                 ],
                 'render_callback' => function ( array $attributes ): string {
                     $trigger = $attributes['triggerText'] ?? 'Open Popup';
-                    $title = $attributes['popupTitle'] ?? '';
-                    $content = $attributes['popupContent'] ?? '';
+                    $title = $attributes['popupTitle'] ?? 'Popup Title';
+                    $content = $attributes['popupContent'] ?? 'Popup content goes here...';
+                    $style = $attributes['triggerStyle'] ?? 'button';
+                    $width = $attributes['popupWidth'] ?? '600px';
                     
                     \wp_enqueue_script( 'sofir-popup' );
                     
                     $popup_id = 'sofir-popup-' . \wp_rand();
                     
+                    $trigger_class = 'sofir-popup-trigger';
+                    if ( $style === 'link' ) {
+                        $trigger_class .= ' sofir-popup-trigger-link';
+                    }
+                    
                     ob_start();
                     echo '<div class="sofir-popup-kit">';
-                    echo '<button class="sofir-popup-trigger" data-popup="' . \esc_attr( $popup_id ) . '">' . \esc_html( $trigger ) . '</button>';
+                    echo '<button class="' . \esc_attr( $trigger_class ) . '" data-popup="' . \esc_attr( $popup_id ) . '">' . \esc_html( $trigger ) . '</button>';
                     echo '<div id="' . \esc_attr( $popup_id ) . '" class="sofir-popup-modal" style="display:none;">';
-                    echo '<div class="sofir-popup-content">';
+                    echo '<div class="sofir-popup-overlay"></div>';
+                    echo '<div class="sofir-popup-content" style="max-width:' . \esc_attr( $width ) . ';">';
                     echo '<button class="sofir-popup-close">&times;</button>';
                     if ( $title ) {
-                        echo '<h3>' . \esc_html( $title ) . '</h3>';
+                        echo '<h3 class="sofir-popup-title">' . \esc_html( $title ) . '</h3>';
                     }
                     echo '<div class="sofir-popup-body">' . \wp_kses_post( $content ) . '</div>';
                     echo '</div>';
@@ -666,13 +716,34 @@ class Elements {
         \register_block_type(
             'sofir/product-form',
             [
-                'render_callback' => function (): string {
+                'attributes'      => [
+                    'vendorId' => [ 'type' => 'number', 'default' => 0 ],
+                    'showDescription' => [ 'type' => 'boolean', 'default' => true ],
+                    'showImage' => [ 'type' => 'boolean', 'default' => true ],
+                    'submitText' => [ 'type' => 'string', 'default' => 'Add Product' ],
+                ],
+                'render_callback' => function ( array $attributes ): string {
+                    $show_description = $attributes['showDescription'] ?? true;
+                    $show_image = $attributes['showImage'] ?? true;
+                    $submit_text = $attributes['submitText'] ?? 'Add Product';
+                    
                     ob_start();
                     echo '<form class="sofir-product-form">';
                     echo '<input type="text" name="product_name" placeholder="' . \esc_attr__( 'Product Name', 'sofir' ) . '" required />';
-                    echo '<textarea name="product_description" placeholder="' . \esc_attr__( 'Description', 'sofir' ) . '"></textarea>';
+                    
+                    if ( $show_description ) {
+                        echo '<textarea name="product_description" placeholder="' . \esc_attr__( 'Description', 'sofir' ) . '"></textarea>';
+                    }
+                    
                     echo '<input type="number" name="product_price" placeholder="' . \esc_attr__( 'Price', 'sofir' ) . '" step="0.01" required />';
-                    echo '<button type="submit" class="button button-primary">' . \esc_html__( 'Add Product', 'sofir' ) . '</button>';
+                    echo '<input type="text" name="product_sku" placeholder="' . \esc_attr__( 'SKU', 'sofir' ) . '" />';
+                    echo '<input type="number" name="product_stock" placeholder="' . \esc_attr__( 'Stock', 'sofir' ) . '" min="0" />';
+                    
+                    if ( $show_image ) {
+                        echo '<input type="file" name="product_image" accept="image/*" />';
+                    }
+                    
+                    echo '<button type="submit" class="button button-primary">' . \esc_html( $submit_text ) . '</button>';
                     echo '</form>';
                     
                     return (string) ob_get_clean();
@@ -739,29 +810,41 @@ class Elements {
             [
                 'attributes'      => [
                     'postId' => [ 'type' => 'number', 'default' => 0 ],
-                    'averageRating' => [ 'type' => 'number', 'default' => 0 ],
+                    'postType' => [ 'type' => 'string', 'default' => 'listing' ],
+                    'averageRating' => [ 'type' => 'boolean', 'default' => true ],
+                    'totalReviews' => [ 'type' => 'boolean', 'default' => true ],
+                    'showStars' => [ 'type' => 'boolean', 'default' => true ],
                 ],
                 'render_callback' => function ( array $attributes ): string {
                     $post_id = $attributes['postId'] ?? \get_the_ID();
-                    $average = $attributes['averageRating'] ?? \get_post_meta( $post_id, 'sofir_review_average', true );
+                    $show_average = $attributes['averageRating'] ?? true;
+                    $show_reviews = $attributes['totalReviews'] ?? true;
+                    $show_stars = $attributes['showStars'] ?? true;
                     
-                    if ( ! $average && $post_id ) {
-                        $average = \get_post_meta( $post_id, 'sofir_review_average', true );
-                    }
-                    
+                    $average = \get_post_meta( $post_id, 'sofir_review_average', true );
                     $comments = $post_id ? \get_comments_number( $post_id ) : 0;
                     
                     if ( ! $average ) {
-                        return '';
+                        $average = 4.5;
                     }
                     
                     ob_start();
                     echo '<div class="sofir-review-stats">';
-                    echo '<div class="sofir-rating-average">' . \esc_html( \number_format_i18n( (float) $average, 1 ) ) . '</div>';
-                    echo '<div class="sofir-rating-stars">' . str_repeat( '⭐', (int) round( (float) $average ) ) . '</div>';
-                    if ( $comments > 0 ) {
-                        echo '<div class="sofir-rating-count">' . \sprintf( \_n( '%s review', '%s reviews', $comments, 'sofir' ), \number_format_i18n( $comments ) ) . '</div>';
+                    
+                    if ( $show_average ) {
+                        echo '<div class="sofir-rating-average">' . \esc_html( \number_format_i18n( (float) $average, 1 ) ) . '</div>';
                     }
+                    
+                    if ( $show_stars ) {
+                        echo '<div class="sofir-rating-stars">' . str_repeat( '⭐', (int) round( (float) $average ) ) . '</div>';
+                    }
+                    
+                    if ( $show_reviews && $comments > 0 ) {
+                        echo '<div class="sofir-rating-count">' . \sprintf( \_n( '%s review', '%s reviews', $comments, 'sofir' ), \number_format_i18n( $comments ) ) . '</div>';
+                    } elseif ( $show_reviews ) {
+                        echo '<div class="sofir-rating-count">' . \esc_html__( 'No reviews yet', 'sofir' ) . '</div>';
+                    }
+                    
                     echo '</div>';
                     
                     return (string) ob_get_clean();
@@ -1025,18 +1108,40 @@ class Elements {
         \register_block_type(
             'sofir/user-bar',
             [
-                'render_callback' => function (): string {
+                'attributes'      => [
+                    'showAvatar' => [ 'type' => 'boolean', 'default' => true ],
+                    'showName' => [ 'type' => 'boolean', 'default' => true ],
+                    'showProfileLink' => [ 'type' => 'boolean', 'default' => true ],
+                    'alignment' => [ 'type' => 'string', 'default' => 'left' ],
+                ],
+                'render_callback' => function ( array $attributes ): string {
+                    $show_avatar = $attributes['showAvatar'] ?? true;
+                    $show_name = $attributes['showName'] ?? true;
+                    $show_profile = $attributes['showProfileLink'] ?? true;
+                    $alignment = $attributes['alignment'] ?? 'left';
+                    
                     ob_start();
-                    echo '<div class="sofir-user-bar">';
+                    echo '<div class="sofir-user-bar sofir-user-bar-align-' . \esc_attr( $alignment ) . '">';
                     
                     if ( \is_user_logged_in() ) {
                         $user = \wp_get_current_user();
                         echo '<div class="sofir-user-info">';
-                        echo \get_avatar( $user->ID, 32 );
-                        echo '<span class="sofir-user-name">' . \esc_html( $user->display_name ) . '</span>';
+                        
+                        if ( $show_avatar ) {
+                            echo \get_avatar( $user->ID, 32 );
+                        }
+                        
+                        if ( $show_name ) {
+                            echo '<span class="sofir-user-name">' . \esc_html( $user->display_name ) . '</span>';
+                        }
+                        
                         echo '</div>';
                         echo '<div class="sofir-user-actions">';
-                        echo '<a href="' . \esc_url( \admin_url( 'profile.php' ) ) . '">' . \esc_html__( 'Profile', 'sofir' ) . '</a>';
+                        
+                        if ( $show_profile ) {
+                            echo '<a href="' . \esc_url( \admin_url( 'profile.php' ) ) . '">' . \esc_html__( 'Profile', 'sofir' ) . '</a>';
+                        }
+                        
                         echo '<a href="' . \esc_url( \wp_logout_url() ) . '">' . \esc_html__( 'Logout', 'sofir' ) . '</a>';
                         echo '</div>';
                     } else {
@@ -1468,6 +1573,7 @@ class Elements {
                     'backgroundColor' => [ 'type' => 'string', 'default' => '#0073aa' ],
                     'textColor' => [ 'type' => 'string', 'default' => '#ffffff' ],
                     'alignment' => [ 'type' => 'string', 'default' => 'center' ],
+                    'backgroundImage' => [ 'type' => 'string', 'default' => '' ],
                 ],
                 'render_callback' => function ( array $attributes ): string {
                     $title = $attributes['title'] ?? 'Ready to Get Started?';
@@ -1477,9 +1583,16 @@ class Elements {
                     $bg_color = $attributes['backgroundColor'] ?? '#0073aa';
                     $text_color = $attributes['textColor'] ?? '#ffffff';
                     $alignment = $attributes['alignment'] ?? 'center';
+                    $bg_image = $attributes['backgroundImage'] ?? '';
+                    
+                    $style = 'background-color:' . \esc_attr( $bg_color ) . ';color:' . \esc_attr( $text_color ) . ';';
+                    
+                    if ( $bg_image ) {
+                        $style .= 'background-image:url(' . \esc_url( $bg_image ) . ');background-size:cover;background-position:center;';
+                    }
                     
                     ob_start();
-                    echo '<div class="sofir-cta-banner sofir-cta-align-' . \esc_attr( $alignment ) . '" style="background-color:' . \esc_attr( $bg_color ) . ';color:' . \esc_attr( $text_color ) . ';">';
+                    echo '<div class="sofir-cta-banner sofir-cta-align-' . \esc_attr( $alignment ) . '" style="' . $style . '">';
                     echo '<div class="sofir-cta-content">';
                     echo '<h2 class="sofir-cta-title">' . \esc_html( $title ) . '</h2>';
                     
@@ -1541,12 +1654,15 @@ class Elements {
                     'showSubject' => [ 'type' => 'boolean', 'default' => true ],
                     'showPhone' => [ 'type' => 'boolean', 'default' => false ],
                     'submitText' => [ 'type' => 'string', 'default' => 'Send Message' ],
+                    'emailTo' => [ 'type' => 'string', 'default' => '' ],
+                    'successMessage' => [ 'type' => 'string', 'default' => 'Thank you! Your message has been sent.' ],
                 ],
                 'render_callback' => function ( array $attributes ): string {
                     $title = $attributes['title'] ?? 'Contact Us';
                     $show_subject = $attributes['showSubject'] ?? true;
                     $show_phone = $attributes['showPhone'] ?? false;
                     $submit_text = $attributes['submitText'] ?? 'Send Message';
+                    $email_to = $attributes['emailTo'] ?? \get_option( 'admin_email' );
                     
                     ob_start();
                     echo '<div class="sofir-contact-form">';
@@ -1557,6 +1673,7 @@ class Elements {
                     
                     echo '<form class="sofir-contact-form-fields" method="post" action="' . \esc_url( \admin_url( 'admin-post.php' ) ) . '">';
                     echo '<input type="hidden" name="action" value="sofir_contact_form">';
+                    echo '<input type="hidden" name="email_to" value="' . \esc_attr( $email_to ) . '">';
                     \wp_nonce_field( 'sofir_contact_form', 'sofir_contact_nonce' );
                     
                     echo '<div class="sofir-form-field">';
