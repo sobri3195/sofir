@@ -271,9 +271,59 @@
 
 .sofir-gallery {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: 1.5em;
     margin: 2em 0;
+}
+
+.sofir-gallery-columns-1 {
+    grid-template-columns: repeat(1, 1fr);
+}
+
+.sofir-gallery-columns-2 {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.sofir-gallery-columns-3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.sofir-gallery-columns-4 {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.sofir-gallery-columns-5 {
+    grid-template-columns: repeat(5, 1fr);
+}
+
+.sofir-gallery-columns-6 {
+    grid-template-columns: repeat(6, 1fr);
+}
+
+@media (max-width: 1024px) {
+    .sofir-gallery-columns-4,
+    .sofir-gallery-columns-5,
+    .sofir-gallery-columns-6 {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .sofir-gallery-columns-3,
+    .sofir-gallery-columns-4,
+    .sofir-gallery-columns-5,
+    .sofir-gallery-columns-6 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .sofir-gallery-columns-2,
+    .sofir-gallery-columns-3,
+    .sofir-gallery-columns-4,
+    .sofir-gallery-columns-5,
+    .sofir-gallery-columns-6 {
+        grid-template-columns: repeat(1, 1fr);
+    }
 }
 
 .sofir-gallery-item {
@@ -292,6 +342,37 @@
 
 .sofir-gallery-item:hover img {
     transform: scale(1.1);
+}
+
+.sofir-gallery-remove {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 4px 8px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 10;
+}
+
+.sofir-gallery-item:hover .sofir-gallery-remove {
+    opacity: 1;
+}
+
+.sofir-gallery-add {
+    margin-top: 1em;
+    grid-column: 1 / -1;
+}
+
+.sofir-gallery-placeholder {
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* ==========================================================================
@@ -837,6 +918,240 @@
     padding: 2em;
     border-radius: 12px;
     margin: 2em 0;
+}
+
+.sofir-dashboard h2 {
+    margin: 0 0 1em;
+    color: #333;
+    font-size: 2em;
+}
+
+.sofir-dashboard h3 {
+    margin: 1.5em 0 1em;
+    color: #333;
+    font-size: 1.5em;
+}
+
+.sofir-dashboard-welcome {
+    margin-bottom: 2em;
+}
+
+.sofir-dashboard-welcome p {
+    font-size: 1.1em;
+    color: #666;
+    margin: 0;
+}
+
+.sofir-dashboard-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5em;
+    margin-bottom: 2em;
+}
+
+.sofir-stat-card {
+    background: #fff;
+    padding: 2em;
+    border-radius: 12px;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+    text-align: center;
+    transition: transform 0.3s ease;
+}
+
+.sofir-stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.12);
+}
+
+.sofir-stat-card-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.sofir-stat-card-primary .sofir-stat-value,
+.sofir-stat-card-primary .sofir-stat-label {
+    color: #fff;
+}
+
+.sofir-stat-value {
+    display: block;
+    font-size: 3em;
+    font-weight: 700;
+    color: #007cba;
+    margin-bottom: 0.2em;
+    line-height: 1;
+}
+
+.sofir-stat-label {
+    display: block;
+    font-size: 1em;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
+.sofir-dashboard-post-type-stats {
+    background: #fff;
+    padding: 2em;
+    border-radius: 12px;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+    margin-bottom: 2em;
+}
+
+.sofir-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1.5em;
+    margin-top: 1em;
+}
+
+.sofir-stat-item {
+    background: #f9f9f9;
+    padding: 1.5em;
+    border-radius: 8px;
+    text-align: center;
+    border: 2px solid #e0e0e0;
+    transition: border-color 0.3s ease;
+}
+
+.sofir-stat-item:hover {
+    border-color: #007cba;
+}
+
+.sofir-stat-item-value {
+    display: block;
+    font-size: 2em;
+    font-weight: 700;
+    color: #007cba;
+    margin-bottom: 0.3em;
+}
+
+.sofir-stat-item-label {
+    display: block;
+    font-size: 0.9em;
+    color: #666;
+    font-weight: 500;
+}
+
+.sofir-dashboard-recent {
+    background: #fff;
+    padding: 2em;
+    border-radius: 12px;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+    margin-bottom: 2em;
+}
+
+.sofir-post-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sofir-post-list li {
+    padding: 1em 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.sofir-post-list li:last-child {
+    border-bottom: none;
+}
+
+.sofir-post-list a {
+    color: #007cba;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1.1em;
+    transition: color 0.3s ease;
+}
+
+.sofir-post-list a:hover {
+    color: #005a87;
+}
+
+.sofir-post-meta {
+    display: flex;
+    gap: 1em;
+    margin-top: 0.5em;
+    flex-wrap: wrap;
+}
+
+.sofir-post-type,
+.sofir-post-status,
+.sofir-post-date {
+    font-size: 0.85em;
+    padding: 0.3em 0.8em;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.sofir-post-type {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.sofir-post-status {
+    background: #f0f0f0;
+    color: #666;
+}
+
+.sofir-post-status-publish {
+    background: #e8f5e9;
+    color: #388e3c;
+}
+
+.sofir-post-status-draft {
+    background: #fff3e0;
+    color: #f57c00;
+}
+
+.sofir-post-status-pending {
+    background: #fce4ec;
+    color: #c2185b;
+}
+
+.sofir-post-date {
+    background: #f5f5f5;
+    color: #666;
+}
+
+.sofir-dashboard-actions {
+    display: flex;
+    gap: 1em;
+    margin-top: 2em;
+    flex-wrap: wrap;
+}
+
+.sofir-dashboard-actions .button {
+    flex: 1;
+    min-width: 200px;
+    text-align: center;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.sofir-dashboard-actions .button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+@media (max-width: 768px) {
+    .sofir-dashboard-stats {
+        grid-template-columns: 1fr;
+    }
+    
+    .sofir-stat-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .sofir-dashboard-actions {
+        flex-direction: column;
+    }
+    
+    .sofir-dashboard-actions .button {
+        width: 100%;
+    }
 }
 
 .sofir-dashboard-grid {
