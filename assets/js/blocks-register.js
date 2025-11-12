@@ -123,7 +123,8 @@
         createServerBlock('dashboard', __('User Dashboard', 'sofir'), 'dashboard-icon', {
             title: { type: 'string', default: 'Dashboard' },
             showStats: { type: 'boolean', default: true },
-            showRecent: { type: 'boolean', default: true }
+            showRecent: { type: 'boolean', default: true },
+            recentPostsCount: { type: 'number', default: 5 }
         }, function(props) {
             return el(PanelBody, { title: __('Dashboard Settings', 'sofir') },
                 el(TextControl, {
@@ -140,24 +141,112 @@
                     label: __('Show Recent Posts', 'sofir'),
                     checked: props.attributes.showRecent,
                     onChange: function(val) { props.setAttributes({ showRecent: val }); }
+                }),
+                el(RangeControl, {
+                    label: __('Recent Posts Count', 'sofir'),
+                    value: props.attributes.recentPostsCount,
+                    onChange: function(val) { props.setAttributes({ recentPostsCount: val }); },
+                    min: 1,
+                    max: 20
                 })
             );
         });
 
         // Gallery Block
-        createServerBlock('gallery', __('Gallery', 'sofir'), 'format-gallery', {
-            imageIds: { type: 'array', default: [] },
-            columns: { type: 'number', default: 3 }
-        }, function(props) {
-            return el(PanelBody, { title: __('Gallery Settings', 'sofir') },
-                el(RangeControl, {
-                    label: __('Columns', 'sofir'),
-                    value: props.attributes.columns,
-                    onChange: function(val) { props.setAttributes({ columns: val }); },
-                    min: 1,
-                    max: 6
-                })
-            );
+        var MediaUpload = wp.blockEditor.MediaUpload || wp.editor.MediaUpload;
+        var MediaPlaceholder = wp.blockEditor.MediaPlaceholder || wp.editor.MediaPlaceholder;
+        var Button = wp.components.Button;
+        
+        registerBlockType('sofir/gallery', {
+            title: __('Gallery', 'sofir'),
+            icon: 'format-gallery',
+            category: 'sofir',
+            attributes: {
+                imageIds: { type: 'array', default: [] },
+                columns: { type: 'number', default: 3 }
+            },
+            edit: function(props) {
+                var imageIds = props.attributes.imageIds || [];
+                var columns = props.attributes.columns || 3;
+                
+                function onSelectImages(images) {
+                    var ids = images.map(function(img) { return img.id; });
+                    props.setAttributes({ imageIds: ids });
+                }
+                
+                function removeImage(index) {
+                    var newIds = imageIds.filter(function(id, i) { return i !== index; });
+                    props.setAttributes({ imageIds: newIds });
+                }
+                
+                var inspectorControls = el(InspectorControls, {},
+                    el(PanelBody, { title: __('Gallery Settings', 'sofir') },
+                        el(RangeControl, {
+                            label: __('Columns', 'sofir'),
+                            value: columns,
+                            onChange: function(val) { props.setAttributes({ columns: val }); },
+                            min: 1,
+                            max: 6
+                        })
+                    )
+                );
+                
+                if (imageIds.length === 0) {
+                    return el(
+                        'div',
+                        { className: 'sofir-gallery-placeholder' },
+                        inspectorControls,
+                        el(MediaPlaceholder, {
+                            icon: 'format-gallery',
+                            labels: {
+                                title: __('Gallery', 'sofir'),
+                                instructions: __('Upload images or select from media library', 'sofir')
+                            },
+                            onSelect: onSelectImages,
+                            accept: 'image/*',
+                            allowedTypes: ['image'],
+                            multiple: true
+                        })
+                    );
+                }
+                
+                return el(
+                    'div',
+                    { className: 'sofir-block-editor-wrapper' },
+                    inspectorControls,
+                    el('div', { className: 'sofir-gallery sofir-gallery-columns-' + columns },
+                        imageIds.map(function(id, index) {
+                            return el('div', { key: id, className: 'sofir-gallery-item' },
+                                el('img', {
+                                    src: wp.data.select('core').getMedia(id) ? 
+                                        wp.data.select('core').getMedia(id).source_url : '',
+                                    className: 'sofir-gallery-image'
+                                }),
+                                el(Button, {
+                                    className: 'sofir-gallery-remove',
+                                    icon: 'no-alt',
+                                    onClick: function() { removeImage(index); }
+                                })
+                            );
+                        }),
+                        el(MediaUpload, {
+                            onSelect: onSelectImages,
+                            allowedTypes: ['image'],
+                            multiple: true,
+                            value: imageIds,
+                            render: function(obj) {
+                                return el(Button, {
+                                    className: 'sofir-gallery-add button button-large',
+                                    onClick: obj.open
+                                }, __('Add More Images', 'sofir'));
+                            }
+                        })
+                    )
+                );
+            },
+            save: function() {
+                return null;
+            }
         });
 
         // Login/Register Block

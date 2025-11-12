@@ -233,6 +233,7 @@ class Elements {
                     'title' => [ 'type' => 'string', 'default' => 'Dashboard' ],
                     'showStats' => [ 'type' => 'boolean', 'default' => true ],
                     'showRecent' => [ 'type' => 'boolean', 'default' => true ],
+                    'recentPostsCount' => [ 'type' => 'number', 'default' => 5 ],
                 ],
                 'render_callback' => function ( array $attributes ): string {
                     if ( ! \is_user_logged_in() ) {
@@ -243,6 +244,7 @@ class Elements {
                     $title = $attributes['title'] ?? 'Dashboard';
                     $show_stats = $attributes['showStats'] ?? true;
                     $show_recent = $attributes['showRecent'] ?? true;
+                    $recent_count = $attributes['recentPostsCount'] ?? 5;
                     
                     ob_start();
                     echo '<div class="sofir-dashboard">';
@@ -253,13 +255,28 @@ class Elements {
                     echo '</div>';
                     
                     if ( $show_stats ) {
-                        $post_count = \count_user_posts( $user->ID );
+                        $post_types = array_merge( [ 'post', 'page' ], array_keys( CptManager::instance()->get_post_types() ) );
+                        $post_type_stats = [];
+                        $total_posts = 0;
+                        
+                        foreach ( $post_types as $post_type ) {
+                            $count = (int) \count_user_posts( $user->ID, $post_type, true );
+                            if ( $count > 0 ) {
+                                $post_type_obj = \get_post_type_object( $post_type );
+                                $post_type_stats[ $post_type ] = [
+                                    'count' => $count,
+                                    'label' => $post_type_obj ? $post_type_obj->labels->name : $post_type,
+                                ];
+                                $total_posts += $count;
+                            }
+                        }
+                        
                         $comment_count = \get_comments( [ 'user_id' => $user->ID, 'count' => true ] );
                         
                         echo '<div class="sofir-dashboard-stats">';
-                        echo '<div class="sofir-stat-card">';
-                        echo '<span class="sofir-stat-value">' . \esc_html( $post_count ) . '</span>';
-                        echo '<span class="sofir-stat-label">' . \esc_html__( 'Posts', 'sofir' ) . '</span>';
+                        echo '<div class="sofir-stat-card sofir-stat-card-primary">';
+                        echo '<span class="sofir-stat-value">' . \esc_html( $total_posts ) . '</span>';
+                        echo '<span class="sofir-stat-label">' . \esc_html__( 'Total Posts', 'sofir' ) . '</span>';
                         echo '</div>';
                         echo '<div class="sofir-stat-card">';
                         echo '<span class="sofir-stat-value">' . \esc_html( $comment_count ) . '</span>';
@@ -270,23 +287,47 @@ class Elements {
                         echo '<span class="sofir-stat-label">' . \esc_html__( 'Member Since', 'sofir' ) . '</span>';
                         echo '</div>';
                         echo '</div>';
+                        
+                        if ( ! empty( $post_type_stats ) ) {
+                            echo '<div class="sofir-dashboard-post-type-stats">';
+                            echo '<h3>' . \esc_html__( 'Posts by Type', 'sofir' ) . '</h3>';
+                            echo '<div class="sofir-stat-grid">';
+                            foreach ( $post_type_stats as $stat ) {
+                                echo '<div class="sofir-stat-item">';
+                                echo '<span class="sofir-stat-item-value">' . \esc_html( $stat['count'] ) . '</span>';
+                                echo '<span class="sofir-stat-item-label">' . \esc_html( $stat['label'] ) . '</span>';
+                                echo '</div>';
+                            }
+                            echo '</div>';
+                            echo '</div>';
+                        }
                     }
                     
                     if ( $show_recent ) {
+                        $post_types = array_merge( [ 'post', 'page' ], array_keys( CptManager::instance()->get_post_types() ) );
+                        
                         $recent_posts = \get_posts( [
                             'author' => $user->ID,
-                            'numberposts' => 5,
-                            'post_status' => 'publish',
+                            'numberposts' => $recent_count,
+                            'post_status' => [ 'publish', 'draft', 'pending' ],
+                            'post_type' => $post_types,
                         ] );
                         
                         if ( ! empty( $recent_posts ) ) {
                             echo '<div class="sofir-dashboard-recent">';
-                            echo '<h3>' . \esc_html__( 'Recent Posts', 'sofir' ) . '</h3>';
+                            echo '<h3>' . \sprintf( \esc_html__( 'Recent Posts (%d)', 'sofir' ), \count( $recent_posts ) ) . '</h3>';
                             echo '<ul class="sofir-post-list">';
                             foreach ( $recent_posts as $post ) {
+                                $post_type_obj = \get_post_type_object( $post->post_type );
+                                $post_type_label = $post_type_obj ? $post_type_obj->labels->singular_name : $post->post_type;
+                                
                                 echo '<li>';
                                 echo '<a href="' . \esc_url( \get_permalink( $post ) ) . '">' . \esc_html( $post->post_title ) . '</a>';
+                                echo '<span class="sofir-post-meta">';
+                                echo '<span class="sofir-post-type">' . \esc_html( $post_type_label ) . '</span>';
+                                echo '<span class="sofir-post-status sofir-post-status-' . \esc_attr( $post->post_status ) . '">' . \esc_html( \ucfirst( $post->post_status ) ) . '</span>';
                                 echo '<span class="sofir-post-date">' . \esc_html( \get_the_date( '', $post ) ) . '</span>';
+                                echo '</span>';
                                 echo '</li>';
                             }
                             echo '</ul>';
