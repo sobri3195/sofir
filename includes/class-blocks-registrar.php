@@ -19,6 +19,7 @@ class Registrar {
     public function boot(): void {
         \add_action( 'init', [ $this, 'register_blocks' ] );
         \add_action( 'wp_enqueue_scripts', [ $this, 'register_block_assets' ] );
+        \add_action( 'wp_enqueue_scripts', [ $this, 'setup_api_fetch' ], 20 );
         \add_filter( 'block_categories_all', [ $this, 'register_category' ], 10, 2 );
     }
 
@@ -38,6 +39,24 @@ class Registrar {
             'ajaxUrl' => \admin_url( 'admin-ajax.php' ),
             'nonce'   => \wp_create_nonce( 'sofir_appointment' ),
         ] );
+        
+        \wp_localize_script( 'sofir-create-post', 'wpApiSettings', [
+            'root'  => \esc_url_raw( \rest_url() ),
+            'nonce' => \wp_create_nonce( 'wp_rest' ),
+        ] );
+    }
+
+    public function setup_api_fetch(): void {
+        if ( ! \is_admin() && \wp_script_is( 'wp-api-fetch', 'enqueued' ) ) {
+            \wp_add_inline_script(
+                'wp-api-fetch',
+                sprintf(
+                    'wp.apiFetch.use( wp.apiFetch.createNonceMiddleware( "%s" ) );',
+                    \wp_create_nonce( 'wp_rest' )
+                ),
+                'after'
+            );
+        }
     }
 
     public function register_blocks(): void {
