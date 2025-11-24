@@ -372,7 +372,13 @@ class LibraryPanel {
                 echo '</div>';
             }
             
-            echo '<form method="post" action="' . \esc_url( \admin_url( 'admin-post.php' ) ) . '" style="margin-top: 15px;">';
+            if ( ! empty( $template['demo_url'] ) ) {
+                echo '<div style="margin-top: 15px;">';
+                echo '<a href="' . \esc_url( $template['demo_url'] ) . '" target="_blank" class="button button-secondary sofir-demo-button" style="width: 100%; height: 40px; font-weight: 600; text-align: center; line-height: 38px; display: inline-block; text-decoration: none; margin-bottom: 10px;">👁 ' . \esc_html__( 'View Demo', 'sofir' ) . '</a>';
+                echo '</div>';
+            }
+            
+            echo '<form method="post" action="' . \esc_url( \admin_url( 'admin-post.php' ) ) . '" style="margin-top: ' . ( ! empty( $template['demo_url'] ) ? '5px' : '15px' ) . ';">';
             echo '<input type="hidden" name="action" value="sofir_install_ready_cpt" />';
             echo '<input type="hidden" name="template" value="' . \esc_attr( $key ) . '" />';
             \wp_nonce_field( 'sofir_install_ready_cpt', '_sofir_nonce' );
@@ -395,6 +401,7 @@ class LibraryPanel {
                 'icon' => '🏢',
                 'badge' => \__( 'Popular', 'sofir' ),
                 'description' => \__( 'Direktori bisnis lengkap dengan lokasi, rating, jam buka, dan kontak.', 'sofir' ),
+                'demo_url' => 'https://demo.sofir.id/business-directory',
                 'features' => [
                     \__( 'Lokasi & peta', 'sofir' ),
                     \__( 'Rating & review', 'sofir' ),
@@ -440,6 +447,7 @@ class LibraryPanel {
                 'icon' => '🏨',
                 'badge' => \__( 'New', 'sofir' ),
                 'description' => \__( 'Website hotel atau penginapan dengan harga, rating, lokasi, dan galeri foto.', 'sofir' ),
+                'demo_url' => 'https://demo.sofir.id/accommodation',
                 'features' => [
                     \__( 'Harga per malam', 'sofir' ),
                     \__( 'Galeri foto', 'sofir' ),
@@ -485,6 +493,7 @@ class LibraryPanel {
                 'icon' => '📰',
                 'badge' => \__( 'Simple', 'sofir' ),
                 'description' => \__( 'Website berita atau blog dengan artikel, kategori, dan komentar.', 'sofir' ),
+                'demo_url' => 'https://demo.sofir.id/news-blog',
                 'features' => [
                     \__( 'Artikel lengkap', 'sofir' ),
                     \__( 'Featured image', 'sofir' ),
@@ -513,6 +522,7 @@ class LibraryPanel {
                 'icon' => '📅',
                 'badge' => \__( 'Popular', 'sofir' ),
                 'description' => \__( 'Website event dengan tanggal, lokasi, kapasitas, dan pendaftaran.', 'sofir' ),
+                'demo_url' => 'https://demo.sofir.id/events',
                 'features' => [
                     \__( 'Tanggal & waktu', 'sofir' ),
                     \__( 'Kapasitas peserta', 'sofir' ),
@@ -558,6 +568,7 @@ class LibraryPanel {
                 'icon' => '⏰',
                 'badge' => \__( 'Pro', 'sofir' ),
                 'description' => \__( 'Sistem booking appointment dengan status, provider, dan client.', 'sofir' ),
+                'demo_url' => 'https://demo.sofir.id/appointments',
                 'features' => [
                     \__( 'Tanggal & waktu', 'sofir' ),
                     \__( 'Status booking', 'sofir' ),
@@ -595,6 +606,7 @@ class LibraryPanel {
                 'icon' => '🛒',
                 'badge' => \__( 'Popular', 'sofir' ),
                 'description' => \__( 'Website toko online lengkap dengan produk, kategori, harga, stok, dan multi-vendor.', 'sofir' ),
+                'demo_url' => 'https://demo.sofir.id/online-store',
                 'features' => [
                     \__( 'Produk & SKU', 'sofir' ),
                     \__( 'Harga & stok', 'sofir' ),

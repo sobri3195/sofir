@@ -21,6 +21,8 @@ use Sofir\Templates\Manager as TemplateManager;
 use Sofir\GSheets\Manager as GSheetsManager;
 use Sofir\Multivendor\Manager as MultivendorManager;
 use Sofir\Forms\Manager as FormsManager;
+use Sofir\Elementor\Manager as ElementorManager;
+use Sofir\Ecommerce\Manager as EcommerceManager;
 
 class Loader {
     /** @var class-string[] */
@@ -91,6 +93,8 @@ class Loader {
             GSheetsManager::class,
             MultivendorManager::class,
             FormsManager::class,
+            ElementorManager::class,
+            EcommerceManager::class,
         ];
 
         /** @var class-string[] $modules */
