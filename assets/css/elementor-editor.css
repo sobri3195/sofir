@@ -1,0 +1,116 @@
+.elementor-element .icon-sofir {
+    display: inline-block;
+    width: 28px;
+    height: 28px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 4px;
+    text-align: center;
+    line-height: 28px;
+    color: #fff;
+    font-weight: bold;
+}
+
+.elementor-control-type-sofir_notice {
+    padding: 12px;
+    background: #f0f6fc;
+    border-left: 3px solid #0073aa;
+    border-radius: 4px;
+    margin: 10px 0;
+}
+
+.sofir-elementor-widget-preview {
+    padding: 20px;
+    border: 1px dashed #ddd;
+    border-radius: 4px;
+    background: #f9f9f9;
+}
+
+.elementor-panel .elementor-element[data-widget_type^="sofir-"] .elementor-element-overlay {
+    background-color: rgba(102, 126, 234, 0.1);
+}
+
+.elementor-panel .elementor-element[data-widget_type^="sofir-"] .elementor-editor-element-settings {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.elementor-panel .elementor-control-section_content .elementor-control-sofir_source {
+    background: #fff;
+    padding: 15px;
+    border-radius: 4px;
+    margin: 10px 0;
+}
+
+.sofir-wc-products,
+.sofir-edd-products,
+.sofir-north-products {
+    margin: 20px 0;
+}
+
+.sofir-wc-product,
+.sofir-edd-product,
+.sofir-north-product {
+    position: relative;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.sofir-wc-product:hover,
+.sofir-edd-product:hover,
+.sofir-north-product:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.sofir-sale-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #e74c3c;
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.sofir-wc-price,
+.sofir-edd-price,
+.sofir-north-price {
+    font-size: 20px;
+    font-weight: bold;
+    color: #0073aa;
+    margin: 10px 0;
+}
+
+.sofir-elementor-notice {
+    padding: 12px;
+    background: #fff3cd;
+    border-left: 3px solid #ffc107;
+    border-radius: 4px;
+    margin: 15px 0;
+    color: #856404;
+}
+
+.sofir-elementor-notice strong {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.elementor-control-type-repeater .sofir-repeater-item {
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.elementor-panel-heading-title.elementor-panel-heading-title-sofir {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    padding: 10px 15px;
+    border-radius: 4px;
+}
