@@ -1,0 +1,100 @@
+feat: Add Restaurant & E-Course modules + 5 new CPT Library templates
+
+## New Modules
+
+### Restaurant Module
+- Complete ordering system for dine-in and delivery
+- Menu management with pricing and categories
+- Order status workflow (pending → preparing → ready → completed)
+- Customer information tracking (name, phone, address, table)
+- REST API endpoints for orders and menu
+- AJAX form submission
+- Shortcodes: [sofir_restaurant_menu], [sofir_order_form]
+- Event hooks: sofir/restaurant/order_created, sofir/restaurant/order_status_changed
+
+### E-Course Module
+- Complete learning management system
+- Course catalog with pricing and levels
+- Student enrollment system
+- Progress tracking per user per course
+- Lesson completion tracking
+- REST API for enrollment and progress
+- Shortcodes: [sofir_course_list], [sofir_course_progress], [sofir_my_courses]
+- Event hooks: sofir/ecourse/enrolled, sofir/ecourse/lesson_completed
+
+## New CPT Library Templates (5)
+
+1. **Restaurant Orders** 🍽️
+   - restaurant_order CPT (order management)
+   - menu_item CPT (menu catalog)
+   - order_status & menu_category taxonomies
+   - Demo: https://demo.sofir.id/restaurant-orders
+
+2. **Car Rental** 🚗
+   - vehicle CPT (vehicle catalog)
+   - rental_booking CPT (booking management)
+   - vehicle_type & vehicle_brand taxonomies
+   - Demo: https://demo.sofir.id/car-rental
+
+3. **Community & Forum** 👥
+   - forum_topic CPT (discussion topics)
+   - member_profile CPT (member profiles)
+   - forum_category, forum_tag, member_group taxonomies
+   - Demo: https://demo.sofir.id/community-forum
+
+4. **Doctor Appointments** ⚕️
+   - doctor CPT (doctor profiles)
+   - medical_appointment CPT (appointments)
+   - specialty, hospital, appointment_type taxonomies
+   - Demo: https://demo.sofir.id/doctor-appointments
+
+5. **E-Learning & Courses** 🎓
+   - course CPT (course catalog)
+   - lesson CPT (course lessons)
+   - course_category & course_level taxonomies
+   - Demo: https://demo.sofir.id/elearning-courses
+
+## Assets Added
+
+- assets/js/restaurant.js - Restaurant ordering functionality
+- assets/css/restaurant.css - Restaurant styles
+- assets/js/ecourse.js - E-course enrollment and progress
+- assets/css/ecourse.css - E-course styles
+
+## Module Loading
+
+Updated includes/sofir-loader.php to load:
+- Sofir\Restaurant\Manager
+- Sofir\Ecourse\Manager
+
+## Documentation
+
+- NEW_FEATURES_ADDONS.md - Complete English documentation
+- FITUR_BARU_ADDONS_ID.md - Complete Indonesian documentation
+- Covers all features, use cases, API endpoints, hooks, and examples
+
+## Summary
+
+Total CPT Library Templates: 11 (6 existing + 5 new)
+- Business Directory
+- Hotel & Accommodation
+- News & Blog
+- Events & Calendar
+- Appointments & Booking
+- Toko Online / E-Commerce
+- Restaurant Orders (NEW)
+- Car Rental (NEW)
+- Community & Forum (NEW)
+- Doctor Appointments (NEW)
+- E-Learning & Courses (NEW)
+
+All modules are production-ready with:
+✅ REST API endpoints
+✅ AJAX support
+✅ Shortcodes
+✅ Event hooks
+✅ Admin UI integration
+✅ Responsive design
+✅ Complete documentation
+
+Closes: Payment gateway, loyalty program, events, appointments, booking, restaurant orders, delivery, marketplace, and e-course add-ons

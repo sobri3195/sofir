@@ -1,0 +1,66 @@
+.sofir-restaurant-menu {
+    margin: 20px 0;
+}
+
+.sofir-menu-item {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.sofir-menu-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.menu-item-image img {
+    display: block;
+}
+
+.menu-item-price {
+    font-weight: bold;
+}
+
+.sofir-order-form {
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 30px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.sofir-order-form h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+
+.sofir-order-form .form-field {
+    margin-bottom: 20px;
+}
+
+.sofir-order-form label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.sofir-order-form input[type="text"],
+.sofir-order-form input[type="tel"],
+.sofir-order-form textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.sofir-order-form textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.sofir-order-form button[type="submit"] {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+}

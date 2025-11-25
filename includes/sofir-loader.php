@@ -23,6 +23,8 @@ use Sofir\Multivendor\Manager as MultivendorManager;
 use Sofir\Forms\Manager as FormsManager;
 use Sofir\Elementor\Manager as ElementorManager;
 use Sofir\Ecommerce\Manager as EcommerceManager;
+use Sofir\Restaurant\Manager as RestaurantManager;
+use Sofir\Ecourse\Manager as EcourseManager;
 
 class Loader {
     /** @var class-string[] */
@@ -95,6 +97,8 @@ class Loader {
             FormsManager::class,
             ElementorManager::class,
             EcommerceManager::class,
+            RestaurantManager::class,
+            EcourseManager::class,
         ];
 
         /** @var class-string[] $modules */
