@@ -211,6 +211,8 @@ class LibraryPanel {
             \wp_die( $result->get_error_message() );
         }
 
+        $this->ensure_cpt_menus_visible();
+
         $message = sprintf(
             \__( 'Berhasil import %d CPT, %d taxonomies, dan %d posts.', 'sofir' ),
             $result['cpt_count'] ?? 0,
@@ -293,6 +295,8 @@ class LibraryPanel {
         $installer->install_template_pages( $template_key, $template );
         $installer->create_menu_items( $template_key, $template );
 
+        $this->ensure_cpt_menus_visible();
+
         \flush_rewrite_rules();
 
         $redirect = \add_query_arg(
@@ -307,6 +311,64 @@ class LibraryPanel {
 
         \wp_safe_redirect( $redirect );
         exit;
+    }
+
+    private function ensure_cpt_menus_visible(): void {
+        $manager = CptManager::instance();
+        $post_types = $manager->get_post_types();
+        $updated = false;
+
+        foreach ( $post_types as $slug => $definition ) {
+            if ( ! isset( $definition['args']['show_in_menu'] ) || ! $definition['args']['show_in_menu'] ) {
+                $definition['args']['show_in_menu'] = true;
+                $definition['args']['show_ui'] = true;
+                $definition['args']['show_in_nav_menus'] = true;
+                $manager->save_post_type( array_merge( [ 'slug' => $slug ], $this->convert_definition_to_payload( $slug, $definition ) ) );
+                $updated = true;
+            }
+        }
+
+        if ( $updated ) {
+            \update_option( 'sofir_cpt_definitions_version', '1.0.3' );
+        }
+    }
+
+    private function convert_definition_to_payload( string $slug, array $definition ): array {
+        $args = $definition['args'] ?? [];
+        $fields = array_keys( $definition['fields'] ?? [] );
+        $taxonomies = $definition['taxonomies'] ?? [];
+
+        $payload = [
+            'slug' => $slug,
+            'singular' => $args['labels']['singular_name'] ?? ucfirst( $slug ),
+            'plural' => $args['labels']['name'] ?? ucfirst( $slug ) . 's',
+            'menu_icon' => $args['menu_icon'] ?? 'dashicons-admin-post',
+            'supports' => $args['supports'] ?? [],
+            'has_archive' => ! empty( $args['has_archive'] ),
+            'hierarchical' => ! empty( $args['hierarchical'] ),
+            'rest_base' => $args['rest_base'] ?? $slug,
+            'rewrite' => is_array( $args['rewrite'] ?? null ) ? ( $args['rewrite']['slug'] ?? $slug ) : $slug,
+            'fields' => $fields,
+            'taxonomies' => $taxonomies,
+        ];
+
+        $filters = [];
+        foreach ( $definition['fields'] ?? [] as $field_key => $field_config ) {
+            if ( ! empty( $field_config['filterable'] ) ) {
+                $filters[] = $field_key;
+            }
+        }
+        $payload['filters'] = $filters;
+
+        if ( ! empty( $definition['template'] ) ) {
+            $payload['template'] = $definition['template'];
+        }
+
+        if ( ! empty( $definition['template_lock'] ) ) {
+            $payload['template_lock'] = $definition['template_lock'];
+        }
+
+        return $payload;
     }
 
     private function render_ready_templates(): void {

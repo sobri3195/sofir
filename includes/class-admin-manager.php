@@ -166,6 +166,7 @@ class Manager {
 
     public function render_tools_tab(): void {
         if ( isset( $_POST['sofir_refresh_cpt'] ) && \check_admin_referer( 'sofir_refresh_cpt' ) ) {
+            $this->fix_cpt_menus();
             \delete_option( 'sofir_cpt_definitions_version' );
             \delete_option( 'sofir_multivendor_rewrite_version' );
             \delete_option( 'sofir_multivendor_flush_notice_dismissed' );
@@ -180,7 +181,7 @@ class Manager {
             
             <div class="sofir-tool-card" style="background: #fff; padding: 20px; margin: 20px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                 <h3><?php \esc_html_e( 'Refresh CPT Definitions', 'sofir' ); ?></h3>
-                <p><?php \esc_html_e( 'Jika menu CPT (Listing, Profile, Article, Event, Appointment) tidak tampil di sidebar admin, atau jika halaman vendor tidak tampil, gunakan tool ini untuk memperbarui definisi CPT dan rewrite rules.', 'sofir' ); ?></p>
+                <p><?php \esc_html_e( 'Jika menu CPT tidak tampil di sidebar admin setelah install dari Library, atau jika halaman vendor tidak tampil, gunakan tool ini untuk memperbarui definisi CPT dan rewrite rules.', 'sofir' ); ?></p>
                 
                 <form method="post">
                     <?php \wp_nonce_field( 'sofir_refresh_cpt' ); ?>
@@ -194,7 +195,7 @@ class Manager {
                 
                 <h4><?php \esc_html_e( 'Yang akan dilakukan:', 'sofir' ); ?></h4>
                 <ul style="list-style: disc; padding-left: 20px;">
-                    <li><?php \esc_html_e( 'Memperbarui setting show_in_menu untuk semua CPT bawaan', 'sofir' ); ?></li>
+                    <li><?php \esc_html_e( 'Memperbarui setting show_in_menu untuk SEMUA CPT (termasuk dari Library)', 'sofir' ); ?></li>
                     <li><?php \esc_html_e( 'Flush rewrite rules untuk vendor store dan vendor product', 'sofir' ); ?></li>
                     <li><?php \esc_html_e( 'Reset version check untuk memaksa update otomatis', 'sofir' ); ?></li>
                 </ul>
@@ -238,6 +239,73 @@ class Manager {
         }
 
         return $tab;
+    }
+
+    private function fix_cpt_menus(): void {
+        $manager = \Sofir\Cpt\Manager::instance();
+        $post_types = $manager->get_post_types();
+        
+        foreach ( $post_types as $slug => $definition ) {
+            $needs_update = false;
+            
+            if ( ! isset( $definition['args']['show_in_menu'] ) || ! $definition['args']['show_in_menu'] ) {
+                $definition['args']['show_in_menu'] = true;
+                $needs_update = true;
+            }
+            
+            if ( ! isset( $definition['args']['show_ui'] ) || ! $definition['args']['show_ui'] ) {
+                $definition['args']['show_ui'] = true;
+                $needs_update = true;
+            }
+            
+            if ( ! isset( $definition['args']['show_in_nav_menus'] ) ) {
+                $definition['args']['show_in_nav_menus'] = true;
+                $needs_update = true;
+            }
+            
+            if ( $needs_update ) {
+                $payload = $this->convert_definition_to_payload( $slug, $definition );
+                $manager->save_post_type( $payload );
+            }
+        }
+    }
+
+    private function convert_definition_to_payload( string $slug, array $definition ): array {
+        $args = $definition['args'] ?? [];
+        $fields = array_keys( $definition['fields'] ?? [] );
+        $taxonomies = $definition['taxonomies'] ?? [];
+
+        $payload = [
+            'slug' => $slug,
+            'singular' => $args['labels']['singular_name'] ?? ucfirst( $slug ),
+            'plural' => $args['labels']['name'] ?? ucfirst( $slug ) . 's',
+            'menu_icon' => $args['menu_icon'] ?? 'dashicons-admin-post',
+            'supports' => $args['supports'] ?? [],
+            'has_archive' => ! empty( $args['has_archive'] ),
+            'hierarchical' => ! empty( $args['hierarchical'] ),
+            'rest_base' => $args['rest_base'] ?? $slug,
+            'rewrite' => is_array( $args['rewrite'] ?? null ) ? ( $args['rewrite']['slug'] ?? $slug ) : $slug,
+            'fields' => $fields,
+            'taxonomies' => $taxonomies,
+        ];
+
+        $filters = [];
+        foreach ( $definition['fields'] ?? [] as $field_key => $field_config ) {
+            if ( ! empty( $field_config['filterable'] ) ) {
+                $filters[] = $field_key;
+            }
+        }
+        $payload['filters'] = $filters;
+
+        if ( ! empty( $definition['template'] ) ) {
+            $payload['template'] = $definition['template'];
+        }
+
+        if ( ! empty( $definition['template_lock'] ) ) {
+            $payload['template_lock'] = $definition['template_lock'];
+        }
+
+        return $payload;
     }
 
     private function get_templates_payload(): array {
