@@ -172,7 +172,7 @@ class Manager {
             \delete_option( 'sofir_multivendor_flush_notice_dismissed' );
             \flush_rewrite_rules();
             
-            echo '<div class="notice notice-success"><p><strong>' . \esc_html__( 'Berhasil!', 'sofir' ) . '</strong> ' . \esc_html__( 'CPT definitions dan rewrite rules telah di-refresh. Menu CPT sekarang akan tampil.', 'sofir' ) . '</p></div>';
+            echo '<div class="notice notice-success"><p><strong>' . \esc_html__( 'Berhasil!', 'sofir' ) . '</strong> ' . \esc_html__( 'CPT definitions dan rewrite rules telah di-refresh. Menu CPT sekarang akan tampil dan dapat diakses di web/frontend.', 'sofir' ) . '</p></div>';
         }
         
         ?>
@@ -181,7 +181,7 @@ class Manager {
             
             <div class="sofir-tool-card" style="background: #fff; padding: 20px; margin: 20px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                 <h3><?php \esc_html_e( 'Refresh CPT Definitions', 'sofir' ); ?></h3>
-                <p><?php \esc_html_e( 'Jika menu CPT tidak tampil di sidebar admin setelah install dari Library, atau jika halaman vendor tidak tampil, gunakan tool ini untuk memperbarui definisi CPT dan rewrite rules.', 'sofir' ); ?></p>
+                <p><?php \esc_html_e( 'Jika menu CPT tidak tampil di sidebar admin setelah install dari Library, atau jika halaman CPT tidak dapat diakses di web/frontend (event, appointment, booking, restoran, ecourse, dll), gunakan tool ini untuk memperbarui definisi CPT dan rewrite rules.', 'sofir' ); ?></p>
                 
                 <form method="post">
                     <?php \wp_nonce_field( 'sofir_refresh_cpt' ); ?>
@@ -195,7 +195,8 @@ class Manager {
                 
                 <h4><?php \esc_html_e( 'Yang akan dilakukan:', 'sofir' ); ?></h4>
                 <ul style="list-style: disc; padding-left: 20px;">
-                    <li><?php \esc_html_e( 'Memperbarui setting show_in_menu untuk SEMUA CPT (termasuk dari Library)', 'sofir' ); ?></li>
+                    <li><?php \esc_html_e( 'Memperbarui setting public, show_in_menu, dan publicly_queryable untuk SEMUA CPT', 'sofir' ); ?></li>
+                    <li><?php \esc_html_e( 'Memastikan CPT dapat diakses di admin dan web/frontend', 'sofir' ); ?></li>
                     <li><?php \esc_html_e( 'Flush rewrite rules untuk vendor store dan vendor product', 'sofir' ); ?></li>
                     <li><?php \esc_html_e( 'Reset version check untuk memaksa update otomatis', 'sofir' ); ?></li>
                 </ul>
@@ -247,6 +248,11 @@ class Manager {
         
         foreach ( $post_types as $slug => $definition ) {
             $needs_update = false;
+            
+            if ( ! isset( $definition['args']['public'] ) || ! $definition['args']['public'] ) {
+                $definition['args']['public'] = true;
+                $needs_update = true;
+            }
             
             if ( ! isset( $definition['args']['show_in_menu'] ) || ! $definition['args']['show_in_menu'] ) {
                 $definition['args']['show_in_menu'] = true;

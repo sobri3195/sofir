@@ -319,7 +319,9 @@ class LibraryPanel {
         $updated = false;
 
         foreach ( $post_types as $slug => $definition ) {
-            if ( ! isset( $definition['args']['show_in_menu'] ) || ! $definition['args']['show_in_menu'] ) {
+            if ( ! isset( $definition['args']['show_in_menu'] ) || ! $definition['args']['show_in_menu'] 
+                || ! isset( $definition['args']['public'] ) || ! $definition['args']['public'] ) {
+                $definition['args']['public'] = true;
                 $definition['args']['show_in_menu'] = true;
                 $definition['args']['show_ui'] = true;
                 $definition['args']['show_in_nav_menus'] = true;
@@ -332,7 +334,7 @@ class LibraryPanel {
         }
 
         if ( $updated ) {
-            \update_option( 'sofir_cpt_definitions_version', '1.0.5' );
+            \update_option( 'sofir_cpt_definitions_version', '1.0.6' );
         }
     }
 
