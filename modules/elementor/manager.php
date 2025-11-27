@@ -28,10 +28,26 @@ class Manager {
         );
 
         $elements_manager->add_category(
+            'sofir-booking',
+            [
+                'title' => \esc_html__( 'SOFIR Booking & Events', 'sofir' ),
+                'icon' => 'fa fa-calendar',
+            ]
+        );
+
+        $elements_manager->add_category(
             'sofir-ecommerce',
             [
                 'title' => \esc_html__( 'SOFIR E-Commerce', 'sofir' ),
                 'icon' => 'fa fa-shopping-cart',
+            ]
+        );
+
+        $elements_manager->add_category(
+            'sofir-learning',
+            [
+                'title' => \esc_html__( 'SOFIR E-Learning', 'sofir' ),
+                'icon' => 'fa fa-graduation-cap',
             ]
         );
     }
@@ -50,6 +66,18 @@ class Manager {
             'create-post',
             'dynamic-data',
             'appointment-form',
+            'event-list',
+            'event-calendar',
+            'event-registration',
+            'booking-form',
+            'restaurant-menu',
+            'restaurant-order-form',
+            'restaurant-delivery-form',
+            'vendor-products',
+            'vendor-store-list',
+            'course-list',
+            'course-progress',
+            'my-courses',
         ];
 
         foreach ( $widget_files as $widget_file ) {
