@@ -65,25 +65,41 @@ class Manager {
 
     public function check_and_update_definitions(): void {
         $version = \get_option( 'sofir_cpt_definitions_version', '0' );
-        $current_version = '1.0.2';
+        $current_version = '1.0.4';
 
         if ( $version !== $current_version ) {
             $this->load_definitions();
-            $seeds = $this->get_seed_post_types();
+            $updated = false;
 
-            foreach ( $seeds as $slug => $seed_definition ) {
-                if ( ! isset( $this->post_types[ $slug ] ) ) {
-                    continue;
+            foreach ( $this->post_types as $slug => $definition ) {
+                $needs_update = false;
+
+                if ( ! isset( $definition['args']['show_in_menu'] ) || ! $definition['args']['show_in_menu'] ) {
+                    $this->post_types[ $slug ]['args']['show_in_menu'] = true;
+                    $needs_update = true;
                 }
 
-                if ( isset( $seed_definition['args']['show_in_menu'] ) ) {
-                    $this->post_types[ $slug ]['args']['show_in_menu'] = $seed_definition['args']['show_in_menu'];
+                if ( ! isset( $definition['args']['show_ui'] ) || ! $definition['args']['show_ui'] ) {
+                    $this->post_types[ $slug ]['args']['show_ui'] = true;
+                    $needs_update = true;
+                }
+
+                if ( ! isset( $definition['args']['show_in_nav_menus'] ) ) {
+                    $this->post_types[ $slug ]['args']['show_in_nav_menus'] = true;
+                    $needs_update = true;
+                }
+
+                if ( $needs_update ) {
+                    $updated = true;
                 }
             }
 
-            \update_option( self::OPTION_POST_TYPES, $this->post_types );
+            if ( $updated ) {
+                \update_option( self::OPTION_POST_TYPES, $this->post_types );
+                \flush_rewrite_rules();
+            }
+
             \update_option( 'sofir_cpt_definitions_version', $current_version );
-            \flush_rewrite_rules();
         }
     }
 
