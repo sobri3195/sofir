@@ -263,6 +263,21 @@ class Manager {
                 $needs_update = true;
             }
             
+            if ( ! isset( $definition['args']['publicly_queryable'] ) ) {
+                $definition['args']['publicly_queryable'] = true;
+                $needs_update = true;
+            }
+            
+            if ( ! isset( $definition['args']['can_export'] ) ) {
+                $definition['args']['can_export'] = true;
+                $needs_update = true;
+            }
+            
+            if ( ! isset( $definition['args']['exclude_from_search'] ) ) {
+                $definition['args']['exclude_from_search'] = false;
+                $needs_update = true;
+            }
+            
             if ( $needs_update ) {
                 $payload = $this->convert_definition_to_payload( $slug, $definition );
                 $manager->save_post_type( $payload );

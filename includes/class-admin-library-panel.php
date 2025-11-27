@@ -323,13 +323,16 @@ class LibraryPanel {
                 $definition['args']['show_in_menu'] = true;
                 $definition['args']['show_ui'] = true;
                 $definition['args']['show_in_nav_menus'] = true;
+                $definition['args']['publicly_queryable'] = true;
+                $definition['args']['can_export'] = true;
+                $definition['args']['exclude_from_search'] = false;
                 $manager->save_post_type( array_merge( [ 'slug' => $slug ], $this->convert_definition_to_payload( $slug, $definition ) ) );
                 $updated = true;
             }
         }
 
         if ( $updated ) {
-            \update_option( 'sofir_cpt_definitions_version', '1.0.4' );
+            \update_option( 'sofir_cpt_definitions_version', '1.0.5' );
         }
     }
 
