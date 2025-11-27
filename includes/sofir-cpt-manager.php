@@ -65,7 +65,7 @@ class Manager {
 
     public function check_and_update_definitions(): void {
         $version = \get_option( 'sofir_cpt_definitions_version', '0' );
-        $current_version = '1.0.5';
+        $current_version = '1.0.6';
 
         if ( $version !== $current_version ) {
             $this->load_definitions();
@@ -73,6 +73,11 @@ class Manager {
 
             foreach ( $this->post_types as $slug => $definition ) {
                 $needs_update = false;
+
+                if ( ! isset( $definition['args']['public'] ) || ! $definition['args']['public'] ) {
+                    $this->post_types[ $slug ]['args']['public'] = true;
+                    $needs_update = true;
+                }
 
                 if ( ! isset( $definition['args']['show_in_menu'] ) || ! $definition['args']['show_in_menu'] ) {
                     $this->post_types[ $slug ]['args']['show_in_menu'] = true;
