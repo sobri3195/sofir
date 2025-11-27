@@ -78,6 +78,8 @@ class Manager {
             'course-list',
             'course-progress',
             'my-courses',
+            'voxel-listings',
+            'voxel-search-form',
         ];
 
         foreach ( $widget_files as $widget_file ) {

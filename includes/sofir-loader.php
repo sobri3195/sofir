@@ -25,6 +25,7 @@ use Sofir\Elementor\Manager as ElementorManager;
 use Sofir\Ecommerce\Manager as EcommerceManager;
 use Sofir\Restaurant\Manager as RestaurantManager;
 use Sofir\Ecourse\Manager as EcourseManager;
+use Sofir\Voxel\Manager as VoxelManager;
 
 class Loader {
     /** @var class-string[] */
@@ -99,6 +100,7 @@ class Loader {
             EcommerceManager::class,
             RestaurantManager::class,
             EcourseManager::class,
+            VoxelManager::class,
         ];
 
         /** @var class-string[] $modules */
