@@ -65,7 +65,7 @@ class Manager {
 
     public function check_and_update_definitions(): void {
         $version = \get_option( 'sofir_cpt_definitions_version', '0' );
-        $current_version = '1.0.4';
+        $current_version = '1.0.5';
 
         if ( $version !== $current_version ) {
             $this->load_definitions();
@@ -86,6 +86,21 @@ class Manager {
 
                 if ( ! isset( $definition['args']['show_in_nav_menus'] ) ) {
                     $this->post_types[ $slug ]['args']['show_in_nav_menus'] = true;
+                    $needs_update = true;
+                }
+
+                if ( ! isset( $definition['args']['publicly_queryable'] ) ) {
+                    $this->post_types[ $slug ]['args']['publicly_queryable'] = true;
+                    $needs_update = true;
+                }
+
+                if ( ! isset( $definition['args']['can_export'] ) ) {
+                    $this->post_types[ $slug ]['args']['can_export'] = true;
+                    $needs_update = true;
+                }
+
+                if ( ! isset( $definition['args']['exclude_from_search'] ) ) {
+                    $this->post_types[ $slug ]['args']['exclude_from_search'] = false;
                     $needs_update = true;
                 }
 
@@ -437,16 +452,19 @@ class Manager {
             $plural      = $args['labels']['name'] ?? $singular . 's';
 
             $defaults = [
-                'public'            => true,
-                'show_ui'           => true,
-                'show_in_menu'      => true,
-                'show_in_nav_menus' => true,
-                'show_in_rest'      => true,
-                'supports'          => ! empty( $supports ) ? $supports : [ 'title', 'editor', 'thumbnail', 'excerpt', 'author', 'revisions' ],
-                'has_archive'       => true,
-                'menu_position'     => 20,
-                'rewrite'           => [ 'slug' => $post_type ],
-                'labels'            => $this->build_labels( $singular, $plural ),
+                'public'             => true,
+                'publicly_queryable' => true,
+                'show_ui'            => true,
+                'show_in_menu'       => true,
+                'show_in_nav_menus'  => true,
+                'show_in_rest'       => true,
+                'can_export'         => true,
+                'exclude_from_search' => false,
+                'supports'           => ! empty( $supports ) ? $supports : [ 'title', 'editor', 'thumbnail', 'excerpt', 'author', 'revisions' ],
+                'has_archive'        => true,
+                'menu_position'      => 20,
+                'rewrite'            => [ 'slug' => $post_type ],
+                'labels'             => $this->build_labels( $singular, $plural ),
             ];
 
             $normalized_args = \wp_parse_args( $args, $defaults );
@@ -681,19 +699,22 @@ class Manager {
         $rest_base = isset( $payload['rest_base'] ) ? \sanitize_title( $payload['rest_base'] ) : $slug;
 
         $args = [
-            'labels'            => $this->build_labels( $singular, $plural ),
-            'menu_icon'         => $icon,
-            'supports'          => ! empty( $supports ) ? $supports : [ 'title', 'editor', 'thumbnail', 'excerpt', 'revisions' ],
-            'has_archive'       => ! empty( $payload['has_archive'] ),
-            'hierarchical'      => ! empty( $payload['hierarchical'] ),
-            'public'            => true,
-            'show_ui'           => true,
-            'show_in_menu'      => true,
-            'show_in_nav_menus' => true,
-            'show_in_rest'      => true,
-            'rest_base'         => $rest_base,
-            'rewrite'           => [ 'slug' => $payload['rewrite'] ?? $slug ],
-            'taxonomies'        => $taxes,
+            'labels'              => $this->build_labels( $singular, $plural ),
+            'menu_icon'           => $icon,
+            'supports'            => ! empty( $supports ) ? $supports : [ 'title', 'editor', 'thumbnail', 'excerpt', 'revisions' ],
+            'has_archive'         => ! empty( $payload['has_archive'] ),
+            'hierarchical'        => ! empty( $payload['hierarchical'] ),
+            'public'              => true,
+            'publicly_queryable'  => true,
+            'show_ui'             => true,
+            'show_in_menu'        => true,
+            'show_in_nav_menus'   => true,
+            'show_in_rest'        => true,
+            'can_export'          => true,
+            'exclude_from_search' => false,
+            'rest_base'           => $rest_base,
+            'rewrite'             => [ 'slug' => $payload['rewrite'] ?? $slug ],
+            'taxonomies'          => $taxes,
         ];
 
         $fields_selected = isset( $payload['fields'] ) ? array_map( 'sanitize_key', (array) $payload['fields'] ) : [];
