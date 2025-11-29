@@ -7,6 +7,7 @@ use Sofir\Admin\TemplatesPanel;
 use Sofir\Admin\LibraryPanel;
 use Sofir\Admin\UserPanel;
 use Sofir\Admin\PaymentPanel;
+use Sofir\Admin\VoxelPanel;
 use Sofir\Admin\Wizard;
 use Sofir\Templates\Manager as TemplateManager;
 
@@ -36,11 +37,13 @@ class Manager {
         \add_action( 'sofir/admin/tab/payments', [ $this, 'render_payments_tab' ] );
         \add_action( 'sofir/admin/tab/seo', [ $this, 'render_seo_tab' ] );
         \add_action( 'sofir/admin/tab/users', [ $this, 'render_users_tab' ] );
+        \add_action( 'sofir/admin/tab/voxel', [ $this, 'render_voxel_tab' ] );
         \add_action( 'sofir/admin/tab/tools', [ $this, 'render_tools_tab' ] );
 
         ContentPanel::instance()->boot();
         LibraryPanel::instance()->boot();
         PaymentPanel::instance()->boot();
+        VoxelPanel::instance()->boot();
         Wizard::instance()->boot();
     }
 
@@ -164,6 +167,13 @@ class Manager {
         UserPanel::instance()->render();
     }
 
+    public function render_voxel_tab(): void {
+        if ( isset( $_GET['voxel_settings_saved'] ) ) {
+            echo '<div class="notice notice-success is-dismissible"><p><strong>' . \esc_html__( 'Berhasil!', 'sofir' ) . '</strong> ' . \esc_html__( 'Voxel settings berhasil disimpan.', 'sofir' ) . '</p></div>';
+        }
+        VoxelPanel::instance()->render();
+    }
+
     public function render_tools_tab(): void {
         if ( isset( $_POST['sofir_refresh_cpt'] ) && \check_admin_referer( 'sofir_refresh_cpt' ) ) {
             $this->fix_cpt_menus();
@@ -222,6 +232,7 @@ class Manager {
             'payments'    => \__( 'Payments', 'sofir' ),
             'seo'         => \__( 'SEO', 'sofir' ),
             'users'       => \__( 'Users', 'sofir' ),
+            'voxel'       => \__( 'Voxel', 'sofir' ),
             'tools'       => \__( 'Tools', 'sofir' ),
         ];
 
