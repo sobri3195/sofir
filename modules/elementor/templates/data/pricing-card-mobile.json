@@ -1,0 +1,136 @@
+[
+  {
+    "id": "pricing-card-mobile",
+    "elType": "section",
+    "settings": {
+      "background_background": "gradient",
+      "background_color": "#6366f1",
+      "background_color_b": "#8b5cf6",
+      "background_gradient_angle": {"unit": "deg", "size": 135},
+      "padding": {"unit": "px", "top": 40, "right": 28, "bottom": 40, "left": 28, "isLinked": false},
+      "border_radius": {"unit": "px", "top": 24, "right": 24, "bottom": 24, "left": 24, "isLinked": true},
+      "box_shadow_box_shadow_type": "yes",
+      "box_shadow_box_shadow": {
+        "horizontal": 0,
+        "vertical": 12,
+        "blur": 32,
+        "spread": 0,
+        "color": "rgba(99,102,241,0.3)"
+      }
+    },
+    "elements": [
+      {
+        "id": "pricing-col",
+        "elType": "column",
+        "settings": {"_column_size": 100},
+        "elements": [
+          {
+            "id": "pricing-badge",
+            "elType": "widget",
+            "widgetType": "heading",
+            "settings": {
+              "title": "MOST POPULAR",
+              "header_size": "h6",
+              "typography_typography": "custom",
+              "typography_font_size": {"unit": "px", "size": 12},
+              "typography_font_weight": "700",
+              "typography_letter_spacing": {"unit": "px", "size": 1.5},
+              "color": "#6366f1",
+              "background_background": "classic",
+              "background_color": "#ffffff",
+              "border_radius": {"unit": "px", "top": 50, "right": 50, "bottom": 50, "left": 50, "isLinked": true},
+              "padding": {"unit": "px", "top": 8, "right": 16, "bottom": 8, "left": 16, "isLinked": false},
+              "margin": {"unit": "px", "top": 0, "right": 0, "bottom": 24, "left": 0, "isLinked": false},
+              "text_align": "center",
+              "width": {"unit": "%", "size": "auto"}
+            }
+          },
+          {
+            "id": "pricing-plan-name",
+            "elType": "widget",
+            "widgetType": "heading",
+            "settings": {
+              "title": "Professional",
+              "header_size": "h3",
+              "typography_typography": "custom",
+              "typography_font_size": {"unit": "px", "size": 28},
+              "typography_font_weight": "700",
+              "color": "#ffffff",
+              "text_align": "center",
+              "margin": {"unit": "px", "top": 0, "right": 0, "bottom": 8, "left": 0, "isLinked": false}
+            }
+          },
+          {
+            "id": "pricing-description",
+            "elType": "widget",
+            "widgetType": "text-editor",
+            "settings": {
+              "editor": "<p>Perfect for growing teams</p>",
+              "typography_typography": "custom",
+              "typography_font_size": {"unit": "px", "size": 16},
+              "color": "rgba(255,255,255,0.9)",
+              "text_align": "center",
+              "margin": {"unit": "px", "top": 0, "right": 0, "bottom": 32, "left": 0, "isLinked": false}
+            }
+          },
+          {
+            "id": "pricing-price",
+            "elType": "widget",
+            "widgetType": "heading",
+            "settings": {
+              "title": "$49",
+              "header_size": "h1",
+              "typography_typography": "custom",
+              "typography_font_size": {"unit": "px", "size": 56},
+              "typography_font_weight": "900",
+              "color": "#ffffff",
+              "text_align": "center",
+              "margin": {"unit": "px", "top": 0, "right": 0, "bottom": 8, "left": 0, "isLinked": false}
+            }
+          },
+          {
+            "id": "pricing-period",
+            "elType": "widget",
+            "widgetType": "text-editor",
+            "settings": {
+              "editor": "<p>per month</p>",
+              "typography_typography": "custom",
+              "typography_font_size": {"unit": "px", "size": 16},
+              "color": "rgba(255,255,255,0.8)",
+              "text_align": "center",
+              "margin": {"unit": "px", "top": 0, "right": 0, "bottom": 32, "left": 0, "isLinked": false}
+            }
+          },
+          {
+            "id": "pricing-features",
+            "elType": "widget",
+            "widgetType": "text-editor",
+            "settings": {
+              "editor": "<ul style='list-style: none; padding: 0; margin: 0 0 32px 0;'><li style='padding: 12px 0; color: #ffffff; font-size: 16px;'>✓ Unlimited projects</li><li style='padding: 12px 0; color: #ffffff; font-size: 16px;'>✓ 50GB storage</li><li style='padding: 12px 0; color: #ffffff; font-size: 16px;'>✓ Priority support</li><li style='padding: 12px 0; color: #ffffff; font-size: 16px;'>✓ Advanced analytics</li><li style='padding: 12px 0; color: #ffffff; font-size: 16px;'>✓ Custom integrations</li></ul>",
+              "text_align": "left",
+              "margin": {"unit": "px", "top": 0, "right": 0, "bottom": 32, "left": 0, "isLinked": false}
+            }
+          },
+          {
+            "id": "pricing-button",
+            "elType": "widget",
+            "widgetType": "button",
+            "settings": {
+              "text": "Get Started",
+              "size": "xl",
+              "typography_typography": "custom",
+              "typography_font_size": {"unit": "px", "size": 18},
+              "typography_font_weight": "700",
+              "button_background_color": "#ffffff",
+              "button_text_color": "#6366f1",
+              "border_radius": {"unit": "px", "top": 50, "right": 50, "bottom": 50, "left": 50, "isLinked": true},
+              "button_padding": {"unit": "px", "top": 18, "right": 40, "bottom": 18, "left": 40, "isLinked": false},
+              "hover_animation": "grow",
+              "align": "stretch"
+            }
+          }
+        ]
+      }
+    ]
+  }
+]

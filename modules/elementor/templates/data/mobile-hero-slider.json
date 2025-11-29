@@ -1,0 +1,142 @@
+[
+  {
+    "id": "mobile-hero-1",
+    "elType": "section",
+    "settings": {
+      "background_background": "gradient",
+      "background_color": "#6366f1",
+      "background_color_b": "#ec4899",
+      "background_gradient_angle": {"unit": "deg", "size": 135},
+      "padding": {"unit": "px", "top": 80, "right": 20, "bottom": 80, "left": 20, "isLinked": false},
+      "height": {"unit": "vh", "size": 100},
+      "content_position": "middle"
+    },
+    "elements": [
+      {
+        "id": "mobile-hero-col",
+        "elType": "column",
+        "settings": {"_column_size": 100},
+        "elements": [
+          {
+            "id": "hero-heading",
+            "elType": "widget",
+            "widgetType": "heading",
+            "settings": {
+              "title": "Build Better Products",
+              "header_size": "h1",
+              "typography_typography": "custom",
+              "typography_font_size": {"unit": "px", "size": 48},
+              "typography_font_weight": "800",
+              "typography_line_height": {"unit": "em", "size": 1.2},
+              "color": "#ffffff",
+              "text_align": "center",
+              "margin": {"unit": "px", "top": 0, "right": 0, "bottom": 24, "left": 0, "isLinked": false}
+            }
+          },
+          {
+            "id": "hero-description",
+            "elType": "widget",
+            "widgetType": "text-editor",
+            "settings": {
+              "editor": "<p>Create stunning mobile experiences with our interactive demo builder. Loved by thousands of teams worldwide.</p>",
+              "typography_typography": "custom",
+              "typography_font_size": {"unit": "px", "size": 18},
+              "typography_line_height": {"unit": "em", "size": 1.6},
+              "color": "rgba(255,255,255,0.9)",
+              "text_align": "center",
+              "margin": {"unit": "px", "top": 0, "right": 0, "bottom": 40, "left": 0, "isLinked": false}
+            }
+          },
+          {
+            "id": "hero-button",
+            "elType": "widget",
+            "widgetType": "button",
+            "settings": {
+              "text": "Get Started Free",
+              "size": "xl",
+              "typography_typography": "custom",
+              "typography_font_size": {"unit": "px", "size": 18},
+              "typography_font_weight": "700",
+              "button_background_color": "#ffffff",
+              "button_text_color": "#6366f1",
+              "border_radius": {"unit": "px", "top": 50, "right": 50, "bottom": 50, "left": 50, "isLinked": true},
+              "button_padding": {"unit": "px", "top": 18, "right": 40, "bottom": 18, "left": 40, "isLinked": false},
+              "hover_animation": "grow",
+              "align": "center"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "mobile-hero-2",
+    "elType": "section",
+    "settings": {
+      "background_background": "gradient",
+      "background_color": "#8b5cf6",
+      "background_color_b": "#06b6d4",
+      "background_gradient_angle": {"unit": "deg", "size": 135},
+      "padding": {"unit": "px", "top": 80, "right": 20, "bottom": 80, "left": 20, "isLinked": false},
+      "height": {"unit": "vh", "size": 100},
+      "content_position": "middle"
+    },
+    "elements": [
+      {
+        "id": "mobile-hero-col-2",
+        "elType": "column",
+        "settings": {"_column_size": 100},
+        "elements": [
+          {
+            "id": "hero-heading-2",
+            "elType": "widget",
+            "widgetType": "heading",
+            "settings": {
+              "title": "Ship Faster",
+              "header_size": "h1",
+              "typography_typography": "custom",
+              "typography_font_size": {"unit": "px", "size": 48},
+              "typography_font_weight": "800",
+              "typography_line_height": {"unit": "em", "size": 1.2},
+              "color": "#ffffff",
+              "text_align": "center",
+              "margin": {"unit": "px", "top": 0, "right": 0, "bottom": 24, "left": 0, "isLinked": false}
+            }
+          },
+          {
+            "id": "hero-description-2",
+            "elType": "widget",
+            "widgetType": "text-editor",
+            "settings": {
+              "editor": "<p>Deploy your ideas in minutes, not months. Our platform handles the complexity so you can focus on what matters.</p>",
+              "typography_typography": "custom",
+              "typography_font_size": {"unit": "px", "size": 18},
+              "typography_line_height": {"unit": "em", "size": 1.6},
+              "color": "rgba(255,255,255,0.9)",
+              "text_align": "center",
+              "margin": {"unit": "px", "top": 0, "right": 0, "bottom": 40, "left": 0, "isLinked": false}
+            }
+          },
+          {
+            "id": "hero-button-2",
+            "elType": "widget",
+            "widgetType": "button",
+            "settings": {
+              "text": "Start Building",
+              "size": "xl",
+              "typography_typography": "custom",
+              "typography_font_size": {"unit": "px", "size": 18},
+              "typography_font_weight": "700",
+              "button_background_color": "#ffffff",
+              "button_text_color": "#8b5cf6",
+              "border_radius": {"unit": "px", "top": 50, "right": 50, "bottom": 50, "left": 50, "isLinked": true},
+              "button_padding": {"unit": "px", "top": 18, "right": 40, "bottom": 18, "left": 40, "isLinked": false},
+              "hover_animation": "grow",
+              "align": "center"
+            }
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -1,0 +1,88 @@
+[
+  {
+    "id": "feature-card-mobile",
+    "elType": "section",
+    "settings": {
+      "background_background": "gradient",
+      "background_color": "#f8fafc",
+      "background_color_b": "#f1f5f9",
+      "background_gradient_angle": {"unit": "deg", "size": 180},
+      "padding": {"unit": "px", "top": 32, "right": 24, "bottom": 32, "left": 24, "isLinked": false},
+      "border_radius": {"unit": "px", "top": 20, "right": 20, "bottom": 20, "left": 20, "isLinked": true},
+      "border_border": "solid",
+      "border_width": {"unit": "px", "top": 2, "right": 2, "bottom": 2, "left": 2, "isLinked": true},
+      "border_color": "#e2e8f0"
+    },
+    "elements": [
+      {
+        "id": "feature-card-col",
+        "elType": "column",
+        "settings": {"_column_size": 100},
+        "elements": [
+          {
+            "id": "feature-icon",
+            "elType": "widget",
+            "widgetType": "icon",
+            "settings": {
+              "icon": {"value": "fas fa-rocket", "library": "fa-solid"},
+              "icon_color": "#6366f1",
+              "icon_size": {"unit": "px", "size": 48},
+              "background_background": "gradient",
+              "background_color": "#ddd6fe",
+              "background_color_b": "#e0e7ff",
+              "shape": "circle",
+              "padding": {"unit": "px", "top": 20, "right": 20, "bottom": 20, "left": 20, "isLinked": true},
+              "margin": {"unit": "px", "top": 0, "right": 0, "bottom": 20, "left": 0, "isLinked": false},
+              "align": "center"
+            }
+          },
+          {
+            "id": "feature-title",
+            "elType": "widget",
+            "widgetType": "heading",
+            "settings": {
+              "title": "Lightning Fast",
+              "header_size": "h3",
+              "typography_typography": "custom",
+              "typography_font_size": {"unit": "px", "size": 24},
+              "typography_font_weight": "700",
+              "typography_line_height": {"unit": "em", "size": 1.3},
+              "color": "#1e293b",
+              "text_align": "center",
+              "margin": {"unit": "px", "top": 0, "right": 0, "bottom": 12, "left": 0, "isLinked": false}
+            }
+          },
+          {
+            "id": "feature-description",
+            "elType": "widget",
+            "widgetType": "text-editor",
+            "settings": {
+              "editor": "<p>Build and deploy your projects in record time with our optimized workflow and powerful tools.</p>",
+              "typography_typography": "custom",
+              "typography_font_size": {"unit": "px", "size": 16},
+              "typography_line_height": {"unit": "em", "size": 1.6},
+              "color": "#64748b",
+              "text_align": "center",
+              "margin": {"unit": "px", "top": 0, "right": 0, "bottom": 20, "left": 0, "isLinked": false}
+            }
+          },
+          {
+            "id": "feature-link",
+            "elType": "widget",
+            "widgetType": "button",
+            "settings": {
+              "text": "Learn More",
+              "button_type": "text",
+              "typography_typography": "custom",
+              "typography_font_size": {"unit": "px", "size": 16},
+              "typography_font_weight": "600",
+              "button_text_color": "#6366f1",
+              "hover_animation": "none",
+              "align": "center"
+            }
+          }
+        ]
+      }
+    ]
+  }
+]
