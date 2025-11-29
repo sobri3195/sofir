@@ -21,7 +21,11 @@ class Manager {
         \add_action( 'add_meta_boxes', [ $this, 'add_submission_meta_boxes' ] );
         \add_action( 'add_meta_boxes', [ $this, 'add_form_meta_boxes' ] );
         \add_action( 'admin_init', [ $this, 'redirect_form_edit' ] );
+        \add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_frontend_assets' ] );
+        \add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_assets' ] );
         \add_shortcode( 'sofir_form', [ $this, 'render_form' ] );
+        
+        $this->register_form_cron();
     }
 
     public function register_form_cpt(): void {
@@ -295,6 +299,11 @@ class Manager {
                                         <option value="date">Date</option>
                                         <option value="time">Time</option>
                                         <option value="file">File Upload</option>
+                                        <option value="rating">Rating (Star)</option>
+                                        <option value="hidden">Hidden Field</option>
+                                        <option value="html">HTML Block</option>
+                                        <option value="section">Section Break</option>
+                                        <option value="signature">Signature</option>
                                     </select>
                                 </td>
                             </tr>
@@ -356,6 +365,11 @@ class Manager {
                             <option value="date" <?php \selected( $field['type'] ?? '', 'date' ); ?>>Date</option>
                             <option value="time" <?php \selected( $field['type'] ?? '', 'time' ); ?>>Time</option>
                             <option value="file" <?php \selected( $field['type'] ?? '', 'file' ); ?>>File Upload</option>
+                            <option value="rating" <?php \selected( $field['type'] ?? '', 'rating' ); ?>>Rating (Star)</option>
+                            <option value="hidden" <?php \selected( $field['type'] ?? '', 'hidden' ); ?>>Hidden Field</option>
+                            <option value="html" <?php \selected( $field['type'] ?? '', 'html' ); ?>>HTML Block</option>
+                            <option value="section" <?php \selected( $field['type'] ?? '', 'section' ); ?>>Section Break</option>
+                            <option value="signature" <?php \selected( $field['type'] ?? '', 'signature' ); ?>>Signature</option>
                         </select>
                     </td>
                 </tr>
@@ -472,6 +486,44 @@ class Manager {
 
             case 'file':
                 echo '<input type="file" id="' . \esc_attr( $name ) . '" name="' . \esc_attr( $name ) . '" ' . ( $required ? 'required' : '' ) . ' />';
+                break;
+
+            case 'rating':
+                echo '<div class="sofir-rating-field" data-field="' . \esc_attr( $name ) . '">';
+                for ( $i = 1; $i <= 5; $i++ ) {
+                    echo '<span class="sofir-star" data-value="' . $i . '">★</span>';
+                }
+                echo '</div>';
+                echo '<input type="hidden" id="' . \esc_attr( $name ) . '" name="' . \esc_attr( $name ) . '" ' . ( $required ? 'required' : '' ) . ' />';
+                break;
+
+            case 'hidden':
+                echo '<input type="hidden" id="' . \esc_attr( $name ) . '" name="' . \esc_attr( $name ) . '" value="' . \esc_attr( $field['default_value'] ?? '' ) . '" />';
+                break;
+
+            case 'html':
+                echo '<div class="sofir-html-block">' . \wp_kses_post( $field['html_content'] ?? '' ) . '</div>';
+                break;
+
+            case 'section':
+                echo '<div class="sofir-section-break">';
+                if ( $label ) {
+                    echo '<h3>' . \esc_html( $label ) . '</h3>';
+                }
+                if ( ! empty( $field['description'] ) ) {
+                    echo '<p>' . \esc_html( $field['description'] ) . '</p>';
+                }
+                echo '</div>';
+                break;
+
+            case 'signature':
+                echo '<div class="sofir-signature-pad">';
+                echo '<canvas id="' . \esc_attr( $name ) . '_canvas" width="400" height="200" style="border: 1px solid #ccc; cursor: crosshair;"></canvas>';
+                echo '<div class="sofir-signature-actions" style="margin-top: 10px;">';
+                echo '<button type="button" class="button sofir-clear-signature" data-field="' . \esc_attr( $name ) . '">' . \esc_html__( 'Clear', 'sofir' ) . '</button>';
+                echo '</div>';
+                echo '<input type="hidden" id="' . \esc_attr( $name ) . '" name="' . \esc_attr( $name ) . '" ' . ( $required ? 'required' : '' ) . ' />';
+                echo '</div>';
                 break;
 
             default:
@@ -797,5 +849,351 @@ class Manager {
         }, $submissions );
 
         return new \WP_REST_Response( $data, 200 );
+    }
+
+    public function enqueue_frontend_assets(): void {
+        \wp_register_style(
+            'sofir-forms',
+            SOFIR_ASSETS_URL . 'css/forms.css',
+            [],
+            SOFIR_VERSION
+        );
+
+        \wp_register_script(
+            'sofir-forms',
+            SOFIR_ASSETS_URL . 'js/forms.js',
+            [ 'jquery', 'wp-api-fetch' ],
+            SOFIR_VERSION,
+            true
+        );
+
+        \wp_localize_script(
+            'sofir-forms',
+            'SOFIR_FORMS_DATA',
+            [
+                'restRoot' => \esc_url_raw( \rest_url() ),
+                'nonce' => \wp_create_nonce( 'wp_rest' ),
+                'ajaxUrl' => \admin_url( 'admin-ajax.php' ),
+            ]
+        );
+    }
+
+    public function enqueue_admin_assets( string $hook ): void {
+        if ( ! \str_contains( $hook, 'sofir-forms' ) ) {
+            return;
+        }
+
+        \wp_enqueue_style( 'wp-color-picker' );
+        \wp_enqueue_script( 'wp-color-picker' );
+        
+        \wp_enqueue_style(
+            'sofir-forms-admin',
+            SOFIR_ASSETS_URL . 'css/forms-admin.css',
+            [],
+            SOFIR_VERSION
+        );
+
+        \wp_enqueue_script(
+            'sofir-forms-admin',
+            SOFIR_ASSETS_URL . 'js/forms-admin.js',
+            [ 'jquery', 'jquery-ui-sortable', 'jquery-ui-datepicker', 'wp-color-picker' ],
+            SOFIR_VERSION,
+            true
+        );
+    }
+
+    public function register_form_cron(): void {
+        if ( ! \wp_next_scheduled( 'sofir_forms_daily_cleanup' ) ) {
+            \wp_schedule_event( \time(), 'daily', 'sofir_forms_daily_cleanup' );
+        }
+
+        \add_action( 'sofir_forms_daily_cleanup', [ $this, 'cleanup_expired_drafts' ] );
+    }
+
+    public function cleanup_expired_drafts(): void {
+        $drafts = \get_posts( [
+            'post_type' => 'sofir_submission',
+            'post_status' => 'draft',
+            'posts_per_page' => -1,
+            'date_query' => [
+                [
+                    'before' => '30 days ago',
+                ],
+            ],
+        ] );
+
+        foreach ( $drafts as $draft ) {
+            \wp_delete_post( $draft->ID, true );
+        }
+    }
+
+    public function get_form_templates(): array {
+        return [
+            'contact' => [
+                'name' => \__( 'Contact Form', 'sofir' ),
+                'fields' => [
+                    [
+                        'type' => 'text',
+                        'label' => \__( 'Name', 'sofir' ),
+                        'required' => '1',
+                        'placeholder' => \__( 'Your Name', 'sofir' ),
+                    ],
+                    [
+                        'type' => 'email',
+                        'label' => \__( 'Email', 'sofir' ),
+                        'required' => '1',
+                        'placeholder' => \__( 'Your Email', 'sofir' ),
+                    ],
+                    [
+                        'type' => 'textarea',
+                        'label' => \__( 'Message', 'sofir' ),
+                        'required' => '1',
+                        'placeholder' => \__( 'Your Message', 'sofir' ),
+                    ],
+                ],
+            ],
+            'registration' => [
+                'name' => \__( 'Registration Form', 'sofir' ),
+                'fields' => [
+                    [
+                        'type' => 'text',
+                        'label' => \__( 'Full Name', 'sofir' ),
+                        'required' => '1',
+                    ],
+                    [
+                        'type' => 'email',
+                        'label' => \__( 'Email Address', 'sofir' ),
+                        'required' => '1',
+                    ],
+                    [
+                        'type' => 'tel',
+                        'label' => \__( 'Phone Number', 'sofir' ),
+                        'required' => '1',
+                    ],
+                    [
+                        'type' => 'date',
+                        'label' => \__( 'Date of Birth', 'sofir' ),
+                        'required' => '1',
+                    ],
+                ],
+            ],
+            'survey' => [
+                'name' => \__( 'Survey Form', 'sofir' ),
+                'fields' => [
+                    [
+                        'type' => 'text',
+                        'label' => \__( 'Name', 'sofir' ),
+                        'required' => '1',
+                    ],
+                    [
+                        'type' => 'rating',
+                        'label' => \__( 'Rate Your Experience', 'sofir' ),
+                        'required' => '1',
+                    ],
+                    [
+                        'type' => 'radio',
+                        'label' => \__( 'Would you recommend us?', 'sofir' ),
+                        'required' => '1',
+                        'options' => "Yes\nNo\nMaybe",
+                    ],
+                    [
+                        'type' => 'textarea',
+                        'label' => \__( 'Additional Comments', 'sofir' ),
+                    ],
+                ],
+            ],
+            'booking' => [
+                'name' => \__( 'Booking Form', 'sofir' ),
+                'fields' => [
+                    [
+                        'type' => 'text',
+                        'label' => \__( 'Full Name', 'sofir' ),
+                        'required' => '1',
+                    ],
+                    [
+                        'type' => 'email',
+                        'label' => \__( 'Email', 'sofir' ),
+                        'required' => '1',
+                    ],
+                    [
+                        'type' => 'tel',
+                        'label' => \__( 'Phone', 'sofir' ),
+                        'required' => '1',
+                    ],
+                    [
+                        'type' => 'date',
+                        'label' => \__( 'Booking Date', 'sofir' ),
+                        'required' => '1',
+                    ],
+                    [
+                        'type' => 'time',
+                        'label' => \__( 'Booking Time', 'sofir' ),
+                        'required' => '1',
+                    ],
+                    [
+                        'type' => 'number',
+                        'label' => \__( 'Number of People', 'sofir' ),
+                        'required' => '1',
+                    ],
+                ],
+            ],
+            'payment' => [
+                'name' => \__( 'Payment Form', 'sofir' ),
+                'fields' => [
+                    [
+                        'type' => 'text',
+                        'label' => \__( 'Full Name', 'sofir' ),
+                        'required' => '1',
+                    ],
+                    [
+                        'type' => 'email',
+                        'label' => \__( 'Email', 'sofir' ),
+                        'required' => '1',
+                    ],
+                    [
+                        'type' => 'number',
+                        'label' => \__( 'Amount', 'sofir' ),
+                        'required' => '1',
+                        'placeholder' => '0.00',
+                    ],
+                    [
+                        'type' => 'select',
+                        'label' => \__( 'Payment Method', 'sofir' ),
+                        'required' => '1',
+                        'options' => "Credit Card\nBank Transfer\nPayPal\nStripe",
+                    ],
+                ],
+            ],
+        ];
+    }
+
+    public function export_submissions_csv( int $form_id ): void {
+        if ( ! \current_user_can( 'manage_options' ) ) {
+            \wp_die( \esc_html__( 'Unauthorized', 'sofir' ) );
+        }
+
+        $submissions = \get_posts( [
+            'post_type' => 'sofir_submission',
+            'meta_key' => 'form_id',
+            'meta_value' => $form_id,
+            'posts_per_page' => -1,
+        ] );
+
+        if ( empty( $submissions ) ) {
+            return;
+        }
+
+        $form = \get_post( $form_id );
+        $filename = \sanitize_file_name( $form->post_title ) . '-submissions-' . \date( 'Y-m-d-His' ) . '.csv';
+
+        \header( 'Content-Type: text/csv; charset=utf-8' );
+        \header( 'Content-Disposition: attachment; filename=' . $filename );
+        \header( 'Pragma: no-cache' );
+        \header( 'Expires: 0' );
+
+        $output = \fopen( 'php://output', 'w' );
+
+        $first_submission = \get_post_meta( $submissions[0]->ID, 'submission_data', true );
+        $headers = [ 'ID', 'Date' ];
+        if ( \is_array( $first_submission ) ) {
+            $headers = \array_merge( $headers, \array_keys( $first_submission ) );
+        }
+        $headers[] = 'IP Address';
+        $headers[] = 'User Agent';
+
+        \fputcsv( $output, $headers );
+
+        foreach ( $submissions as $submission ) {
+            $data = \get_post_meta( $submission->ID, 'submission_data', true );
+            $ip = \get_post_meta( $submission->ID, 'submission_ip', true );
+            $user_agent = \get_post_meta( $submission->ID, 'submission_user_agent', true );
+
+            $row = [ $submission->ID, $submission->post_date ];
+            if ( \is_array( $data ) ) {
+                foreach ( $first_submission as $key => $value ) {
+                    $row[] = $data[ $key ] ?? '';
+                }
+            }
+            $row[] = $ip;
+            $row[] = $user_agent;
+
+            \fputcsv( $output, $row );
+        }
+
+        \fclose( $output );
+        exit;
+    }
+
+    public function duplicate_form( int $form_id ): int {
+        $original_form = \get_post( $form_id );
+
+        if ( ! $original_form || 'sofir_form' !== $original_form->post_type ) {
+            return 0;
+        }
+
+        $new_form_data = [
+            'post_title' => $original_form->post_title . ' (Copy)',
+            'post_type' => 'sofir_form',
+            'post_status' => 'publish',
+        ];
+
+        $new_form_id = \wp_insert_post( $new_form_data );
+
+        if ( \is_wp_error( $new_form_id ) ) {
+            return 0;
+        }
+
+        $fields = \get_post_meta( $form_id, 'sofir_form_fields', true );
+        $settings = \get_post_meta( $form_id, 'sofir_form_settings', true );
+        $conditional_logic = \get_post_meta( $form_id, 'sofir_form_conditional_logic', true );
+        $styling = \get_post_meta( $form_id, 'sofir_form_styling', true );
+
+        \update_post_meta( $new_form_id, 'sofir_form_fields', $fields );
+        \update_post_meta( $new_form_id, 'sofir_form_settings', $settings );
+        \update_post_meta( $new_form_id, 'sofir_form_conditional_logic', $conditional_logic );
+        \update_post_meta( $new_form_id, 'sofir_form_styling', $styling );
+
+        return $new_form_id;
+    }
+
+    public function get_form_analytics( int $form_id ): array {
+        $views = (int) \get_post_meta( $form_id, 'sofir_form_views', true );
+        $submissions = \get_posts( [
+            'post_type' => 'sofir_submission',
+            'meta_key' => 'form_id',
+            'meta_value' => $form_id,
+            'posts_per_page' => -1,
+            'fields' => 'ids',
+        ] );
+
+        $conversion_rate = $views > 0 ? ( \count( $submissions ) / $views ) * 100 : 0;
+
+        return [
+            'views' => $views,
+            'submissions' => \count( $submissions ),
+            'conversion_rate' => \round( $conversion_rate, 2 ),
+        ];
+    }
+
+    public function track_form_view( int $form_id ): void {
+        $views = (int) \get_post_meta( $form_id, 'sofir_form_views', true );
+        \update_post_meta( $form_id, 'sofir_form_views', $views + 1 );
+    }
+
+    public function check_spam( array $data ): bool {
+        if ( isset( $data['honeypot'] ) && ! empty( $data['honeypot'] ) ) {
+            return true;
+        }
+
+        $spam_keywords = [ 'viagra', 'casino', 'porn', 'sex', 'cialis', 'levitra' ];
+        $content = \implode( ' ', $data );
+
+        foreach ( $spam_keywords as $keyword ) {
+            if ( \stripos( $content, $keyword ) !== false ) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
