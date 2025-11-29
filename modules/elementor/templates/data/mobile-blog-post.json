@@ -1,0 +1,266 @@
+[
+  {
+    "id": "mobile-post-header",
+    "elType": "section",
+    "settings": {
+      "background_background": "gradient",
+      "background_color": "#f8fafc",
+      "background_color_b": "#f1f5f9",
+      "padding": {"unit": "px", "top": 40, "right": 20, "bottom": 40, "left": 20, "isLinked": false}
+    },
+    "elements": [
+      {
+        "id": "post-header-col",
+        "elType": "column",
+        "settings": {"_column_size": 100},
+        "elements": [
+          {
+            "id": "post-category",
+            "elType": "widget",
+            "widgetType": "heading",
+            "settings": {
+              "title": "Product Design",
+              "header_size": "h6",
+              "typography_typography": "custom",
+              "typography_font_size": {"unit": "px", "size": 14},
+              "typography_font_weight": "700",
+              "typography_letter_spacing": {"unit": "px", "size": 1},
+              "color": "#6366f1",
+              "margin": {"unit": "px", "top": 0, "right": 0, "bottom": 12, "left": 0, "isLinked": false}
+            }
+          },
+          {
+            "id": "post-title",
+            "elType": "widget",
+            "widgetType": "heading",
+            "settings": {
+              "title": "How to Design Beautiful Mobile Interfaces",
+              "header_size": "h1",
+              "typography_typography": "custom",
+              "typography_font_size": {"unit": "px", "size": 32},
+              "typography_font_weight": "800",
+              "typography_line_height": {"unit": "em", "size": 1.3},
+              "color": "#1e293b",
+              "margin": {"unit": "px", "top": 0, "right": 0, "bottom": 16, "left": 0, "isLinked": false}
+            }
+          },
+          {
+            "id": "post-meta",
+            "elType": "widget",
+            "widgetType": "text-editor",
+            "settings": {
+              "editor": "<p>By John Doe • 5 min read • Dec 15, 2024</p>",
+              "typography_typography": "custom",
+              "typography_font_size": {"unit": "px", "size": 14},
+              "color": "#64748b"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "mobile-post-image",
+    "elType": "section",
+    "settings": {
+      "background_background": "classic",
+      "background_color": "#ffffff",
+      "padding": {"unit": "px", "top": 0, "right": 0, "bottom": 0, "left": 0, "isLinked": true}
+    },
+    "elements": [
+      {
+        "id": "post-image-col",
+        "elType": "column",
+        "settings": {"_column_size": 100},
+        "elements": [
+          {
+            "id": "post-featured-image",
+            "elType": "widget",
+            "widgetType": "image",
+            "settings": {
+              "image": {"url": "https://placehold.co/800x500/6366f1/ffffff?text=Featured+Image"}
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "mobile-post-content",
+    "elType": "section",
+    "settings": {
+      "background_background": "classic",
+      "background_color": "#ffffff",
+      "padding": {"unit": "px", "top": 40, "right": 20, "bottom": 40, "left": 20, "isLinked": false}
+    },
+    "elements": [
+      {
+        "id": "post-content-col",
+        "elType": "column",
+        "settings": {"_column_size": 100},
+        "elements": [
+          {
+            "id": "post-intro",
+            "elType": "widget",
+            "widgetType": "text-editor",
+            "settings": {
+              "editor": "<p style='font-size: 20px; line-height: 1.6; color: #334155; margin-bottom: 32px;'>Mobile interface design is more than just making things smaller. It's about creating intuitive, delightful experiences that feel natural on touch devices.</p>",
+              "typography_typography": "custom",
+              "typography_font_size": {"unit": "px", "size": 20},
+              "typography_line_height": {"unit": "em", "size": 1.6},
+              "color": "#334155",
+              "margin": {"unit": "px", "top": 0, "right": 0, "bottom": 32, "left": 0, "isLinked": false}
+            }
+          },
+          {
+            "id": "post-heading-1",
+            "elType": "widget",
+            "widgetType": "heading",
+            "settings": {
+              "title": "1. Start with Mobile First",
+              "header_size": "h2",
+              "typography_typography": "custom",
+              "typography_font_size": {"unit": "px", "size": 28},
+              "typography_font_weight": "700",
+              "color": "#1e293b",
+              "margin": {"unit": "px", "top": 0, "right": 0, "bottom": 16, "left": 0, "isLinked": false}
+            }
+          },
+          {
+            "id": "post-paragraph-1",
+            "elType": "widget",
+            "widgetType": "text-editor",
+            "settings": {
+              "editor": "<p>Designing for mobile first forces you to prioritize content and features. Start with the smallest screen and work your way up. This approach ensures your core experience is solid on all devices.</p><p>Benefits of mobile-first design:</p><ul><li>Better performance</li><li>Clearer focus on essential features</li><li>Easier to scale up than down</li><li>Improved user experience</li></ul>",
+              "typography_typography": "custom",
+              "typography_font_size": {"unit": "px", "size": 18},
+              "typography_line_height": {"unit": "em", "size": 1.7},
+              "color": "#475569",
+              "margin": {"unit": "px", "top": 0, "right": 0, "bottom": 32, "left": 0, "isLinked": false}
+            }
+          },
+          {
+            "id": "post-heading-2",
+            "elType": "widget",
+            "widgetType": "heading",
+            "settings": {
+              "title": "2. Design for Touch",
+              "header_size": "h2",
+              "typography_typography": "custom",
+              "typography_font_size": {"unit": "px", "size": 28},
+              "typography_font_weight": "700",
+              "color": "#1e293b",
+              "margin": {"unit": "px", "top": 0, "right": 0, "bottom": 16, "left": 0, "isLinked": false}
+            }
+          },
+          {
+            "id": "post-paragraph-2",
+            "elType": "widget",
+            "widgetType": "text-editor",
+            "settings": {
+              "editor": "<p>Touch targets should be large enough (44x44 pixels minimum) and spaced appropriately. Remember that fingers are less precise than mouse cursors, so give users plenty of room to tap.</p><p>Consider gesture-based interactions like swipe, pinch, and long-press to make your interface feel more native and intuitive.</p>",
+              "typography_typography": "custom",
+              "typography_font_size": {"unit": "px", "size": 18},
+              "typography_line_height": {"unit": "em", "size": 1.7},
+              "color": "#475569",
+              "margin": {"unit": "px", "top": 0, "right": 0, "bottom": 32, "left": 0, "isLinked": false}
+            }
+          },
+          {
+            "id": "post-heading-3",
+            "elType": "widget",
+            "widgetType": "heading",
+            "settings": {
+              "title": "3. Keep It Simple",
+              "header_size": "h2",
+              "typography_typography": "custom",
+              "typography_font_size": {"unit": "px", "size": 28},
+              "typography_font_weight": "700",
+              "color": "#1e293b",
+              "margin": {"unit": "px", "top": 0, "right": 0, "bottom": 16, "left": 0, "isLinked": false}
+            }
+          },
+          {
+            "id": "post-paragraph-3",
+            "elType": "widget",
+            "widgetType": "text-editor",
+            "settings": {
+              "editor": "<p>Mobile screens are small, so every element needs to earn its place. Remove unnecessary decorations, simplify navigation, and focus on what users actually need.</p><p>Use white space effectively to create breathing room and improve readability. Don't try to cram too much information into a small space.</p>",
+              "typography_typography": "custom",
+              "typography_font_size": {"unit": "px", "size": 18},
+              "typography_line_height": {"unit": "em", "size": 1.7},
+              "color": "#475569"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "mobile-post-cta",
+    "elType": "section",
+    "settings": {
+      "background_background": "gradient",
+      "background_color": "#f8fafc",
+      "background_color_b": "#f1f5f9",
+      "padding": {"unit": "px", "top": 40, "right": 20, "bottom": 40, "left": 20, "isLinked": false}
+    },
+    "elements": [
+      {
+        "id": "post-cta-col",
+        "elType": "column",
+        "settings": {"_column_size": 100},
+        "elements": [
+          {
+            "id": "post-cta-heading",
+            "elType": "widget",
+            "widgetType": "heading",
+            "settings": {
+              "title": "Ready to Build Your Mobile App?",
+              "header_size": "h3",
+              "typography_typography": "custom",
+              "typography_font_size": {"unit": "px", "size": 24},
+              "typography_font_weight": "700",
+              "color": "#1e293b",
+              "text_align": "center",
+              "margin": {"unit": "px", "top": 0, "right": 0, "bottom": 16, "left": 0, "isLinked": false}
+            }
+          },
+          {
+            "id": "post-cta-text",
+            "elType": "widget",
+            "widgetType": "text-editor",
+            "settings": {
+              "editor": "<p>Start building beautiful mobile interfaces with our templates</p>",
+              "typography_typography": "custom",
+              "typography_font_size": {"unit": "px", "size": 16},
+              "color": "#64748b",
+              "text_align": "center",
+              "margin": {"unit": "px", "top": 0, "right": 0, "bottom": 24, "left": 0, "isLinked": false}
+            }
+          },
+          {
+            "id": "post-cta-button",
+            "elType": "widget",
+            "widgetType": "button",
+            "settings": {
+              "text": "Get Started",
+              "size": "lg",
+              "typography_typography": "custom",
+              "typography_font_size": {"unit": "px", "size": 16},
+              "typography_font_weight": "700",
+              "button_background_background": "gradient",
+              "button_background_color": "#6366f1",
+              "button_background_color_b": "#8b5cf6",
+              "button_text_color": "#ffffff",
+              "border_radius": {"unit": "px", "top": 50, "right": 50, "bottom": 50, "left": 50, "isLinked": true},
+              "button_padding": {"unit": "px", "top": 16, "right": 32, "bottom": 16, "left": 32, "isLinked": false},
+              "hover_animation": "grow",
+              "align": "center"
+            }
+          }
+        ]
+      }
+    ]
+  }
+]
