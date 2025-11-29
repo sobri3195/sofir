@@ -17,6 +17,7 @@ use Sofir\Loyalty\Manager as LoyaltyManager;
 use Sofir\Appointments\Manager as AppointmentsManager;
 use Sofir\Rest\Router as RestRouter;
 use Sofir\Seo\Engine as SeoEngine;
+use Sofir\Seo\AiGenerator as SeoAiGenerator;
 use Sofir\Templates\Manager as TemplateManager;
 use Sofir\GSheets\Manager as GSheetsManager;
 use Sofir\Multivendor\Manager as MultivendorManager;
@@ -78,6 +79,7 @@ class Loader {
             CptManager::class,
             TemplateManager::class,
             SeoEngine::class,
+            SeoAiGenerator::class,
             Importer::class,
             Enhancer::class,
             RestRouter::class,

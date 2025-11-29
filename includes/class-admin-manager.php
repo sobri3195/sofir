@@ -72,6 +72,12 @@ class Manager {
 
         \wp_enqueue_style( $handle );
         \wp_enqueue_script( $handle );
+
+        $active_tab = $this->get_active_tab();
+        if ( 'seo' === $active_tab ) {
+            \wp_enqueue_style( 'sofir-seo-ai-generator' );
+            \wp_enqueue_script( 'sofir-seo-ai-generator' );
+        }
     }
 
     public function register_assets(): void {
@@ -107,6 +113,27 @@ class Manager {
                     'templates'     => $this->get_templates_payload(),
                     'themeStyleUrl' => \get_stylesheet_uri(),
                 ]
+            );
+        }
+
+        $seo_ai_handle = 'sofir-seo-ai-generator';
+
+        if ( ! \wp_style_is( $seo_ai_handle, 'registered' ) ) {
+            \wp_register_style(
+                $seo_ai_handle,
+                SOFIR_ASSETS_URL . 'css/seo-ai-generator.css',
+                [],
+                SOFIR_VERSION
+            );
+        }
+
+        if ( ! \wp_script_is( $seo_ai_handle, 'registered' ) ) {
+            \wp_register_script(
+                $seo_ai_handle,
+                SOFIR_ASSETS_URL . 'js/seo-ai-generator.js',
+                [ 'jquery' ],
+                SOFIR_VERSION,
+                true
             );
         }
     }
