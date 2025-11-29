@@ -1,0 +1,134 @@
+{
+  "content": [
+    {
+      "id": "pricing-card",
+      "elType": "section",
+      "settings": {
+        "layout": "boxed",
+        "content_width": {"unit": "px", "size": 380},
+        "background_background": "gradient",
+        "background_color": "#667eea",
+        "background_color_b": "#764ba2",
+        "background_gradient_angle": {"unit": "deg", "size": 135},
+        "border_radius": {"unit": "px", "top": 25, "right": 25, "bottom": 25, "left": 25},
+        "box_shadow_box_shadow_type": "yes",
+        "box_shadow_box_shadow": {
+          "horizontal": 0,
+          "vertical": 15,
+          "blur": 50,
+          "spread": 0,
+          "color": "rgba(102, 126, 234, 0.4)"
+        },
+        "padding": {"unit": "px", "top": 50, "right": 40, "bottom": 50, "left": 40}
+      },
+      "elements": [
+        {
+          "id": "pricing-column",
+          "elType": "column",
+          "settings": {"_column_size": 100},
+          "elements": [
+            {
+              "id": "plan-badge",
+              "elType": "widget",
+              "widgetType": "text-editor",
+              "settings": {
+                "editor": "<span style='background: rgba(255,255,255,0.3); color: white; padding: 8px 20px; border-radius: 25px; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;'>Most Popular</span>",
+                "align": "center"
+              }
+            },
+            {
+              "id": "plan-name",
+              "elType": "widget",
+              "widgetType": "heading",
+              "settings": {
+                "title": "Professional",
+                "header_size": "h2",
+                "align": "center",
+                "title_color": "#ffffff",
+                "typography_typography": "custom",
+                "typography_font_size": {"unit": "px", "size": 36},
+                "typography_font_weight": "900"
+              }
+            },
+            {
+              "id": "plan-description",
+              "elType": "widget",
+              "widgetType": "text-editor",
+              "settings": {
+                "editor": "Perfect for growing businesses",
+                "align": "center",
+                "text_color": "rgba(255,255,255,0.9)",
+                "typography_typography": "custom",
+                "typography_font_size": {"unit": "px", "size": 16}
+              }
+            },
+            {
+              "id": "plan-price",
+              "elType": "widget",
+              "widgetType": "heading",
+              "settings": {
+                "title": "$49<span style='font-size: 24px; font-weight: 500;'>/month</span>",
+                "header_size": "h1",
+                "align": "center",
+                "title_color": "#ffffff",
+                "typography_typography": "custom",
+                "typography_font_size": {"unit": "px", "size": 64},
+                "typography_font_weight": "900"
+              }
+            },
+            {
+              "id": "plan-features",
+              "elType": "widget",
+              "widgetType": "icon-list",
+              "settings": {
+                "icon_list": [
+                  {"text": "Unlimited Projects", "icon": {"value": "fas fa-check-circle", "library": "fa-solid"}},
+                  {"text": "100GB Storage", "icon": {"value": "fas fa-check-circle", "library": "fa-solid"}},
+                  {"text": "Advanced Analytics", "icon": {"value": "fas fa-check-circle", "library": "fa-solid"}},
+                  {"text": "24/7 Support", "icon": {"value": "fas fa-check-circle", "library": "fa-solid"}},
+                  {"text": "Team Collaboration", "icon": {"value": "fas fa-check-circle", "library": "fa-solid"}},
+                  {"text": "Custom Integrations", "icon": {"value": "fas fa-check-circle", "library": "fa-solid"}}
+                ],
+                "icon_color": "#ffffff",
+                "text_color": "#ffffff",
+                "typography_typography": "custom",
+                "typography_font_size": {"unit": "px", "size": 16},
+                "space_between": {"unit": "px", "size": 15}
+              }
+            },
+            {
+              "id": "plan-button",
+              "elType": "widget",
+              "widgetType": "button",
+              "settings": {
+                "text": "Get Started Now",
+                "align": "justify",
+                "size": "lg",
+                "background_color": "#ffffff",
+                "button_text_color": "#667eea",
+                "typography_typography": "custom",
+                "typography_font_size": {"unit": "px", "size": 18},
+                "typography_font_weight": "700",
+                "border_radius": {"unit": "px", "size": 50},
+                "padding": {"unit": "px", "top": 18, "right": 40, "bottom": 18, "left": 40},
+                "hover_animation": "grow"
+              }
+            },
+            {
+              "id": "plan-note",
+              "elType": "widget",
+              "widgetType": "text-editor",
+              "settings": {
+                "editor": "<small>No credit card required • Cancel anytime</small>",
+                "align": "center",
+                "text_color": "rgba(255,255,255,0.85)",
+                "typography_typography": "custom",
+                "typography_font_size": {"unit": "px", "size": 13}
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
