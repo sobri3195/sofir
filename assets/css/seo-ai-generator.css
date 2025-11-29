@@ -140,6 +140,22 @@
     margin-bottom: 8px;
 }
 
+.sofir-conditional-field {
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.sofir-conditional-field textarea {
+    resize: vertical;
+}
+
+.sofir-field .description {
+    margin-top: 5px;
+    font-size: 12px;
+    color: #666;
+    font-style: italic;
+}
+
 .sofir-ai-form-col .sofir-field .creativity-value {
     color: #667eea;
     font-weight: 700;

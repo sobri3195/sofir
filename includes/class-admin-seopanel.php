@@ -265,15 +265,49 @@ class SeoPanel {
         echo '</label>';
 
         echo '<label class="sofir-field">';
+        echo '<span>' . \esc_html__( 'Article Type', 'sofir' ) . ' *</span>';
+        echo '<select name="article_type" id="sofir-article-type" class="widefat">';
+        echo '<option value="general">' . \esc_html__( 'General Article', 'sofir' ) . '</option>';
+        echo '<option value="product_roundup">' . \esc_html__( 'Product Roundup', 'sofir' ) . '</option>';
+        echo '<option value="product_review">' . \esc_html__( 'Product Review', 'sofir' ) . '</option>';
+        echo '<option value="comparison">' . \esc_html__( 'Comparison Post', 'sofir' ) . '</option>';
+        echo '<option value="listicle">' . \esc_html__( 'Listicle', 'sofir' ) . '</option>';
+        echo '</select>';
+        echo '<p class="description">' . \esc_html__( 'Choose the type of article to generate specialized content', 'sofir' ) . '</p>';
+        echo '</label>';
+
+        echo '<label class="sofir-field sofir-conditional-field" data-show-when="article_type" data-show-value="general">';
         echo '<span>' . \esc_html__( 'Article Purpose', 'sofir' ) . '</span>';
         echo '<select name="purpose" class="widefat">';
         echo '<option value="informational">' . \esc_html__( 'Informational', 'sofir' ) . '</option>';
         echo '<option value="educational">' . \esc_html__( 'Educational', 'sofir' ) . '</option>';
         echo '<option value="transactional">' . \esc_html__( 'Transactional', 'sofir' ) . '</option>';
-        echo '<option value="review">' . \esc_html__( 'Review/Comparison', 'sofir' ) . '</option>';
         echo '<option value="how-to">' . \esc_html__( 'How-to Guide', 'sofir' ) . '</option>';
-        echo '<option value="listicle">' . \esc_html__( 'Listicle', 'sofir' ) . '</option>';
         echo '</select>';
+        echo '</label>';
+
+        echo '<label class="sofir-field sofir-conditional-field" data-show-when="article_type" data-show-value="product_roundup,product_review,comparison" style="display:none;">';
+        echo '<span>' . \esc_html__( 'Product Name(s)', 'sofir' ) . '</span>';
+        echo '<textarea name="product_names" class="widefat" rows="3" placeholder="' . \esc_attr__( 'Enter product names (one per line for roundup/comparison, single name for review)', 'sofir' ) . '"></textarea>';
+        echo '<p class="description">' . \esc_html__( 'For Product Roundup/Comparison: Enter multiple product names (one per line)', 'sofir' ) . '</p>';
+        echo '</label>';
+
+        echo '<label class="sofir-field sofir-conditional-field" data-show-when="article_type" data-show-value="product_roundup" style="display:none;">';
+        echo '<span>' . \esc_html__( 'Product Features to Compare', 'sofir' ) . '</span>';
+        echo '<textarea name="product_features" class="widefat" rows="3" placeholder="' . \esc_attr__( 'e.g., Price, Performance, Battery Life, Design', 'sofir' ) . '"></textarea>';
+        echo '<p class="description">' . \esc_html__( 'Key features to highlight in the roundup (comma-separated)', 'sofir' ) . '</p>';
+        echo '</label>';
+
+        echo '<label class="sofir-field sofir-conditional-field" data-show-when="article_type" data-show-value="comparison" style="display:none;">';
+        echo '<span>' . \esc_html__( 'Comparison Criteria', 'sofir' ) . '</span>';
+        echo '<textarea name="comparison_criteria" class="widefat" rows="3" placeholder="' . \esc_attr__( 'e.g., Features, Price, Performance, User Experience', 'sofir' ) . '"></textarea>';
+        echo '<p class="description">' . \esc_html__( 'Criteria to use for comparison (comma-separated)', 'sofir' ) . '</p>';
+        echo '</label>';
+
+        echo '<label class="sofir-field sofir-conditional-field" data-show-when="article_type" data-show-value="listicle" style="display:none;">';
+        echo '<span>' . \esc_html__( 'Number of List Items', 'sofir' ) . '</span>';
+        echo '<input type="number" name="list_count" class="widefat" value="10" min="5" max="50" />';
+        echo '<p class="description">' . \esc_html__( 'How many items to include in the listicle', 'sofir' ) . '</p>';
         echo '</label>';
 
         echo '<label class="sofir-field">';
