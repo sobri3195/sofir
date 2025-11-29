@@ -1,0 +1,84 @@
+{
+  "content": [
+    {
+      "id": "newsletter-section",
+      "elType": "section",
+      "settings": {
+        "background_background": "gradient",
+        "background_color": "#667eea",
+        "background_color_b": "#764ba2",
+        "background_gradient_angle": {"unit": "deg", "size": 135},
+        "padding": {"unit": "px", "top": 60, "right": 40, "bottom": 60, "left": 40},
+        "border_radius": {"unit": "px", "top": 20, "right": 20, "bottom": 20, "left": 20}
+      },
+      "elements": [
+        {
+          "id": "newsletter-column",
+          "elType": "column",
+          "settings": {"_column_size": 100},
+          "elements": [
+            {
+              "id": "close-icon",
+              "elType": "widget",
+              "widgetType": "icon",
+              "settings": {
+                "icon": {"value": "fas fa-times", "library": "fa-solid"},
+                "align": "right",
+                "icon_color": "#ffffff",
+                "size": {"unit": "px", "size": 24},
+                "hover_animation": "grow"
+              }
+            },
+            {
+              "id": "newsletter-heading",
+              "elType": "widget",
+              "widgetType": "heading",
+              "settings": {
+                "title": "Get Exclusive Updates",
+                "align": "center",
+                "title_color": "#ffffff",
+                "typography_typography": "custom",
+                "typography_font_size": {"unit": "px", "size": 42},
+                "typography_font_weight": "700",
+                "typography_line_height": {"unit": "em", "size": 1.2}
+              }
+            },
+            {
+              "id": "newsletter-text",
+              "elType": "widget",
+              "widgetType": "text-editor",
+              "settings": {
+                "editor": "Subscribe to our newsletter and stay updated with the latest news, tips, and exclusive offers delivered directly to your inbox!",
+                "align": "center",
+                "text_color": "#ffffff",
+                "typography_typography": "custom",
+                "typography_font_size": {"unit": "px", "size": 18},
+                "typography_line_height": {"unit": "em", "size": 1.6}
+              }
+            },
+            {
+              "id": "newsletter-form",
+              "elType": "widget",
+              "widgetType": "shortcode",
+              "settings": {
+                "shortcode": "[sofir_newsletter_form]"
+              }
+            },
+            {
+              "id": "privacy-text",
+              "elType": "widget",
+              "widgetType": "text-editor",
+              "settings": {
+                "editor": "<small>🔒 We respect your privacy. Unsubscribe at any time.</small>",
+                "align": "center",
+                "text_color": "rgba(255,255,255,0.8)",
+                "typography_typography": "custom",
+                "typography_font_size": {"unit": "px", "size": 14}
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

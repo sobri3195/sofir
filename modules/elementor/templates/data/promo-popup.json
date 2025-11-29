@@ -1,0 +1,134 @@
+{
+  "content": [
+    {
+      "id": "promo-section",
+      "elType": "section",
+      "settings": {
+        "background_background": "gradient",
+        "background_color": "#fa709a",
+        "background_color_b": "#fee140",
+        "background_gradient_angle": {"unit": "deg", "size": 45},
+        "padding": {"unit": "px", "top": 50, "right": 50, "bottom": 50, "left": 50},
+        "border_radius": {"unit": "px", "top": 15, "right": 15, "bottom": 15, "left": 15},
+        "box_shadow_box_shadow_type": "yes",
+        "box_shadow_box_shadow": {
+          "horizontal": 0,
+          "vertical": 20,
+          "blur": 60,
+          "spread": 0,
+          "color": "rgba(0,0,0,0.25)"
+        }
+      },
+      "elements": [
+        {
+          "id": "promo-column",
+          "elType": "column",
+          "settings": {"_column_size": 100},
+          "elements": [
+            {
+              "id": "promo-badge",
+              "elType": "widget",
+              "widgetType": "heading",
+              "settings": {
+                "title": "🎉 MEGA SALE",
+                "align": "center",
+                "title_color": "#ffffff",
+                "typography_typography": "custom",
+                "typography_font_size": {"unit": "px", "size": 24},
+                "typography_font_weight": "600",
+                "typography_text_transform": "uppercase",
+                "typography_letter_spacing": {"unit": "px", "size": 2}
+              }
+            },
+            {
+              "id": "promo-heading",
+              "elType": "widget",
+              "widgetType": "heading",
+              "settings": {
+                "title": "Get 50% OFF",
+                "align": "center",
+                "title_color": "#ffffff",
+                "typography_typography": "custom",
+                "typography_font_size": {"unit": "px", "size": 72},
+                "typography_font_weight": "900",
+                "typography_line_height": {"unit": "em", "size": 1},
+                "text_shadow_text_shadow_type": "yes",
+                "text_shadow_text_shadow": {
+                  "horizontal": 0,
+                  "vertical": 4,
+                  "blur": 20,
+                  "color": "rgba(0,0,0,0.3)"
+                }
+              }
+            },
+            {
+              "id": "promo-subtitle",
+              "elType": "widget",
+              "widgetType": "heading",
+              "settings": {
+                "title": "On All Premium Plans",
+                "header_size": "h3",
+                "align": "center",
+                "title_color": "#ffffff",
+                "typography_typography": "custom",
+                "typography_font_size": {"unit": "px", "size": 24},
+                "typography_font_weight": "500"
+              }
+            },
+            {
+              "id": "countdown-widget",
+              "elType": "widget",
+              "widgetType": "sofir-countdown",
+              "settings": {
+                "target_date": "2024-12-31 23:59:59",
+                "alignment": "center",
+                "label_color": "#ffffff",
+                "digit_color": "#ffffff",
+                "background_color": "rgba(0,0,0,0.2)",
+                "border_radius": {"unit": "px", "size": 10}
+              }
+            },
+            {
+              "id": "promo-button",
+              "elType": "widget",
+              "widgetType": "button",
+              "settings": {
+                "text": "Claim Your Discount Now",
+                "align": "center",
+                "button_type": "success",
+                "size": "xl",
+                "background_color": "#ffffff",
+                "button_text_color": "#fa709a",
+                "typography_typography": "custom",
+                "typography_font_size": {"unit": "px", "size": 20},
+                "typography_font_weight": "700",
+                "border_radius": {"unit": "px", "size": 50},
+                "button_box_shadow_box_shadow_type": "yes",
+                "button_box_shadow_box_shadow": {
+                  "horizontal": 0,
+                  "vertical": 10,
+                  "blur": 30,
+                  "spread": 0,
+                  "color": "rgba(0,0,0,0.2)"
+                },
+                "hover_animation": "pulse"
+              }
+            },
+            {
+              "id": "promo-terms",
+              "elType": "widget",
+              "widgetType": "text-editor",
+              "settings": {
+                "editor": "<small>*Limited time offer. Terms and conditions apply.</small>",
+                "align": "center",
+                "text_color": "rgba(255,255,255,0.9)",
+                "typography_typography": "custom",
+                "typography_font_size": {"unit": "px", "size": 12}
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

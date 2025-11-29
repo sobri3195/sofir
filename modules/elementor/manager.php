@@ -18,6 +18,11 @@ class Manager {
         \add_action( 'elementor/editor/after_enqueue_styles', [ $this, 'enqueue_editor_styles' ] );
         \add_action( 'elementor/frontend/after_enqueue_styles', [ $this, 'enqueue_frontend_styles' ] );
         \add_action( 'elementor/frontend/after_register_scripts', [ $this, 'enqueue_frontend_scripts' ] );
+
+        if ( \is_admin() || ( \defined( 'DOING_AJAX' ) && DOING_AJAX ) ) {
+            require_once SOFIR_PLUGIN_DIR . '/modules/elementor/templates-manager.php';
+            Templates_Manager::instance()->boot();
+        }
     }
 
     public function register_category( $elements_manager ): void {

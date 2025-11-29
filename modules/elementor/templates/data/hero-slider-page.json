@@ -1,0 +1,276 @@
+{
+  "content": [
+    {
+      "id": "hero-section",
+      "elType": "section",
+      "settings": {
+        "layout": "full_width",
+        "height": "full_height",
+        "background_background": "slideshow",
+        "background_slideshow_gallery": [
+          {"url": "https://placehold.co/1920x1080/667eea/ffffff?text=Slide+1"},
+          {"url": "https://placehold.co/1920x1080/764ba2/ffffff?text=Slide+2"},
+          {"url": "https://placehold.co/1920x1080/f093fb/ffffff?text=Slide+3"}
+        ],
+        "background_slideshow_slide_duration": 5000,
+        "background_slideshow_slide_transition": "fade",
+        "background_slideshow_transition_duration": 1000,
+        "background_overlay_background": "gradient",
+        "background_overlay_color": "rgba(0,0,0,0.5)",
+        "background_overlay_color_b": "rgba(102,126,234,0.7)",
+        "background_overlay_gradient_angle": {"unit": "deg", "size": 135}
+      },
+      "elements": [
+        {
+          "id": "hero-column",
+          "elType": "column",
+          "settings": {
+            "_column_size": 100,
+            "content_position": "middle"
+          },
+          "elements": [
+            {
+              "id": "hero-subtitle",
+              "elType": "widget",
+              "widgetType": "heading",
+              "settings": {
+                "title": "Welcome to Innovation",
+                "header_size": "h6",
+                "align": "center",
+                "title_color": "#ffffff",
+                "typography_typography": "custom",
+                "typography_font_size": {"unit": "px", "size": 18},
+                "typography_font_weight": "500",
+                "typography_text_transform": "uppercase",
+                "typography_letter_spacing": {"unit": "px", "size": 3}
+              }
+            },
+            {
+              "id": "hero-title",
+              "elType": "widget",
+              "widgetType": "heading",
+              "settings": {
+                "title": "Transform Your Digital Experience",
+                "header_size": "h1",
+                "align": "center",
+                "title_color": "#ffffff",
+                "typography_typography": "custom",
+                "typography_font_size": {"unit": "px", "size": 72},
+                "typography_font_weight": "900",
+                "typography_line_height": {"unit": "em", "size": 1.1},
+                "text_shadow_text_shadow_type": "yes",
+                "text_shadow_text_shadow": {
+                  "horizontal": 0,
+                  "vertical": 4,
+                  "blur": 30,
+                  "color": "rgba(0,0,0,0.5)"
+                }
+              }
+            },
+            {
+              "id": "hero-description",
+              "elType": "widget",
+              "widgetType": "text-editor",
+              "settings": {
+                "editor": "We help businesses grow with cutting-edge technology solutions. Join thousands of satisfied customers who trust us with their digital transformation journey.",
+                "align": "center",
+                "text_color": "rgba(255,255,255,0.95)",
+                "typography_typography": "custom",
+                "typography_font_size": {"unit": "px", "size": 22},
+                "typography_line_height": {"unit": "em", "size": 1.7},
+                "width": {"unit": "%", "size": 70}
+              }
+            },
+            {
+              "id": "hero-buttons",
+              "elType": "section",
+              "settings": {
+                "layout": "boxed",
+                "gap": "default"
+              },
+              "elements": [
+                {
+                  "id": "button-column-1",
+                  "elType": "column",
+                  "settings": {"_column_size": 50},
+                  "elements": [
+                    {
+                      "id": "primary-button",
+                      "elType": "widget",
+                      "widgetType": "button",
+                      "settings": {
+                        "text": "Get Started Free",
+                        "align": "right",
+                        "size": "xl",
+                        "background_color": "#ffffff",
+                        "button_text_color": "#667eea",
+                        "typography_typography": "custom",
+                        "typography_font_size": {"unit": "px", "size": 18},
+                        "typography_font_weight": "700",
+                        "border_radius": {"unit": "px", "size": 50},
+                        "padding": {"unit": "px", "top": 20, "right": 40, "bottom": 20, "left": 40},
+                        "button_box_shadow_box_shadow_type": "yes",
+                        "button_box_shadow_box_shadow": {
+                          "horizontal": 0,
+                          "vertical": 10,
+                          "blur": 40,
+                          "spread": 0,
+                          "color": "rgba(0,0,0,0.3)"
+                        },
+                        "hover_animation": "grow"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": "button-column-2",
+                  "elType": "column",
+                  "settings": {"_column_size": 50},
+                  "elements": [
+                    {
+                      "id": "secondary-button",
+                      "elType": "widget",
+                      "widgetType": "button",
+                      "settings": {
+                        "text": "Watch Demo",
+                        "align": "left",
+                        "size": "xl",
+                        "background_color": "transparent",
+                        "button_text_color": "#ffffff",
+                        "border_border": "solid",
+                        "border_width": {"unit": "px", "top": 2, "right": 2, "bottom": 2, "left": 2},
+                        "border_color": "#ffffff",
+                        "typography_typography": "custom",
+                        "typography_font_size": {"unit": "px", "size": 18},
+                        "typography_font_weight": "700",
+                        "border_radius": {"unit": "px", "size": 50},
+                        "padding": {"unit": "px", "top": 20, "right": 40, "bottom": 20, "left": 40},
+                        "hover_animation": "grow"
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "hero-stats",
+              "elType": "section",
+              "settings": {
+                "layout": "boxed",
+                "gap": "narrow",
+                "margin": {"unit": "px", "top": 80, "right": 0, "bottom": 0, "left": 0}
+              },
+              "elements": [
+                {
+                  "id": "stat-1",
+                  "elType": "column",
+                  "settings": {"_column_size": 33},
+                  "elements": [
+                    {
+                      "id": "stat-1-number",
+                      "elType": "widget",
+                      "widgetType": "counter",
+                      "settings": {
+                        "ending_number": 10000,
+                        "suffix": "+",
+                        "duration": 3000,
+                        "number_color": "#ffffff",
+                        "typography_typography": "custom",
+                        "typography_font_size": {"unit": "px", "size": 48},
+                        "typography_font_weight": "900",
+                        "align": "center"
+                      }
+                    },
+                    {
+                      "id": "stat-1-label",
+                      "elType": "widget",
+                      "widgetType": "heading",
+                      "settings": {
+                        "title": "Happy Customers",
+                        "header_size": "h6",
+                        "align": "center",
+                        "title_color": "rgba(255,255,255,0.9)",
+                        "typography_typography": "custom",
+                        "typography_font_size": {"unit": "px", "size": 16}
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": "stat-2",
+                  "elType": "column",
+                  "settings": {"_column_size": 33},
+                  "elements": [
+                    {
+                      "id": "stat-2-number",
+                      "elType": "widget",
+                      "widgetType": "counter",
+                      "settings": {
+                        "ending_number": 500,
+                        "suffix": "+",
+                        "duration": 3000,
+                        "number_color": "#ffffff",
+                        "typography_typography": "custom",
+                        "typography_font_size": {"unit": "px", "size": 48},
+                        "typography_font_weight": "900",
+                        "align": "center"
+                      }
+                    },
+                    {
+                      "id": "stat-2-label",
+                      "elType": "widget",
+                      "widgetType": "heading",
+                      "settings": {
+                        "title": "Projects Completed",
+                        "header_size": "h6",
+                        "align": "center",
+                        "title_color": "rgba(255,255,255,0.9)",
+                        "typography_typography": "custom",
+                        "typography_font_size": {"unit": "px", "size": 16}
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": "stat-3",
+                  "elType": "column",
+                  "settings": {"_column_size": 33},
+                  "elements": [
+                    {
+                      "id": "stat-3-number",
+                      "elType": "widget",
+                      "widgetType": "counter",
+                      "settings": {
+                        "ending_number": 99,
+                        "suffix": "%",
+                        "duration": 3000,
+                        "number_color": "#ffffff",
+                        "typography_typography": "custom",
+                        "typography_font_size": {"unit": "px", "size": 48},
+                        "typography_font_weight": "900",
+                        "align": "center"
+                      }
+                    },
+                    {
+                      "id": "stat-3-label",
+                      "elType": "widget",
+                      "widgetType": "heading",
+                      "settings": {
+                        "title": "Satisfaction Rate",
+                        "header_size": "h6",
+                        "align": "center",
+                        "title_color": "rgba(255,255,255,0.9)",
+                        "typography_typography": "custom",
+                        "typography_font_size": {"unit": "px", "size": 16}
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
