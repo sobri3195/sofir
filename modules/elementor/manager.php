@@ -16,6 +16,8 @@ class Manager {
         \add_action( 'elementor/widgets/register', [ $this, 'register_widgets' ] );
         \add_action( 'elementor/elements/categories_registered', [ $this, 'register_category' ] );
         \add_action( 'elementor/editor/after_enqueue_styles', [ $this, 'enqueue_editor_styles' ] );
+        \add_action( 'elementor/frontend/after_enqueue_styles', [ $this, 'enqueue_frontend_styles' ] );
+        \add_action( 'elementor/frontend/after_register_scripts', [ $this, 'enqueue_frontend_scripts' ] );
     }
 
     public function register_category( $elements_manager ): void {
@@ -80,6 +82,10 @@ class Manager {
             'my-courses',
             'voxel-listings',
             'voxel-search-form',
+            'gallery',
+            'slideshow',
+            'filmstrip-gallery',
+            'album',
         ];
 
         foreach ( $widget_files as $widget_file ) {
@@ -185,5 +191,25 @@ class Manager {
             [],
             SOFIR_VERSION
         );
+    }
+
+    public function enqueue_frontend_styles(): void {
+        \wp_enqueue_style(
+            'sofir-gallery',
+            SOFIR_PLUGIN_URL . 'assets/css/gallery.css',
+            [],
+            SOFIR_VERSION
+        );
+    }
+
+    public function enqueue_frontend_scripts(): void {
+        \wp_register_script(
+            'sofir-gallery',
+            SOFIR_PLUGIN_URL . 'assets/js/gallery.js',
+            [],
+            SOFIR_VERSION,
+            true
+        );
+        \wp_enqueue_script( 'sofir-gallery' );
     }
 }
