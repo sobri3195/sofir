@@ -25,6 +25,7 @@ class AiGenerator {
         \add_action( 'wp_ajax_sofir_generate_seo_article', [ $this, 'ajax_generate_article' ] );
         \add_action( 'wp_ajax_sofir_research_keywords', [ $this, 'ajax_research_keywords' ] );
         \add_action( 'wp_ajax_sofir_create_post_from_ai', [ $this, 'ajax_create_post' ] );
+        \add_action( 'wp_ajax_sofir_get_product_suggestions', [ $this, 'ajax_get_product_suggestions' ] );
     }
 
     public function get_api_key(): string {
@@ -50,6 +51,18 @@ class AiGenerator {
             [
                 'methods'             => 'POST',
                 'callback'            => [ $this, 'rest_research_keywords' ],
+                'permission_callback' => function () {
+                    return \current_user_can( 'edit_posts' );
+                },
+            ]
+        );
+
+        \register_rest_route(
+            'sofir/v1',
+            '/seo-ai/product-suggestions',
+            [
+                'methods'             => 'POST',
+                'callback'            => [ $this, 'rest_get_product_suggestions' ],
                 'permission_callback' => function () {
                     return \current_user_can( 'edit_posts' );
                 },
@@ -87,6 +100,15 @@ class AiGenerator {
             \wp_send_json_error( [ 'message' => 'Unauthorized' ], 403 );
         }
 
+        $product_list = [];
+        if ( ! empty( $_POST['product_list'] ) ) {
+            $product_list_json = \wp_unslash( $_POST['product_list'] );
+            $product_list = json_decode( $product_list_json, true );
+            if ( json_last_error() !== JSON_ERROR_NONE ) {
+                $product_list = [];
+            }
+        }
+
         $params = [
             'title'           => \sanitize_text_field( $_POST['title'] ?? '' ),
             'keyword'         => \sanitize_text_field( $_POST['keyword'] ?? '' ),
@@ -103,6 +125,7 @@ class AiGenerator {
             'product_features' => isset( $_POST['product_features'] ) ? \sanitize_textarea_field( \wp_unslash( $_POST['product_features'] ) ) : '',
             'comparison_criteria' => isset( $_POST['comparison_criteria'] ) ? \sanitize_textarea_field( \wp_unslash( $_POST['comparison_criteria'] ) ) : '',
             'list_count'      => (int) ( $_POST['list_count'] ?? 10 ),
+            'product_list'    => $product_list,
         ];
 
         $result = $this->generate_complete_article( $params );
@@ -169,6 +192,14 @@ class AiGenerator {
     }
 
     public function rest_generate_article( \WP_REST_Request $request ): \WP_REST_Response {
+        $product_list = $request->get_param( 'product_list' );
+        if ( is_string( $product_list ) ) {
+            $product_list = json_decode( $product_list, true );
+            if ( json_last_error() !== JSON_ERROR_NONE ) {
+                $product_list = [];
+            }
+        }
+
         $params = [
             'title'           => \sanitize_text_field( $request->get_param( 'title' ) ?? '' ),
             'keyword'         => \sanitize_text_field( $request->get_param( 'keyword' ) ?? '' ),
@@ -185,6 +216,7 @@ class AiGenerator {
             'product_features' => \sanitize_textarea_field( $request->get_param( 'product_features' ) ?? '' ),
             'comparison_criteria' => \sanitize_textarea_field( $request->get_param( 'comparison_criteria' ) ?? '' ),
             'list_count'      => (int) ( $request->get_param( 'list_count' ) ?? 10 ),
+            'product_list'    => $product_list ?? [],
         ];
 
         $result = $this->generate_complete_article( $params );
@@ -846,6 +878,7 @@ Return ONLY the JSON response.";
         $readability = $params['readability'];
         $product_names = $params['product_names'] ?? '';
         $product_features = $params['product_features'] ?? '';
+        $product_list = $params['product_list'] ?? [];
 
         $pov_text = [
             'first_person' => 'first person (I, we)',
@@ -853,7 +886,24 @@ Return ONLY the JSON response.";
             'third_person' => 'third person (he, she, they)',
         ][ $pov ] ?? 'third person';
 
-        $products_info = ! empty( $product_names ) ? "\n- Products to Include: {$product_names}" : '';
+        $products_info = '';
+        if ( ! empty( $product_list ) ) {
+            $products_info = "\n\n**Products to Review:**\n";
+            foreach ( $product_list as $index => $product ) {
+                $num = $index + 1;
+                $products_info .= "{$num}. {$product['name']}";
+                if ( ! empty( $product['url'] ) ) {
+                    $products_info .= " (URL: {$product['url']})";
+                }
+                if ( ! empty( $product['description'] ) ) {
+                    $products_info .= " - {$product['description']}";
+                }
+                $products_info .= "\n";
+            }
+        } elseif ( ! empty( $product_names ) ) {
+            $products_info = "\n- Products to Include: {$product_names}";
+        }
+
         $features_info = ! empty( $product_features ) ? "\n- Key Features to Compare: {$product_features}" : '';
 
         $prompt = "You are an expert affiliate marketer and product reviewer. Create a comprehensive PRODUCT ROUNDUP article with the following specifications:
@@ -949,6 +999,7 @@ Return ONLY the JSON response, no additional text.";
         $pov = $params['pov'];
         $readability = $params['readability'];
         $product_name = $params['product_names'] ?? '';
+        $product_list = $params['product_list'] ?? [];
 
         $pov_text = [
             'first_person' => 'first person (I, we)',
@@ -956,7 +1007,20 @@ Return ONLY the JSON response, no additional text.";
             'third_person' => 'third person (he, she, they)',
         ][ $pov ] ?? 'third person';
 
-        $product_info = ! empty( $product_name ) ? "\n- Product Name: {$product_name}" : '';
+        $product_info = '';
+        if ( ! empty( $product_list ) && isset( $product_list[0] ) ) {
+            $product = $product_list[0];
+            $product_info = "\n\n**Product to Review:**\n";
+            $product_info .= "- Name: {$product['name']}\n";
+            if ( ! empty( $product['url'] ) ) {
+                $product_info .= "- URL: {$product['url']}\n";
+            }
+            if ( ! empty( $product['description'] ) ) {
+                $product_info .= "- Description: {$product['description']}\n";
+            }
+        } elseif ( ! empty( $product_name ) ) {
+            $product_info = "\n- Product Name: {$product_name}";
+        }
 
         $prompt = "You are an expert product reviewer. Create a comprehensive IN-DEPTH PRODUCT REVIEW with the following specifications:
 
@@ -1053,6 +1117,7 @@ Return ONLY the JSON response, no additional text.";
         $readability = $params['readability'];
         $product_names = $params['product_names'] ?? '';
         $comparison_criteria = $params['comparison_criteria'] ?? '';
+        $product_list = $params['product_list'] ?? [];
 
         $pov_text = [
             'first_person' => 'first person (I, we)',
@@ -1060,7 +1125,24 @@ Return ONLY the JSON response, no additional text.";
             'third_person' => 'third person (he, she, they)',
         ][ $pov ] ?? 'third person';
 
-        $products_info = ! empty( $product_names ) ? "\n- Products to Compare: {$product_names}" : '';
+        $products_info = '';
+        if ( ! empty( $product_list ) ) {
+            $products_info = "\n\n**Products to Compare:**\n";
+            foreach ( $product_list as $index => $product ) {
+                $num = $index + 1;
+                $products_info .= "{$num}. {$product['name']}";
+                if ( ! empty( $product['url'] ) ) {
+                    $products_info .= " (URL: {$product['url']})";
+                }
+                if ( ! empty( $product['description'] ) ) {
+                    $products_info .= " - {$product['description']}";
+                }
+                $products_info .= "\n";
+            }
+        } elseif ( ! empty( $product_names ) ) {
+            $products_info = "\n- Products to Compare: {$product_names}";
+        }
+
         $criteria_info = ! empty( $comparison_criteria ) ? "\n- Comparison Criteria: {$comparison_criteria}" : '';
 
         $prompt = "You are an expert product analyst. Create a detailed HEAD-TO-HEAD COMPARISON article with the following specifications:
@@ -1248,5 +1330,90 @@ Please provide the article in the following JSON format:
 Return ONLY the JSON response, no additional text.";
 
         return $prompt;
+    }
+
+    public function ajax_get_product_suggestions(): void {
+        \check_ajax_referer( 'sofir_seo_ai', 'nonce' );
+
+        if ( ! \current_user_can( 'edit_posts' ) ) {
+            \wp_send_json_error( [ 'message' => 'Unauthorized' ], 403 );
+        }
+
+        $query = \sanitize_text_field( $_POST['query'] ?? '' );
+        
+        if ( empty( $query ) ) {
+            \wp_send_json_error( [ 'message' => 'Search query is required' ] );
+        }
+
+        $products = $this->fetch_product_suggestions( $query );
+
+        if ( \is_wp_error( $products ) ) {
+            \wp_send_json_error( [ 'message' => $products->get_error_message() ] );
+        }
+
+        \wp_send_json_success( [ 'products' => $products ] );
+    }
+
+    public function rest_get_product_suggestions( \WP_REST_Request $request ): \WP_REST_Response {
+        $query = \sanitize_text_field( $request->get_param( 'query' ) ?? '' );
+        
+        if ( empty( $query ) ) {
+            return new \WP_REST_Response( 
+                [ 'error' => 'Search query is required' ], 
+                400 
+            );
+        }
+
+        $products = $this->fetch_product_suggestions( $query );
+
+        if ( \is_wp_error( $products ) ) {
+            return new \WP_REST_Response( 
+                [ 'error' => $products->get_error_message() ], 
+                400 
+            );
+        }
+
+        return \rest_ensure_response( [ 'products' => $products ] );
+    }
+
+    private function fetch_product_suggestions( string $query ): array|\WP_Error {
+        if ( empty( $this->api_key ) ) {
+            return new \WP_Error( 'no_api_key', 'Google Gemini API key is not configured. Using AI to generate product suggestions instead.' );
+        }
+
+        $prompt = "You are a product research expert. Based on the search query: \"{$query}\", suggest 5-10 popular and relevant products that would be perfect for a product roundup or review article.
+
+For each product, provide:
+1. Product name (real, popular products if possible)
+2. A typical product URL structure (you can use placeholder domain like 'example.com/product-name')
+3. A brief 1-2 sentence description highlighting key features
+
+Return ONLY a JSON response in this format:
+
+{
+  \"products\": [
+    {
+      \"name\": \"Product Name\",
+      \"url\": \"https://example.com/product-name\",
+      \"description\": \"Brief description of key features and benefits\"
+    }
+  ]
+}
+
+Focus on well-known, high-quality products that readers would actually want to know about. Return ONLY the JSON, no additional text.";
+
+        $response = $this->call_gemini_api( $prompt, 0.7 );
+
+        if ( \is_wp_error( $response ) ) {
+            return $response;
+        }
+
+        $data = json_decode( $response, true );
+        
+        if ( json_last_error() !== JSON_ERROR_NONE || empty( $data['products'] ) ) {
+            return new \WP_Error( 'json_error', 'Failed to parse product suggestions response.' );
+        }
+
+        return $data['products'];
     }
 }

@@ -298,6 +298,27 @@ class SeoPanel {
         echo '<p class="description">' . \esc_html__( 'Key features to highlight in the roundup (comma-separated)', 'sofir' ) . '</p>';
         echo '</label>';
 
+        echo '<div class="sofir-field sofir-conditional-field" data-show-when="article_type" data-show-value="product_roundup,product_review,comparison" style="display:none;">';
+        echo '<h3>' . \esc_html__( '📦 Product List Manager', 'sofir' ) . '</h3>';
+        echo '<p class="description">' . \esc_html__( 'Get AI-powered product suggestions or manually add products with links for your article', 'sofir' ) . '</p>';
+        
+        echo '<div class="sofir-product-search-box">';
+        echo '<label>';
+        echo '<span>' . \esc_html__( 'Search Query', 'sofir' ) . '</span>';
+        echo '<div style="display: flex; gap: 10px; align-items: center;">';
+        echo '<input type="text" id="sofir-product-search" class="regular-text" placeholder="' . \esc_attr__( 'e.g., best wireless headphones 2024', 'sofir' ) . '" />';
+        echo '<button type="button" id="sofir-get-products-btn" class="button button-secondary">🤖 ' . \esc_html__( 'Get AI Suggestions', 'sofir' ) . '</button>';
+        echo '<button type="button" id="sofir-add-product-btn" class="button">➕ ' . \esc_html__( 'Add Product', 'sofir' ) . '</button>';
+        echo '</div>';
+        echo '</label>';
+        echo '</div>';
+        
+        echo '<div id="sofir-product-list-container" class="sofir-product-list">';
+        echo '<p class="description">' . \esc_html__( 'No products added yet. Click "Add Product" or get AI suggestions.', 'sofir' ) . '</p>';
+        echo '</div>';
+        
+        echo '</div>';
+
         echo '<label class="sofir-field sofir-conditional-field" data-show-when="article_type" data-show-value="comparison" style="display:none;">';
         echo '<span>' . \esc_html__( 'Comparison Criteria', 'sofir' ) . '</span>';
         echo '<textarea name="comparison_criteria" class="widefat" rows="3" placeholder="' . \esc_attr__( 'e.g., Features, Price, Performance, User Experience', 'sofir' ) . '"></textarea>';

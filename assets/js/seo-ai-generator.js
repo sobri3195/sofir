@@ -2,6 +2,8 @@
     'use strict';
 
     const SofirSeoAI = {
+        productList: [],
+
         init() {
             this.bindEvents();
             this.handleArticleTypeChange();
@@ -15,6 +17,10 @@
             $('#sofir-ai-keywords-form').on('submit', this.handleKeywordResearch.bind(this));
             $(document).on('click', '.sofir-ai-create-post', this.handleCreatePost.bind(this));
             $(document).on('click', '.sofir-ai-copy-text', this.handleCopyText);
+            $(document).on('click', '#sofir-get-products-btn', this.handleGetProductSuggestions.bind(this));
+            $(document).on('click', '#sofir-add-product-btn', this.handleAddProduct.bind(this));
+            $(document).on('click', '.sofir-remove-product', this.handleRemoveProduct.bind(this));
+            $(document).on('input', '.sofir-product-field', this.handleProductFieldChange.bind(this));
         },
 
         handleArticleTypeChange() {
@@ -78,7 +84,8 @@
                 product_names: formData.get('product_names'),
                 product_features: formData.get('product_features'),
                 comparison_criteria: formData.get('comparison_criteria'),
-                list_count: formData.get('list_count')
+                list_count: formData.get('list_count'),
+                product_list: JSON.stringify(this.productList)
             };
 
             $button.prop('disabled', true);
@@ -533,6 +540,108 @@
         escapeAttr(text) {
             if (!text) return '';
             return this.escapeHtml(text).replace(/"/g, '&quot;');
+        },
+
+        async handleGetProductSuggestions(e) {
+            e.preventDefault();
+            
+            const $button = $(e.target);
+            const query = $('#sofir-product-search').val();
+            
+            if (!query) {
+                this.showError('Please enter a product search query');
+                return;
+            }
+
+            $button.prop('disabled', true).text('Loading...');
+
+            try {
+                const response = await $.ajax({
+                    url: ajaxurl,
+                    type: 'POST',
+                    data: {
+                        action: 'sofir_get_product_suggestions',
+                        nonce: $('#sofir_ai_nonce').val(),
+                        query: query
+                    }
+                });
+
+                if (response.success && response.data.products) {
+                    this.productList = response.data.products;
+                    this.renderProductList();
+                    this.showSuccess(response.data.products.length + ' products loaded from AI suggestions!');
+                } else {
+                    this.showError(response.data.message || 'Failed to get product suggestions');
+                }
+            } catch (error) {
+                this.showError('An error occurred. Please try again.');
+            } finally {
+                $button.prop('disabled', false).text('Get AI Suggestions');
+            }
+        },
+
+        handleAddProduct(e) {
+            e.preventDefault();
+            
+            this.productList.push({
+                name: '',
+                url: '',
+                description: ''
+            });
+            
+            this.renderProductList();
+        },
+
+        handleRemoveProduct(e) {
+            e.preventDefault();
+            
+            const index = $(e.target).data('index');
+            this.productList.splice(index, 1);
+            this.renderProductList();
+        },
+
+        handleProductFieldChange(e) {
+            const $input = $(e.target);
+            const index = $input.data('index');
+            const field = $input.data('field');
+            
+            if (this.productList[index]) {
+                this.productList[index][field] = $input.val();
+            }
+        },
+
+        renderProductList() {
+            const $container = $('#sofir-product-list-container');
+            
+            if (this.productList.length === 0) {
+                $container.html('<p class="description">No products added yet. Click "Add Product" or get AI suggestions.</p>');
+                return;
+            }
+
+            let html = '<div class="sofir-product-count"><strong>' + this.productList.length + ' products</strong></div>';
+            html += '<table class="widefat sofir-product-table">';
+            html += '<thead><tr>';
+            html += '<th style="width: 5%;">#</th>';
+            html += '<th style="width: 25%;">Product Name</th>';
+            html += '<th style="width: 30%;">Product URL</th>';
+            html += '<th style="width: 30%;">Description</th>';
+            html += '<th style="width: 10%;">Actions</th>';
+            html += '</tr></thead>';
+            html += '<tbody>';
+
+            this.productList.forEach((product, index) => {
+                html += '<tr>';
+                html += '<td>' + (index + 1) + '</td>';
+                html += '<td><input type="text" class="sofir-product-field regular-text" data-index="' + index + '" data-field="name" value="' + this.escapeAttr(product.name) + '" placeholder="Product name" /></td>';
+                html += '<td><input type="url" class="sofir-product-field regular-text" data-index="' + index + '" data-field="url" value="' + this.escapeAttr(product.url) + '" placeholder="https://example.com/product" /></td>';
+                html += '<td><input type="text" class="sofir-product-field regular-text" data-index="' + index + '" data-field="description" value="' + this.escapeAttr(product.description) + '" placeholder="Brief description" /></td>';
+                html += '<td><button type="button" class="button button-link-delete sofir-remove-product" data-index="' + index + '">Remove</button></td>';
+                html += '</tr>';
+            });
+
+            html += '</tbody></table>';
+
+            $container.html(html);
         }
     };
 

@@ -630,3 +630,121 @@
         width: 100%;
     }
 }
+
+.sofir-product-search-box {
+    background: rgba(102, 126, 234, 0.05);
+    padding: 20px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    border: 2px solid rgba(102, 126, 234, 0.2);
+}
+
+.sofir-product-search-box label {
+    display: block;
+}
+
+.sofir-product-search-box label > span {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.sofir-product-list {
+    margin-top: 20px;
+}
+
+.sofir-product-count {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 6px 6px 0 0;
+    margin-bottom: 0;
+    font-size: 15px;
+}
+
+.sofir-product-table {
+    margin-top: 0 !important;
+    border-radius: 0 0 6px 6px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.sofir-product-table thead {
+    background: #f8f9fa;
+}
+
+.sofir-product-table thead th {
+    font-weight: 600;
+    color: #333;
+    padding: 12px;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.sofir-product-table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.sofir-product-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+.sofir-product-table tbody td {
+    padding: 12px;
+    vertical-align: middle;
+}
+
+.sofir-product-table tbody td input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    transition: border-color 0.3s ease;
+}
+
+.sofir-product-table tbody td input:focus {
+    border-color: #667eea;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.sofir-product-field {
+    font-size: 14px;
+}
+
+.sofir-remove-product {
+    color: #dc3545 !important;
+    font-weight: 500;
+}
+
+.sofir-remove-product:hover {
+    color: #c82333 !important;
+    text-decoration: none;
+}
+
+#sofir-get-products-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    border: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+#sofir-get-products-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+#sofir-add-product-btn {
+    background: #28a745;
+    color: #fff;
+    border: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+#sofir-add-product-btn:hover {
+    background: #218838;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+}
