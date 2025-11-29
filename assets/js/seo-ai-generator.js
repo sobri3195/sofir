@@ -4,15 +4,35 @@
     const SofirSeoAI = {
         init() {
             this.bindEvents();
+            this.handleArticleTypeChange();
         },
 
         bindEvents() {
             $('.sofir-ai-tab').on('click', this.handleTabSwitch);
             $('.sofir-slider').on('input', this.handleSliderChange);
+            $('#sofir-article-type').on('change', this.handleArticleTypeChange.bind(this));
             $('#sofir-ai-article-form').on('submit', this.handleArticleGeneration.bind(this));
             $('#sofir-ai-keywords-form').on('submit', this.handleKeywordResearch.bind(this));
             $(document).on('click', '.sofir-ai-create-post', this.handleCreatePost.bind(this));
             $(document).on('click', '.sofir-ai-copy-text', this.handleCopyText);
+        },
+
+        handleArticleTypeChange() {
+            const selectedType = $('#sofir-article-type').val() || 'general';
+            
+            $('.sofir-conditional-field').each(function() {
+                const $field = $(this);
+                const showWhen = $field.data('show-when');
+                const showValues = String($field.data('show-value')).split(',');
+                
+                if (showWhen && showValues.length > 0) {
+                    if (showValues.includes(selectedType)) {
+                        $field.slideDown(300);
+                    } else {
+                        $field.slideUp(300);
+                    }
+                }
+            });
         },
 
         handleTabSwitch(e) {
@@ -46,6 +66,7 @@
                 nonce: $('#sofir_ai_nonce').val(),
                 title: formData.get('title'),
                 keyword: formData.get('keyword'),
+                article_type: formData.get('article_type'),
                 purpose: formData.get('purpose'),
                 tone: formData.get('tone'),
                 word_count: formData.get('word_count'),
@@ -53,7 +74,11 @@
                 readability: formData.get('readability'),
                 creativity: formData.get('creativity'),
                 include_faq: formData.get('include_faq') ? 1 : 0,
-                include_toc: formData.get('include_toc') ? 1 : 0
+                include_toc: formData.get('include_toc') ? 1 : 0,
+                product_names: formData.get('product_names'),
+                product_features: formData.get('product_features'),
+                comparison_criteria: formData.get('comparison_criteria'),
+                list_count: formData.get('list_count')
             };
 
             $button.prop('disabled', true);

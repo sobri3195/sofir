@@ -90,6 +90,7 @@ class AiGenerator {
         $params = [
             'title'           => \sanitize_text_field( $_POST['title'] ?? '' ),
             'keyword'         => \sanitize_text_field( $_POST['keyword'] ?? '' ),
+            'article_type'    => \sanitize_text_field( $_POST['article_type'] ?? 'general' ),
             'purpose'         => \sanitize_text_field( $_POST['purpose'] ?? '' ),
             'tone'            => \sanitize_text_field( $_POST['tone'] ?? 'professional' ),
             'word_count'      => (int) ( $_POST['word_count'] ?? 1000 ),
@@ -98,6 +99,10 @@ class AiGenerator {
             'readability'     => \sanitize_text_field( $_POST['readability'] ?? 'intermediate' ),
             'include_faq'     => ! empty( $_POST['include_faq'] ),
             'include_toc'     => ! empty( $_POST['include_toc'] ),
+            'product_names'   => isset( $_POST['product_names'] ) ? \sanitize_textarea_field( \wp_unslash( $_POST['product_names'] ) ) : '',
+            'product_features' => isset( $_POST['product_features'] ) ? \sanitize_textarea_field( \wp_unslash( $_POST['product_features'] ) ) : '',
+            'comparison_criteria' => isset( $_POST['comparison_criteria'] ) ? \sanitize_textarea_field( \wp_unslash( $_POST['comparison_criteria'] ) ) : '',
+            'list_count'      => (int) ( $_POST['list_count'] ?? 10 ),
         ];
 
         $result = $this->generate_complete_article( $params );
@@ -167,6 +172,7 @@ class AiGenerator {
         $params = [
             'title'           => \sanitize_text_field( $request->get_param( 'title' ) ?? '' ),
             'keyword'         => \sanitize_text_field( $request->get_param( 'keyword' ) ?? '' ),
+            'article_type'    => \sanitize_text_field( $request->get_param( 'article_type' ) ?? 'general' ),
             'purpose'         => \sanitize_text_field( $request->get_param( 'purpose' ) ?? '' ),
             'tone'            => \sanitize_text_field( $request->get_param( 'tone' ) ?? 'professional' ),
             'word_count'      => (int) ( $request->get_param( 'word_count' ) ?? 1000 ),
@@ -175,6 +181,10 @@ class AiGenerator {
             'readability'     => \sanitize_text_field( $request->get_param( 'readability' ) ?? 'intermediate' ),
             'include_faq'     => (bool) $request->get_param( 'include_faq' ),
             'include_toc'     => (bool) $request->get_param( 'include_toc' ),
+            'product_names'   => \sanitize_textarea_field( $request->get_param( 'product_names' ) ?? '' ),
+            'product_features' => \sanitize_textarea_field( $request->get_param( 'product_features' ) ?? '' ),
+            'comparison_criteria' => \sanitize_textarea_field( $request->get_param( 'comparison_criteria' ) ?? '' ),
+            'list_count'      => (int) ( $request->get_param( 'list_count' ) ?? 10 ),
         ];
 
         $result = $this->generate_complete_article( $params );
@@ -234,6 +244,23 @@ class AiGenerator {
     }
 
     private function build_article_prompt( array $params ): string {
+        $article_type = $params['article_type'] ?? 'general';
+
+        switch ( $article_type ) {
+            case 'product_roundup':
+                return $this->build_product_roundup_prompt( $params );
+            case 'product_review':
+                return $this->build_product_review_prompt( $params );
+            case 'comparison':
+                return $this->build_comparison_prompt( $params );
+            case 'listicle':
+                return $this->build_listicle_prompt( $params );
+            default:
+                return $this->build_general_article_prompt( $params );
+        }
+    }
+
+    private function build_general_article_prompt( array $params ): string {
         $title = $params['title'];
         $keyword = $params['keyword'];
         $purpose = $params['purpose'];
@@ -808,5 +835,418 @@ Return ONLY the JSON response.";
         }
 
         return $post_id;
+    }
+
+    private function build_product_roundup_prompt( array $params ): string {
+        $title = $params['title'];
+        $keyword = $params['keyword'];
+        $tone = $params['tone'];
+        $word_count = $params['word_count'];
+        $pov = $params['pov'];
+        $readability = $params['readability'];
+        $product_names = $params['product_names'] ?? '';
+        $product_features = $params['product_features'] ?? '';
+
+        $pov_text = [
+            'first_person' => 'first person (I, we)',
+            'second_person' => 'second person (you)',
+            'third_person' => 'third person (he, she, they)',
+        ][ $pov ] ?? 'third person';
+
+        $products_info = ! empty( $product_names ) ? "\n- Products to Include: {$product_names}" : '';
+        $features_info = ! empty( $product_features ) ? "\n- Key Features to Compare: {$product_features}" : '';
+
+        $prompt = "You are an expert affiliate marketer and product reviewer. Create a comprehensive PRODUCT ROUNDUP article with the following specifications:
+
+**Article Type:** Product Roundup (comparing multiple products in one category)
+
+**Article Requirements:**
+- Title: {$title}
+- Primary Keyword: {$keyword}
+- Tone: {$tone}
+- Word Count: approximately {$word_count} words
+- Point of View: {$pov_text}
+- Readability Level: {$readability}{$products_info}{$features_info}
+
+**Product Roundup Structure:**
+For each product in the roundup, include:
+1. Product name and brief introduction
+2. Key features and specifications
+3. Pros and cons
+4. Best use case or ideal customer
+5. Pricing information (if available)
+6. Overall rating or recommendation
+7. Affiliate-friendly call-to-action
+
+**Content Requirements:**
+- Start with an engaging introduction explaining what readers will learn
+- Create a comparison table (in HTML) summarizing all products
+- Dedicate a detailed section for each product
+- Include a 'How We Chose' or methodology section
+- Add a buying guide section
+- Conclude with final recommendations for different user types
+- Natural keyword placement throughout
+- Use H2 for product names, H3 for subsections
+
+Please provide the article in the following JSON format:
+
+{
+  \"title\": \"Optimized article title\",
+  \"meta_title\": \"SEO-optimized meta title (55-60 characters)\",
+  \"meta_description\": \"Compelling meta description (150-160 characters)\",
+  \"slug\": \"url-friendly-slug\",
+  \"outline\": [
+    \"Introduction\",
+    \"Product 1 Name - Full Review\",
+    \"Product 2 Name - Full Review\",
+    \"Comparison Table\",
+    \"How We Chose These Products\",
+    \"Buying Guide\",
+    \"Final Recommendations\",
+    \"Conclusion\"
+  ],
+  \"introduction\": \"Engaging introduction paragraph\",
+  \"content\": \"Full article content with proper HTML formatting including comparison tables, product sections with <h2>, <h3>, <ul>, <ol>, <table>, <strong>, <em> tags\",
+  \"headings\": [
+    {\"level\": \"h2\", \"text\": \"Product Name\"},
+    {\"level\": \"h3\", \"text\": \"Pros and Cons\"}
+  ],
+  \"talking_points\": [
+    \"Key comparison point 1\",
+    \"Key comparison point 2\"
+  ],
+  \"contextual_terms\": [
+    \"product-related term 1\",
+    \"LSI keyword 1\"
+  ],
+  \"conclusion\": \"Strong conclusion with final recommendations\",
+  \"faqs\": [
+    {
+      \"question\": \"Which product is best for [use case]?\",
+      \"answer\": \"Detailed answer\"
+    }
+  ],
+  \"featured_image_description\": \"Description of ideal featured image\",
+  \"keywords\": [
+    \"primary keyword\",
+    \"secondary keyword 1\"
+  ],
+  \"inline_suggestions\": [
+    \"Related product review title 1\"
+  ]
+}
+
+Return ONLY the JSON response, no additional text.";
+
+        return $prompt;
+    }
+
+    private function build_product_review_prompt( array $params ): string {
+        $title = $params['title'];
+        $keyword = $params['keyword'];
+        $tone = $params['tone'];
+        $word_count = $params['word_count'];
+        $pov = $params['pov'];
+        $readability = $params['readability'];
+        $product_name = $params['product_names'] ?? '';
+
+        $pov_text = [
+            'first_person' => 'first person (I, we)',
+            'second_person' => 'second person (you)',
+            'third_person' => 'third person (he, she, they)',
+        ][ $pov ] ?? 'third person';
+
+        $product_info = ! empty( $product_name ) ? "\n- Product Name: {$product_name}" : '';
+
+        $prompt = "You are an expert product reviewer. Create a comprehensive IN-DEPTH PRODUCT REVIEW with the following specifications:
+
+**Article Type:** Single Product Review (detailed analysis of one product)
+
+**Article Requirements:**
+- Title: {$title}
+- Primary Keyword: {$keyword}
+- Tone: {$tone}
+- Word Count: approximately {$word_count} words
+- Point of View: {$pov_text}
+- Readability Level: {$readability}{$product_info}
+
+**Product Review Structure:**
+1. Product introduction and first impressions
+2. Detailed specifications and features
+3. Design and build quality
+4. Performance and real-world testing
+5. Comprehensive pros and cons list
+6. Comparison with competitors
+7. Who should buy this product
+8. Overall rating and final verdict
+9. Where to buy (with affiliate-friendly CTA)
+
+**Content Requirements:**
+- Start with a compelling hook about the product
+- Include a specifications table
+- Use H2 for major sections, H3 for subsections
+- Add a pros/cons box
+- Include rating scores (overall, features, value, etc.)
+- Natural keyword placement
+- Honest, balanced review with both positives and negatives
+- Call-to-action for purchase
+
+Please provide the article in the following JSON format:
+
+{
+  \"title\": \"Optimized article title\",
+  \"meta_title\": \"SEO-optimized meta title (55-60 characters)\",
+  \"meta_description\": \"Compelling meta description (150-160 characters)\",
+  \"slug\": \"url-friendly-slug\",
+  \"outline\": [
+    \"Introduction\",
+    \"Product Overview\",
+    \"Key Features\",
+    \"Performance Testing\",
+    \"Pros and Cons\",
+    \"Comparison with Alternatives\",
+    \"Who Should Buy\",
+    \"Final Verdict\"
+  ],
+  \"introduction\": \"Engaging introduction paragraph\",
+  \"content\": \"Full article content with proper HTML formatting including specs table, pros/cons lists, rating boxes with <h2>, <h3>, <table>, <ul>, <ol>, <strong>, <em> tags\",
+  \"headings\": [
+    {\"level\": \"h2\", \"text\": \"Product Overview\"},
+    {\"level\": \"h3\", \"text\": \"Design Quality\"}
+  ],
+  \"talking_points\": [
+    \"Key feature 1\",
+    \"Performance insight 2\"
+  ],
+  \"contextual_terms\": [
+    \"product-related term 1\",
+    \"LSI keyword 1\"
+  ],
+  \"conclusion\": \"Strong conclusion with purchase recommendation\",
+  \"faqs\": [
+    {
+      \"question\": \"Is this product worth the price?\",
+      \"answer\": \"Detailed answer\"
+    }
+  ],
+  \"featured_image_description\": \"Description of ideal featured image\",
+  \"keywords\": [
+    \"primary keyword\",
+    \"secondary keyword 1\"
+  ],
+  \"inline_suggestions\": [
+    \"Related product review title 1\"
+  ]
+}
+
+Return ONLY the JSON response, no additional text.";
+
+        return $prompt;
+    }
+
+    private function build_comparison_prompt( array $params ): string {
+        $title = $params['title'];
+        $keyword = $params['keyword'];
+        $tone = $params['tone'];
+        $word_count = $params['word_count'];
+        $pov = $params['pov'];
+        $readability = $params['readability'];
+        $product_names = $params['product_names'] ?? '';
+        $comparison_criteria = $params['comparison_criteria'] ?? '';
+
+        $pov_text = [
+            'first_person' => 'first person (I, we)',
+            'second_person' => 'second person (you)',
+            'third_person' => 'third person (he, she, they)',
+        ][ $pov ] ?? 'third person';
+
+        $products_info = ! empty( $product_names ) ? "\n- Products to Compare: {$product_names}" : '';
+        $criteria_info = ! empty( $comparison_criteria ) ? "\n- Comparison Criteria: {$comparison_criteria}" : '';
+
+        $prompt = "You are an expert product analyst. Create a detailed HEAD-TO-HEAD COMPARISON article with the following specifications:
+
+**Article Type:** Product Comparison (detailed comparison of 2-3 products)
+
+**Article Requirements:**
+- Title: {$title}
+- Primary Keyword: {$keyword}
+- Tone: {$tone}
+- Word Count: approximately {$word_count} words
+- Point of View: {$pov_text}
+- Readability Level: {$readability}{$products_info}{$criteria_info}
+
+**Comparison Structure:**
+1. Introduction explaining what's being compared and why
+2. Quick overview of each product
+3. Side-by-side comparison table
+4. Detailed comparison across multiple criteria:
+   - Features and specifications
+   - Performance and quality
+   - Price and value
+   - User experience
+   - Support and warranty
+5. Winner declaration for each category
+6. Final verdict and recommendations
+7. Which product is best for different user types
+
+**Content Requirements:**
+- Start with clear comparison purpose
+- Use HTML comparison tables
+- Declare a winner for each criterion
+- Be objective and data-driven
+- Use H2 for comparison criteria, H3 for sub-criteria
+- Include a final scorecard or rating summary
+- Natural keyword placement
+- Affiliate-friendly calls-to-action
+
+Please provide the article in the following JSON format:
+
+{
+  \"title\": \"Optimized article title\",
+  \"meta_title\": \"SEO-optimized meta title (55-60 characters)\",
+  \"meta_description\": \"Compelling meta description (150-160 characters)\",
+  \"slug\": \"url-friendly-slug\",
+  \"outline\": [
+    \"Introduction\",
+    \"Product A Overview\",
+    \"Product B Overview\",
+    \"Quick Comparison Table\",
+    \"Features Comparison\",
+    \"Performance Comparison\",
+    \"Price Comparison\",
+    \"Final Verdict\"
+  ],
+  \"introduction\": \"Engaging introduction paragraph\",
+  \"content\": \"Full article content with proper HTML formatting including comparison tables, winner declarations with <h2>, <h3>, <table>, <ul>, <ol>, <strong>, <em> tags\",
+  \"headings\": [
+    {\"level\": \"h2\", \"text\": \"Feature Comparison\"},
+    {\"level\": \"h3\", \"text\": \"Winner: Product A\"}
+  ],
+  \"talking_points\": [
+    \"Key difference 1\",
+    \"Key difference 2\"
+  ],
+  \"contextual_terms\": [
+    \"comparison-related term 1\",
+    \"LSI keyword 1\"
+  ],
+  \"conclusion\": \"Strong conclusion with clear winner or recommendation\",
+  \"faqs\": [
+    {
+      \"question\": \"Which product is better for [use case]?\",
+      \"answer\": \"Detailed answer\"
+    }
+  ],
+  \"featured_image_description\": \"Description of ideal featured image\",
+  \"keywords\": [
+    \"primary keyword\",
+    \"secondary keyword 1\"
+  ],
+  \"inline_suggestions\": [
+    \"Related comparison title 1\"
+  ]
+}
+
+Return ONLY the JSON response, no additional text.";
+
+        return $prompt;
+    }
+
+    private function build_listicle_prompt( array $params ): string {
+        $title = $params['title'];
+        $keyword = $params['keyword'];
+        $tone = $params['tone'];
+        $word_count = $params['word_count'];
+        $pov = $params['pov'];
+        $readability = $params['readability'];
+        $list_count = $params['list_count'] ?? 10;
+
+        $pov_text = [
+            'first_person' => 'first person (I, we)',
+            'second_person' => 'second person (you)',
+            'third_person' => 'third person (he, she, they)',
+        ][ $pov ] ?? 'third person';
+
+        $prompt = "You are an expert content writer specializing in viral listicles. Create an engaging LISTICLE article with the following specifications:
+
+**Article Type:** Listicle (numbered or bulleted list article)
+
+**Article Requirements:**
+- Title: {$title}
+- Primary Keyword: {$keyword}
+- Tone: {$tone}
+- Word Count: approximately {$word_count} words
+- Point of View: {$pov_text}
+- Readability Level: {$readability}
+- Number of Items: {$list_count}
+
+**Listicle Structure:**
+1. Compelling introduction explaining the list's value
+2. {$list_count} main list items, each with:
+   - Catchy subheading
+   - Detailed explanation (100-200 words per item)
+   - Supporting details or examples
+   - Optional image suggestion
+3. Brief conclusion summarizing the list
+4. Call-to-action
+
+**Content Requirements:**
+- Use H2 for each list item (e.g., \"1. First Item Name\")
+- Start with the most important/compelling items
+- Each item should provide real value
+- Include actionable tips or insights
+- Use engaging, scannable formatting
+- Add numbers to H2 headings (1., 2., 3., etc.)
+- Natural keyword placement
+- Make it shareable and click-worthy
+
+Please provide the article in the following JSON format:
+
+{
+  \"title\": \"Optimized article title with number (e.g., '10 Best...')\",
+  \"meta_title\": \"SEO-optimized meta title (55-60 characters)\",
+  \"meta_description\": \"Compelling meta description (150-160 characters)\",
+  \"slug\": \"url-friendly-slug\",
+  \"outline\": [
+    \"Introduction\",
+    \"1. First Item\",
+    \"2. Second Item\",
+    \"3. Third Item\",
+    \"Conclusion\"
+  ],
+  \"introduction\": \"Engaging introduction paragraph that hooks readers\",
+  \"content\": \"Full article content with proper HTML formatting, numbered H2 headings for each list item with <h2>, <h3>, <ul>, <ol>, <strong>, <em> tags\",
+  \"headings\": [
+    {\"level\": \"h2\", \"text\": \"1. First Item Name\"},
+    {\"level\": \"h3\", \"text\": \"Why This Matters\"}
+  ],
+  \"talking_points\": [
+    \"Key point from item 1\",
+    \"Key point from item 2\"
+  ],
+  \"contextual_terms\": [
+    \"list-related term 1\",
+    \"LSI keyword 1\"
+  ],
+  \"conclusion\": \"Strong conclusion summarizing the list value\",
+  \"faqs\": [
+    {
+      \"question\": \"What is the best [item] on this list?\",
+      \"answer\": \"Detailed answer\"
+    }
+  ],
+  \"featured_image_description\": \"Description of ideal featured image\",
+  \"keywords\": [
+    \"primary keyword\",
+    \"secondary keyword 1\"
+  ],
+  \"inline_suggestions\": [
+    \"Related listicle title 1\"
+  ]
+}
+
+Return ONLY the JSON response, no additional text.";
+
+        return $prompt;
     }
 }
