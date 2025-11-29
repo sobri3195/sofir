@@ -24,10 +24,18 @@ class Manager {
     }
 
     public function boot(): void {
+        \add_action( 'init', [ $this, 'register_payment_cpt' ] );
+        \add_action( 'admin_menu', [ $this, 'add_payments_menu' ] );
         \add_action( 'admin_post_sofir_save_payment_settings', [ $this, 'handle_save_settings' ] );
         \add_action( 'rest_api_init', [ $this, 'register_rest_routes' ] );
         \add_action( 'wp_enqueue_scripts', [ $this, 'register_assets' ] );
+        \add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_assets' ] );
         \add_shortcode( 'sofir_payment_form', [ $this, 'render_payment_form' ] );
+        \add_shortcode( 'sofir_donation_form', [ $this, 'render_donation_form' ] );
+        \add_shortcode( 'sofir_subscription_form', [ $this, 'render_subscription_form' ] );
+        \add_shortcode( 'sofir_product_catalog', [ $this, 'render_product_catalog' ] );
+        
+        $this->register_payment_cron();
     }
 
     public function get_settings(): array {
@@ -486,5 +494,623 @@ class Manager {
         ];
 
         return \apply_filters( 'sofir/payment/gateways', $gateways );
+    }
+
+    public function register_payment_cpt(): void {
+        \register_post_type(
+            'sofir_product',
+            [
+                'label' => \__( 'Products', 'sofir' ),
+                'public' => true,
+                'show_ui' => true,
+                'show_in_menu' => false,
+                'supports' => [ 'title', 'editor', 'thumbnail' ],
+                'capability_type' => 'post',
+                'has_archive' => true,
+            ]
+        );
+
+        \register_post_type(
+            'sofir_coupon',
+            [
+                'label' => \__( 'Coupons', 'sofir' ),
+                'public' => false,
+                'show_ui' => true,
+                'show_in_menu' => false,
+                'supports' => [ 'title' ],
+                'capability_type' => 'post',
+            ]
+        );
+
+        \register_post_type(
+            'sofir_subscription',
+            [
+                'label' => \__( 'Subscriptions', 'sofir' ),
+                'public' => false,
+                'show_ui' => true,
+                'show_in_menu' => false,
+                'supports' => [ 'title' ],
+                'capability_type' => 'post',
+            ]
+        );
+
+        \register_post_type(
+            'sofir_invoice',
+            [
+                'label' => \__( 'Invoices', 'sofir' ),
+                'public' => false,
+                'show_ui' => true,
+                'show_in_menu' => false,
+                'supports' => [ 'title' ],
+                'capability_type' => 'post',
+            ]
+        );
+    }
+
+    public function add_payments_menu(): void {
+        \add_menu_page(
+            \__( 'Payments', 'sofir' ),
+            \__( 'Payments', 'sofir' ),
+            'manage_options',
+            'sofir-payments',
+            [ $this, 'render_payments_dashboard' ],
+            'dashicons-money-alt',
+            32
+        );
+
+        \add_submenu_page(
+            'sofir-payments',
+            \__( 'Dashboard', 'sofir' ),
+            \__( 'Dashboard', 'sofir' ),
+            'manage_options',
+            'sofir-payments',
+            [ $this, 'render_payments_dashboard' ]
+        );
+
+        \add_submenu_page(
+            'sofir-payments',
+            \__( 'Transactions', 'sofir' ),
+            \__( 'Transactions', 'sofir' ),
+            'manage_options',
+            'sofir-transactions',
+            [ $this, 'render_transactions_page' ]
+        );
+
+        \add_submenu_page(
+            'sofir-payments',
+            \__( 'Products', 'sofir' ),
+            \__( 'Products', 'sofir' ),
+            'manage_options',
+            'edit.php?post_type=sofir_product'
+        );
+
+        \add_submenu_page(
+            'sofir-payments',
+            \__( 'Coupons', 'sofir' ),
+            \__( 'Coupons', 'sofir' ),
+            'manage_options',
+            'edit.php?post_type=sofir_coupon'
+        );
+
+        \add_submenu_page(
+            'sofir-payments',
+            \__( 'Subscriptions', 'sofir' ),
+            \__( 'Subscriptions', 'sofir' ),
+            'manage_options',
+            'edit.php?post_type=sofir_subscription'
+        );
+
+        \add_submenu_page(
+            'sofir-payments',
+            \__( 'Invoices', 'sofir' ),
+            \__( 'Invoices', 'sofir' ),
+            'manage_options',
+            'edit.php?post_type=sofir_invoice'
+        );
+
+        \add_submenu_page(
+            'sofir-payments',
+            \__( 'Settings', 'sofir' ),
+            \__( 'Settings', 'sofir' ),
+            'manage_options',
+            'sofir-payment-settings',
+            [ $this, 'render_settings_page' ]
+        );
+    }
+
+    public function render_payments_dashboard(): void {
+        $transactions = \get_option( 'sofir_payment_transactions', [] );
+        $total_revenue = 0;
+        $completed_count = 0;
+        $pending_count = 0;
+
+        foreach ( $transactions as $transaction ) {
+            if ( $transaction['status'] === 'completed' ) {
+                $total_revenue += $transaction['amount'];
+                $completed_count++;
+            } elseif ( $transaction['status'] === 'pending' ) {
+                $pending_count++;
+            }
+        }
+
+        ?>
+        <div class="wrap">
+            <h1><?php \esc_html_e( 'Payments Dashboard', 'sofir' ); ?></h1>
+            
+            <div class="sofir-dashboard-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 20px;">
+                <div class="sofir-stat-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    <h3 style="margin: 0 0 10px 0; opacity: 0.9;"><?php \esc_html_e( 'Total Revenue', 'sofir' ); ?></h3>
+                    <p style="font-size: 36px; font-weight: bold; margin: 0;"><?php echo \esc_html( $this->format_price( $total_revenue ) ); ?></p>
+                </div>
+
+                <div class="sofir-stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    <h3 style="margin: 0 0 10px 0; opacity: 0.9;"><?php \esc_html_e( 'Completed Payments', 'sofir' ); ?></h3>
+                    <p style="font-size: 36px; font-weight: bold; margin: 0;"><?php echo \esc_html( $completed_count ); ?></p>
+                </div>
+
+                <div class="sofir-stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    <h3 style="margin: 0 0 10px 0; opacity: 0.9;"><?php \esc_html_e( 'Pending Payments', 'sofir' ); ?></h3>
+                    <p style="font-size: 36px; font-weight: bold; margin: 0;"><?php echo \esc_html( $pending_count ); ?></p>
+                </div>
+
+                <div class="sofir-stat-card" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    <h3 style="margin: 0 0 10px 0; opacity: 0.9;"><?php \esc_html_e( 'Total Transactions', 'sofir' ); ?></h3>
+                    <p style="font-size: 36px; font-weight: bold; margin: 0;"><?php echo \esc_html( \count( $transactions ) ); ?></p>
+                </div>
+            </div>
+
+            <h2 style="margin-top: 40px;"><?php \esc_html_e( 'Recent Transactions', 'sofir' ); ?></h2>
+            <?php $this->render_recent_transactions( 10 ); ?>
+        </div>
+        <?php
+    }
+
+    public function render_transactions_page(): void {
+        ?>
+        <div class="wrap">
+            <h1><?php \esc_html_e( 'Transactions', 'sofir' ); ?></h1>
+            <?php $this->render_recent_transactions( -1 ); ?>
+        </div>
+        <?php
+    }
+
+    private function render_recent_transactions( int $limit ): void {
+        $transactions = \get_option( 'sofir_payment_transactions', [] );
+        $transactions = \array_reverse( $transactions );
+
+        if ( $limit > 0 ) {
+            $transactions = \array_slice( $transactions, 0, $limit );
+        }
+
+        if ( empty( $transactions ) ) {
+            echo '<p>' . \esc_html__( 'No transactions found.', 'sofir' ) . '</p>';
+            return;
+        }
+
+        echo '<table class="wp-list-table widefat fixed striped">';
+        echo '<thead><tr>';
+        echo '<th>' . \esc_html__( 'Transaction ID', 'sofir' ) . '</th>';
+        echo '<th>' . \esc_html__( 'Gateway', 'sofir' ) . '</th>';
+        echo '<th>' . \esc_html__( 'Amount', 'sofir' ) . '</th>';
+        echo '<th>' . \esc_html__( 'Item', 'sofir' ) . '</th>';
+        echo '<th>' . \esc_html__( 'Status', 'sofir' ) . '</th>';
+        echo '<th>' . \esc_html__( 'Date', 'sofir' ) . '</th>';
+        echo '<th>' . \esc_html__( 'Actions', 'sofir' ) . '</th>';
+        echo '</tr></thead><tbody>';
+
+        foreach ( $transactions as $transaction ) {
+            $status_color = match ( $transaction['status'] ) {
+                'completed' => '#00a32a',
+                'pending' => '#f0b849',
+                'failed' => '#d63638',
+                default => '#757575',
+            };
+
+            echo '<tr>';
+            echo '<td><strong>' . \esc_html( $transaction['id'] ) . '</strong></td>';
+            echo '<td>' . \esc_html( \ucfirst( $transaction['gateway'] ) ) . '</td>';
+            echo '<td>' . \esc_html( $this->format_price( $transaction['amount'] ) ) . '</td>';
+            echo '<td>' . \esc_html( $transaction['item_name'] ) . '</td>';
+            echo '<td><span style="padding: 4px 8px; border-radius: 4px; color: white; background: ' . \esc_attr( $status_color ) . ';">' . \esc_html( \ucfirst( $transaction['status'] ) ) . '</span></td>';
+            echo '<td>' . \esc_html( $transaction['created_at'] ) . '</td>';
+            echo '<td><button class="button button-small">' . \esc_html__( 'View', 'sofir' ) . '</button></td>';
+            echo '</tr>';
+        }
+
+        echo '</tbody></table>';
+    }
+
+    public function render_settings_page(): void {
+        ?>
+        <div class="wrap">
+            <h1><?php \esc_html_e( 'Payment Settings', 'sofir' ); ?></h1>
+            <p><?php \esc_html_e( 'Configure your payment gateways and settings.', 'sofir' ); ?></p>
+        </div>
+        <?php
+    }
+
+    public function render_donation_form( array $atts ): string {
+        $atts = \shortcode_atts(
+            [
+                'title' => \__( 'Support Us', 'sofir' ),
+                'description' => '',
+                'suggested_amounts' => '10,25,50,100',
+                'currency' => 'USD',
+            ],
+            $atts,
+            'sofir_donation_form'
+        );
+
+        \wp_enqueue_script( 'sofir-payments' );
+        \wp_enqueue_style( 'sofir-payments' );
+
+        $amounts = \explode( ',', $atts['suggested_amounts'] );
+
+        ob_start();
+        ?>
+        <div class="sofir-donation-form">
+            <h2><?php echo \esc_html( $atts['title'] ); ?></h2>
+            <?php if ( $atts['description'] ) : ?>
+                <p><?php echo \esc_html( $atts['description'] ); ?></p>
+            <?php endif; ?>
+
+            <div class="sofir-donation-amounts" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; margin: 20px 0;">
+                <?php foreach ( $amounts as $amount ) : ?>
+                    <button type="button" class="button sofir-amount-btn" data-amount="<?php echo \esc_attr( \trim( $amount ) ); ?>">
+                        <?php echo \esc_html( $atts['currency'] . ' ' . \trim( $amount ) ); ?>
+                    </button>
+                <?php endforeach; ?>
+            </div>
+
+            <div class="sofir-custom-amount" style="margin: 20px 0;">
+                <label><?php \esc_html_e( 'Or enter custom amount:', 'sofir' ); ?></label>
+                <input type="number" class="sofir-donation-amount" placeholder="0.00" min="1" step="0.01" style="width: 100%; padding: 10px; margin-top: 5px;" />
+            </div>
+
+            <div class="sofir-donor-info" style="margin: 20px 0;">
+                <input type="text" class="sofir-donor-name" placeholder="<?php \esc_attr_e( 'Your Name', 'sofir' ); ?>" style="width: 100%; padding: 10px; margin-bottom: 10px;" />
+                <input type="email" class="sofir-donor-email" placeholder="<?php \esc_attr_e( 'Your Email', 'sofir' ); ?>" style="width: 100%; padding: 10px;" />
+            </div>
+
+            <button type="button" class="button button-primary sofir-donate-btn" style="width: 100%; padding: 15px; font-size: 16px;">
+                <?php \esc_html_e( 'Donate Now', 'sofir' ); ?>
+            </button>
+        </div>
+        <?php
+        return (string) ob_get_clean();
+    }
+
+    public function render_subscription_form( array $atts ): string {
+        $atts = \shortcode_atts(
+            [
+                'plans' => '',
+                'currency' => 'USD',
+            ],
+            $atts,
+            'sofir_subscription_form'
+        );
+
+        \wp_enqueue_script( 'sofir-payments' );
+
+        ob_start();
+        ?>
+        <div class="sofir-subscription-form">
+            <h2><?php \esc_html_e( 'Choose Your Plan', 'sofir' ); ?></h2>
+            <div class="sofir-subscription-plans" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin: 20px 0;">
+                <div class="sofir-plan-card" style="border: 2px solid #e0e0e0; border-radius: 8px; padding: 30px; text-align: center;">
+                    <h3><?php \esc_html_e( 'Basic', 'sofir' ); ?></h3>
+                    <p style="font-size: 36px; font-weight: bold; margin: 20px 0;">$9<span style="font-size: 18px; font-weight: normal;">/mo</span></p>
+                    <ul style="list-style: none; padding: 0; margin: 20px 0; text-align: left;">
+                        <li>✓ Feature 1</li>
+                        <li>✓ Feature 2</li>
+                        <li>✓ Feature 3</li>
+                    </ul>
+                    <button class="button button-primary sofir-subscribe-btn" data-plan="basic" data-amount="9">
+                        <?php \esc_html_e( 'Subscribe', 'sofir' ); ?>
+                    </button>
+                </div>
+
+                <div class="sofir-plan-card" style="border: 2px solid #0073aa; border-radius: 8px; padding: 30px; text-align: center; position: relative;">
+                    <span style="position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: #0073aa; color: white; padding: 5px 15px; border-radius: 15px; font-size: 12px;">
+                        <?php \esc_html_e( 'Popular', 'sofir' ); ?>
+                    </span>
+                    <h3><?php \esc_html_e( 'Pro', 'sofir' ); ?></h3>
+                    <p style="font-size: 36px; font-weight: bold; margin: 20px 0;">$29<span style="font-size: 18px; font-weight: normal;">/mo</span></p>
+                    <ul style="list-style: none; padding: 0; margin: 20px 0; text-align: left;">
+                        <li>✓ All Basic features</li>
+                        <li>✓ Feature 4</li>
+                        <li>✓ Feature 5</li>
+                        <li>✓ Feature 6</li>
+                    </ul>
+                    <button class="button button-primary sofir-subscribe-btn" data-plan="pro" data-amount="29">
+                        <?php \esc_html_e( 'Subscribe', 'sofir' ); ?>
+                    </button>
+                </div>
+
+                <div class="sofir-plan-card" style="border: 2px solid #e0e0e0; border-radius: 8px; padding: 30px; text-align: center;">
+                    <h3><?php \esc_html_e( 'Enterprise', 'sofir' ); ?></h3>
+                    <p style="font-size: 36px; font-weight: bold; margin: 20px 0;">$99<span style="font-size: 18px; font-weight: normal;">/mo</span></p>
+                    <ul style="list-style: none; padding: 0; margin: 20px 0; text-align: left;">
+                        <li>✓ All Pro features</li>
+                        <li>✓ Feature 7</li>
+                        <li>✓ Feature 8</li>
+                        <li>✓ Priority support</li>
+                    </ul>
+                    <button class="button button-primary sofir-subscribe-btn" data-plan="enterprise" data-amount="99">
+                        <?php \esc_html_e( 'Subscribe', 'sofir' ); ?>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <?php
+        return (string) ob_get_clean();
+    }
+
+    public function render_product_catalog( array $atts ): string {
+        $atts = \shortcode_atts(
+            [
+                'columns' => 3,
+                'limit' => 12,
+            ],
+            $atts,
+            'sofir_product_catalog'
+        );
+
+        $products = \get_posts( [
+            'post_type' => 'sofir_product',
+            'posts_per_page' => (int) $atts['limit'],
+            'orderby' => 'date',
+            'order' => 'DESC',
+        ] );
+
+        if ( empty( $products ) ) {
+            return '<p>' . \esc_html__( 'No products found.', 'sofir' ) . '</p>';
+        }
+
+        \wp_enqueue_script( 'sofir-payments' );
+
+        ob_start();
+        ?>
+        <div class="sofir-product-catalog">
+            <div class="sofir-products-grid" style="display: grid; grid-template-columns: repeat(<?php echo \esc_attr( $atts['columns'] ); ?>, 1fr); gap: 30px;">
+                <?php foreach ( $products as $product ) : ?>
+                    <?php
+                    $price = \get_post_meta( $product->ID, 'sofir_product_price', true );
+                    $sale_price = \get_post_meta( $product->ID, 'sofir_product_sale_price', true );
+                    $thumbnail = \get_the_post_thumbnail_url( $product->ID, 'medium' );
+                    ?>
+                    <div class="sofir-product-card" style="border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
+                        <?php if ( $thumbnail ) : ?>
+                            <img src="<?php echo \esc_url( $thumbnail ); ?>" alt="<?php echo \esc_attr( $product->post_title ); ?>" style="width: 100%; height: 200px; object-fit: cover;" />
+                        <?php endif; ?>
+                        
+                        <div style="padding: 20px;">
+                            <h3 style="margin: 0 0 10px 0;"><?php echo \esc_html( $product->post_title ); ?></h3>
+                            <div class="sofir-product-excerpt" style="color: #666; margin-bottom: 15px;">
+                                <?php echo \esc_html( \wp_trim_words( $product->post_excerpt, 15 ) ); ?>
+                            </div>
+                            
+                            <div class="sofir-product-price" style="margin-bottom: 15px;">
+                                <?php if ( $sale_price ) : ?>
+                                    <span style="text-decoration: line-through; color: #999; margin-right: 10px;">
+                                        <?php echo \esc_html( $this->format_price( (float) $price ) ); ?>
+                                    </span>
+                                    <span style="font-size: 24px; font-weight: bold; color: #d63638;">
+                                        <?php echo \esc_html( $this->format_price( (float) $sale_price ) ); ?>
+                                    </span>
+                                <?php else : ?>
+                                    <span style="font-size: 24px; font-weight: bold;">
+                                        <?php echo \esc_html( $this->format_price( (float) $price ) ); ?>
+                                    </span>
+                                <?php endif; ?>
+                            </div>
+                            
+                            <button class="button button-primary sofir-add-to-cart" data-product-id="<?php echo \esc_attr( $product->ID ); ?>" style="width: 100%;">
+                                <?php \esc_html_e( 'Add to Cart', 'sofir' ); ?>
+                            </button>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+        <?php
+        return (string) ob_get_clean();
+    }
+
+    public function enqueue_admin_assets( string $hook ): void {
+        if ( ! \str_contains( $hook, 'sofir-payment' ) ) {
+            return;
+        }
+
+        \wp_enqueue_style(
+            'sofir-payments-admin',
+            SOFIR_ASSETS_URL . 'css/payments-admin.css',
+            [],
+            SOFIR_VERSION
+        );
+
+        \wp_enqueue_script(
+            'sofir-payments-admin',
+            SOFIR_ASSETS_URL . 'js/payments-admin.js',
+            [ 'jquery', 'jquery-ui-datepicker' ],
+            SOFIR_VERSION,
+            true
+        );
+    }
+
+    public function register_payment_cron(): void {
+        if ( ! \wp_next_scheduled( 'sofir_payments_daily_check' ) ) {
+            \wp_schedule_event( \time(), 'daily', 'sofir_payments_daily_check' );
+        }
+
+        \add_action( 'sofir_payments_daily_check', [ $this, 'check_subscription_renewals' ] );
+    }
+
+    public function check_subscription_renewals(): void {
+        $subscriptions = \get_posts( [
+            'post_type' => 'sofir_subscription',
+            'post_status' => 'publish',
+            'posts_per_page' => -1,
+            'meta_query' => [
+                [
+                    'key' => 'subscription_status',
+                    'value' => 'active',
+                ],
+            ],
+        ] );
+
+        foreach ( $subscriptions as $subscription ) {
+            $next_billing = \get_post_meta( $subscription->ID, 'next_billing_date', true );
+            if ( $next_billing && \strtotime( $next_billing ) <= \time() ) {
+                $this->process_subscription_renewal( $subscription->ID );
+            }
+        }
+    }
+
+    private function process_subscription_renewal( int $subscription_id ): void {
+        $amount = \get_post_meta( $subscription_id, 'subscription_amount', true );
+        $gateway = \get_post_meta( $subscription_id, 'subscription_gateway', true );
+        $user_id = \get_post_meta( $subscription_id, 'subscription_user_id', true );
+
+        \do_action( 'sofir/payment/subscription_renewal', $subscription_id, $amount, $gateway, $user_id );
+    }
+
+    public function apply_coupon( string $coupon_code, float $amount ): array {
+        $coupons = \get_posts( [
+            'post_type' => 'sofir_coupon',
+            'title' => $coupon_code,
+            'posts_per_page' => 1,
+        ] );
+
+        if ( empty( $coupons ) ) {
+            return [
+                'valid' => false,
+                'message' => \__( 'Invalid coupon code.', 'sofir' ),
+            ];
+        }
+
+        $coupon = $coupons[0];
+        $discount_type = \get_post_meta( $coupon->ID, 'discount_type', true );
+        $discount_value = (float) \get_post_meta( $coupon->ID, 'discount_value', true );
+        $expiry_date = \get_post_meta( $coupon->ID, 'expiry_date', true );
+        $usage_limit = (int) \get_post_meta( $coupon->ID, 'usage_limit', true );
+        $usage_count = (int) \get_post_meta( $coupon->ID, 'usage_count', true );
+
+        if ( $expiry_date && \strtotime( $expiry_date ) < \time() ) {
+            return [
+                'valid' => false,
+                'message' => \__( 'This coupon has expired.', 'sofir' ),
+            ];
+        }
+
+        if ( $usage_limit > 0 && $usage_count >= $usage_limit ) {
+            return [
+                'valid' => false,
+                'message' => \__( 'This coupon has reached its usage limit.', 'sofir' ),
+            ];
+        }
+
+        $discount = 0;
+        if ( $discount_type === 'percentage' ) {
+            $discount = ( $amount * $discount_value ) / 100;
+        } else {
+            $discount = $discount_value;
+        }
+
+        $new_amount = \max( 0, $amount - $discount );
+
+        \update_post_meta( $coupon->ID, 'usage_count', $usage_count + 1 );
+
+        return [
+            'valid' => true,
+            'discount' => $discount,
+            'new_amount' => $new_amount,
+            'message' => \sprintf( \__( 'Coupon applied! You saved %s', 'sofir' ), $this->format_price( $discount ) ),
+        ];
+    }
+
+    public function generate_invoice( string $transaction_id ): int {
+        $transactions = \get_option( 'sofir_payment_transactions', [] );
+
+        if ( ! isset( $transactions[ $transaction_id ] ) ) {
+            return 0;
+        }
+
+        $transaction = $transactions[ $transaction_id ];
+
+        $invoice_id = \wp_insert_post( [
+            'post_title' => 'Invoice #' . $transaction_id,
+            'post_type' => 'sofir_invoice',
+            'post_status' => 'publish',
+        ] );
+
+        \update_post_meta( $invoice_id, 'transaction_id', $transaction_id );
+        \update_post_meta( $invoice_id, 'invoice_amount', $transaction['amount'] );
+        \update_post_meta( $invoice_id, 'invoice_date', \current_time( 'mysql' ) );
+        \update_post_meta( $invoice_id, 'invoice_status', $transaction['status'] );
+
+        return $invoice_id;
+    }
+
+    public function get_payment_analytics(): array {
+        $transactions = \get_option( 'sofir_payment_transactions', [] );
+        
+        $total_revenue = 0;
+        $completed = 0;
+        $pending = 0;
+        $failed = 0;
+        $refunded = 0;
+        
+        $gateway_stats = [];
+        $monthly_revenue = [];
+
+        foreach ( $transactions as $transaction ) {
+            switch ( $transaction['status'] ) {
+                case 'completed':
+                    $total_revenue += $transaction['amount'];
+                    $completed++;
+                    break;
+                case 'pending':
+                    $pending++;
+                    break;
+                case 'failed':
+                    $failed++;
+                    break;
+                case 'refunded':
+                    $refunded++;
+                    break;
+            }
+
+            if ( ! isset( $gateway_stats[ $transaction['gateway'] ] ) ) {
+                $gateway_stats[ $transaction['gateway'] ] = [
+                    'count' => 0,
+                    'revenue' => 0,
+                ];
+            }
+            $gateway_stats[ $transaction['gateway'] ]['count']++;
+            if ( $transaction['status'] === 'completed' ) {
+                $gateway_stats[ $transaction['gateway'] ]['revenue'] += $transaction['amount'];
+            }
+
+            $month = \date( 'Y-m', \strtotime( $transaction['created_at'] ) );
+            if ( ! isset( $monthly_revenue[ $month ] ) ) {
+                $monthly_revenue[ $month ] = 0;
+            }
+            if ( $transaction['status'] === 'completed' ) {
+                $monthly_revenue[ $month ] += $transaction['amount'];
+            }
+        }
+
+        return [
+            'total_revenue' => $total_revenue,
+            'total_transactions' => \count( $transactions ),
+            'completed' => $completed,
+            'pending' => $pending,
+            'failed' => $failed,
+            'refunded' => $refunded,
+            'gateway_stats' => $gateway_stats,
+            'monthly_revenue' => $monthly_revenue,
+            'conversion_rate' => \count( $transactions ) > 0 ? ( $completed / \count( $transactions ) ) * 100 : 0,
+        ];
     }
 }

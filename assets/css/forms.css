@@ -1,29 +1,32 @@
 .sofir-form-container {
     max-width: 600px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 30px;
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .sofir-custom-form {
-    background: #fff;
-    padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 }
 
 .sofir-form-field {
-    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
 .sofir-form-field label {
-    display: block;
     font-weight: 600;
-    margin-bottom: 8px;
     color: #333;
+    font-size: 14px;
 }
 
-.sofir-form-field .required {
-    color: #dc3232;
+.sofir-form-field label .required {
+    color: #d63638;
 }
 
 .sofir-form-field input[type="text"],
@@ -32,23 +35,23 @@
 .sofir-form-field input[type="number"],
 .sofir-form-field input[type="date"],
 .sofir-form-field input[type="time"],
-.sofir-form-field input[type="url"],
+.sofir-form-field input[type="file"],
 .sofir-form-field textarea,
 .sofir-form-field select {
     width: 100%;
     padding: 12px;
     border: 1px solid #ddd;
     border-radius: 4px;
-    font-size: 16px;
-    transition: border-color 0.2s ease;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
 }
 
 .sofir-form-field input:focus,
 .sofir-form-field textarea:focus,
 .sofir-form-field select:focus {
-    outline: none;
     border-color: #0073aa;
-    box-shadow: 0 0 0 2px rgba(0,115,170,0.1);
+    outline: none;
+    box-shadow: 0 0 0 1px #0073aa;
 }
 
 .sofir-form-field textarea {
@@ -56,44 +59,85 @@
     resize: vertical;
 }
 
-.sofir-form-field input[type="checkbox"],
-.sofir-form-field input[type="radio"] {
-    margin-right: 8px;
+.sofir-rating-field {
+    display: flex;
+    gap: 5px;
+    font-size: 32px;
+    cursor: pointer;
 }
 
-.sofir-form-field input[type="file"] {
-    padding: 8px;
+.sofir-rating-field .sofir-star {
+    color: #ddd;
+    transition: color 0.2s ease;
+}
+
+.sofir-rating-field .sofir-star:hover,
+.sofir-rating-field .sofir-star.active {
+    color: #f0ad4e;
+}
+
+.sofir-section-break {
+    padding: 20px 0;
+    border-bottom: 2px solid #0073aa;
+    margin: 10px 0;
+}
+
+.sofir-section-break h3 {
+    margin: 0 0 10px 0;
+    color: #0073aa;
+}
+
+.sofir-section-break p {
+    margin: 0;
+    color: #666;
+}
+
+.sofir-html-block {
+    padding: 15px;
+    background: #f8f9fa;
+    border-left: 4px solid #0073aa;
+    border-radius: 4px;
+}
+
+.sofir-signature-pad canvas {
+    display: block;
+    width: 100%;
+    height: 200px;
+    border: 2px dashed #ddd;
+    border-radius: 4px;
+    background: #fafafa;
+}
+
+.sofir-signature-actions {
+    margin-top: 10px;
 }
 
 .sofir-form-submit {
-    margin-top: 30px;
+    margin-top: 10px;
 }
 
 .sofir-form-submit button {
-    background: #0073aa;
-    color: white;
-    border: none;
-    padding: 14px 32px;
+    width: 100%;
+    padding: 15px;
     font-size: 16px;
     font-weight: 600;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
     border-radius: 4px;
     cursor: pointer;
-    transition: background 0.2s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .sofir-form-submit button:hover {
-    background: #005a87;
-}
-
-.sofir-form-submit button:disabled {
-    background: #ccc;
-    cursor: not-allowed;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
 .sofir-form-message {
-    margin-top: 20px;
     padding: 15px;
     border-radius: 4px;
+    margin-top: 20px;
 }
 
 .sofir-form-message.success {
@@ -108,12 +152,70 @@
     border: 1px solid #f5c6cb;
 }
 
+.sofir-multistep-form .sofir-step {
+    display: none;
+}
+
+.sofir-multistep-form .sofir-step.active {
+    display: block;
+}
+
+.sofir-step-indicators {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 30px;
+    position: relative;
+}
+
+.sofir-step-indicators::before {
+    content: '';
+    position: absolute;
+    top: 15px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: #ddd;
+    z-index: 0;
+}
+
+.sofir-step-indicator {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    color: #999;
+    position: relative;
+    z-index: 1;
+    transition: all 0.3s ease;
+}
+
+.sofir-step-indicator.completed {
+    background: #00a32a;
+    color: white;
+}
+
+.sofir-step-indicator.active {
+    background: #0073aa;
+    color: white;
+    box-shadow: 0 0 0 4px rgba(0, 115, 170, 0.2);
+}
+
+.sofir-form-navigation {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
 @media (max-width: 768px) {
     .sofir-form-container {
-        padding: 10px;
+        padding: 20px;
     }
     
-    .sofir-custom-form {
-        padding: 20px;
+    .sofir-rating-field {
+        font-size: 24px;
     }
 }
