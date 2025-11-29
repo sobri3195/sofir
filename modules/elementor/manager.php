@@ -72,6 +72,7 @@ class Manager {
             'countdown',
             'create-post',
             'dynamic-data',
+            'form',
             'appointment-form',
             'event-list',
             'event-calendar',
@@ -82,6 +83,10 @@ class Manager {
             'restaurant-delivery-form',
             'vendor-products',
             'vendor-store-list',
+            'payment-form',
+            'donation-form',
+            'subscription-form',
+            'product-catalog',
             'course-list',
             'course-progress',
             'my-courses',
@@ -205,6 +210,20 @@ class Manager {
             [],
             SOFIR_VERSION
         );
+        
+        \wp_enqueue_style(
+            'sofir-forms',
+            SOFIR_PLUGIN_URL . 'assets/css/forms.css',
+            [],
+            SOFIR_VERSION
+        );
+        
+        \wp_enqueue_style(
+            'sofir-payments',
+            SOFIR_PLUGIN_URL . 'assets/css/payments.css',
+            [],
+            SOFIR_VERSION
+        );
     }
 
     public function enqueue_frontend_scripts(): void {
@@ -216,5 +235,23 @@ class Manager {
             true
         );
         \wp_enqueue_script( 'sofir-gallery' );
+        
+        \wp_register_script(
+            'sofir-forms',
+            SOFIR_PLUGIN_URL . 'assets/js/forms.js',
+            [ 'jquery' ],
+            SOFIR_VERSION,
+            true
+        );
+        \wp_enqueue_script( 'sofir-forms' );
+        
+        \wp_register_script(
+            'sofir-payments',
+            SOFIR_PLUGIN_URL . 'assets/js/payments.js',
+            [ 'jquery' ],
+            SOFIR_VERSION,
+            true
+        );
+        \wp_enqueue_script( 'sofir-payments' );
     }
 }
