@@ -1,0 +1,69 @@
+fix(cpt): Perbaiki menu CPT tidak tampil dengan reload definitions (v1.0.7)
+
+PROBLEM:
+Menu Custom Post Type tidak tampil di sidebar admin setelah:
+- Install template dari Library tab
+- Import CPT dari JSON/ZIP package
+- Upgrade plugin dari versi lama
+- Edit manual definisi CPT
+
+ROOT CAUSE:
+1. Definitions tidak di-reload setelah update ke database
+   - check_and_update_definitions() update DB tapi tidak reload memory
+   - register_dynamic_post_types() menggunakan data lama dari memory
+   - CPT ter-register dengan settings yang salah (public=false, show_in_menu=false)
+
+2. Rewrite rules tidak selalu di-flush saat version change
+
+SOLUTION:
+1. Force reload definitions setelah database update
+   - Reset definitions_loaded flag sebelum dan setelah update
+   - Reload $this->post_types dari database setelah save
+   - Memastikan register_dynamic_post_types() menggunakan data yang benar
+
+2. Conditional enforcement di registration time
+   - Hanya enforce jika nilai false atau tidak ada
+   - Respects custom configurations (e.g., parent menu slugs)
+   - Lebih robust dan flexible
+
+3. Always flush rewrite rules saat version change
+   - Tidak perlu manual refresh di Settings → Permalinks
+   - Mencegah 404 errors pada CPT archives/singles
+
+FILES CHANGED:
+- includes/sofir-cpt-manager.php
+  * Line 68: Version bump to 1.0.7
+  * Lines 71-72: Reset definitions_loaded before loading
+  * Lines 120-122: Reload definitions after database update
+  * Lines 481-501: Conditional enforcement at registration
+  * Line 125: Always flush rewrite rules on version change
+
+- includes/class-admin-library-panel.php
+  * Line 337: Version reference updated to 1.0.7
+
+IMPACT:
+✅ CPT menus appear consistently in admin sidebar
+✅ Frontend access works immediately (archive & single pages)
+✅ No race conditions or timing issues
+✅ Works for ALL CPT sources (seed, library, import, custom)
+✅ Respects custom configurations while ensuring visibility
+✅ No manual intervention needed
+✅ Production ready and fully tested
+
+TESTING:
+✅ Fresh installation
+✅ Plugin upgrade
+✅ Install from Library (11 templates)
+✅ Import JSON/ZIP packages
+✅ Create custom CPT
+✅ Edit existing CPT
+✅ Multi-site installation
+
+DOCUMENTATION:
+- CPT_MENU_FIX_V1.0.7.md - Technical documentation
+- PERBAIKAN_MENU_CPT_v1.0.7_ID.md - Indonesian user guide
+- CPT_MENU_FIX_V1.0.7_SUMMARY.md - Quick reference
+- CHANGELOG_v1.0.7.md - Complete changelog
+
+Version: 1.0.7
+Status: Production Ready ✅

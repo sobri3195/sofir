@@ -334,7 +334,7 @@ class LibraryPanel {
         }
 
         if ( $updated ) {
-            \update_option( 'sofir_cpt_definitions_version', '1.0.6' );
+            \update_option( 'sofir_cpt_definitions_version', '1.0.7' );
         }
     }
 

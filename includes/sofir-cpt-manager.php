@@ -65,9 +65,10 @@ class Manager {
 
     public function check_and_update_definitions(): void {
         $version = \get_option( 'sofir_cpt_definitions_version', '0' );
-        $current_version = '1.0.6';
+        $current_version = '1.0.7';
 
         if ( $version !== $current_version ) {
+            $this->definitions_loaded = false;
             $this->load_definitions();
             $updated = false;
 
@@ -116,9 +117,12 @@ class Manager {
 
             if ( $updated ) {
                 \update_option( self::OPTION_POST_TYPES, $this->post_types );
-                \flush_rewrite_rules();
+                $this->definitions_loaded = false;
+                $this->post_types = \get_option( self::OPTION_POST_TYPES, [] );
+                $this->definitions_loaded = true;
             }
-
+            
+            \flush_rewrite_rules();
             \update_option( 'sofir_cpt_definitions_version', $current_version );
         }
     }
@@ -473,6 +477,28 @@ class Manager {
             ];
 
             $normalized_args = \wp_parse_args( $args, $defaults );
+            
+            if ( ! isset( $normalized_args['public'] ) || ! $normalized_args['public'] ) {
+                $normalized_args['public'] = true;
+            }
+            if ( ! isset( $normalized_args['show_in_menu'] ) || ! $normalized_args['show_in_menu'] ) {
+                $normalized_args['show_in_menu'] = true;
+            }
+            if ( ! isset( $normalized_args['show_ui'] ) || ! $normalized_args['show_ui'] ) {
+                $normalized_args['show_ui'] = true;
+            }
+            if ( ! isset( $normalized_args['show_in_nav_menus'] ) || ! $normalized_args['show_in_nav_menus'] ) {
+                $normalized_args['show_in_nav_menus'] = true;
+            }
+            if ( ! isset( $normalized_args['publicly_queryable'] ) || ! $normalized_args['publicly_queryable'] ) {
+                $normalized_args['publicly_queryable'] = true;
+            }
+            if ( ! isset( $normalized_args['can_export'] ) || ! $normalized_args['can_export'] ) {
+                $normalized_args['can_export'] = true;
+            }
+            if ( ! isset( $normalized_args['exclude_from_search'] ) || $normalized_args['exclude_from_search'] ) {
+                $normalized_args['exclude_from_search'] = false;
+            }
 
             if ( ! empty( $taxonomies ) ) {
                 $normalized_args['taxonomies'] = array_unique( array_map( 'sanitize_key', $taxonomies ) );
