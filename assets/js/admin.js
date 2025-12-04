@@ -237,21 +237,46 @@
             '<button type="button" class="sofir-preview-modal__close" aria-label="Close">×</button>' +
             '</div>' +
             '<div class="sofir-preview-modal__body">' +
-            '<iframe class="sofir-preview-modal__iframe" frameborder="0"></iframe>' +
+            '<div class="sofir-preview-loading">Loading preview...</div>' +
+            '<iframe class="sofir-preview-modal__iframe" frameborder="0" style="opacity: 0;"></iframe>' +
             '</div>' +
             '</div>';
 
         document.body.appendChild( modal );
 
         const iframe = modal.querySelector( '.sofir-preview-modal__iframe' );
+        const loading = modal.querySelector( '.sofir-preview-loading' );
         const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
 
         iframeDoc.open();
         iframeDoc.write( '<!DOCTYPE html><html><head>' +
-            '<style>body{margin:0;padding:20px;font-family:system-ui,-apple-system,sans-serif;}</style>' +
+            '<meta name="viewport" content="width=device-width, initial-scale=1.0">' +
+            '<style>' +
+            'body{margin:0;padding:40px;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;line-height:1.6;color:#1e293b;background:#f8fafc;}' +
+            '*{box-sizing:border-box;}' +
+            'img{max-width:100%;height:auto;display:block;}' +
+            'h1,h2,h3,h4,h5,h6{margin-top:0;line-height:1.3;}' +
+            '.wp-block-group{margin-bottom:2em;}' +
+            '.wp-block-columns{display:flex;flex-wrap:wrap;gap:20px;}' +
+            '.wp-block-column{flex:1;min-width:200px;}' +
+            '.wp-block-button__link{display:inline-block;padding:12px 24px;border-radius:6px;text-decoration:none;background:#3858e9;color:#fff;font-weight:500;}' +
+            '</style>' +
             '<link rel="stylesheet" href="' + ( data.themeStyleUrl || '' ) + '">' +
             '</head><body>' + payload.content + '</body></html>' );
         iframeDoc.close();
+
+        setTimeout( function () {
+            if ( loading && loading.parentNode ) {
+                loading.style.opacity = '0';
+                setTimeout( function () {
+                    if ( loading.parentNode ) {
+                        loading.parentNode.removeChild( loading );
+                    }
+                }, 300 );
+            }
+            iframe.style.transition = 'opacity 0.3s ease';
+            iframe.style.opacity = '1';
+        }, 500 );
 
         modal.addEventListener( 'click', function ( event ) {
             if ( event.target === modal || event.target.classList.contains( 'sofir-preview-modal__close' ) ) {

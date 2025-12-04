@@ -101,39 +101,55 @@
     display: flex;
     flex-direction: column;
     gap: 32px;
+    padding-right: 20px;
+}
+
+.sofir-template-group {
+    margin-left: 8px;
 }
 
 .sofir-template-group__header {
     display: flex;
     flex-direction: column;
     gap: 8px;
+    margin-bottom: 20px;
 }
 
 .sofir-template-group__header h2 {
+    margin: 0;
+    font-size: 22px;
+    color: #1e293b;
+}
+
+.sofir-template-group__header p {
+    color: #64748b;
     margin: 0;
 }
 
 .sofir-template-group__grid {
     display: grid;
-    gap: 20px;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    padding-left: 4px;
 }
 
 .sofir-template-card {
     border: 1px solid #d8dce3;
-    border-radius: 10px;
+    border-radius: 12px;
     background: #fff;
     display: flex;
     flex-direction: column;
     gap: 0;
-    box-shadow: 0 1px 1px rgba(18, 32, 73, 0.06);
-    transition: box-shadow 0.2s ease, transform 0.2s ease;
+    box-shadow: 0 2px 4px rgba(18, 32, 73, 0.08);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     overflow: hidden;
+    position: relative;
 }
 
 .sofir-template-card:hover {
-    box-shadow: 0 4px 12px rgba(18, 32, 73, 0.12);
-    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(18, 32, 73, 0.16);
+    transform: translateY(-4px);
+    border-color: #b8bfce;
 }
 
 .sofir-template-card__preview {
@@ -186,7 +202,7 @@
 }
 
 .sofir-template-card__content {
-    padding: 20px;
+    padding: 24px;
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -195,30 +211,68 @@
 
 .sofir-template-card h3 {
     margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #1e293b;
+    line-height: 1.3;
+}
+
+.sofir-template-card .description {
+    color: #64748b;
+    font-size: 14px;
+    line-height: 1.5;
+    margin: 0;
 }
 
 .sofir-template-card__meta {
     display: flex;
     gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 4px;
 }
 
 .sofir-badge {
     display: inline-flex;
     align-items: center;
-    font-size: 12px;
-    padding: 4px 8px;
-    border-radius: 999px;
-    background: #f0f4ff;
-    color: #2f3a5d;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 5px 10px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+    box-shadow: 0 2px 4px rgba(102, 126, 234, 0.2);
 }
 
 .sofir-template-card__actions {
     display: flex;
-    gap: 8px;
+    gap: 10px;
     flex-wrap: wrap;
     margin-top: auto;
+    padding-top: 16px;
+}
+
+.sofir-template-card__actions .button {
+    flex: 1;
+    min-width: 120px;
+    justify-content: center;
+    text-align: center;
+    font-size: 13px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.sofir-template-card__actions .button-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.sofir-template-card__actions .button-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
 .sofir-subscribe {
@@ -491,10 +545,13 @@
 
 .sofir-preview-modal__body {
     flex: 1;
-    overflow: auto;
+    overflow: hidden;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    padding: 20px;
+    padding: 24px;
     position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .sofir-preview-modal__body::before {
@@ -518,6 +575,49 @@
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(0, 0, 0, 0.1);
     position: relative;
     z-index: 1;
+    min-height: 400px;
+}
+
+.sofir-preview-loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #fff;
+    font-size: 18px;
+    font-weight: 600;
+    z-index: 2;
+    text-align: center;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: opacity 0.3s ease;
+}
+
+.sofir-preview-loading::after {
+    content: '';
+    display: block;
+    margin: 20px auto 0;
+    width: 48px;
+    height: 48px;
+    border: 5px solid rgba(255, 255, 255, 0.2);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: sofirSpinner 0.8s linear infinite;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+@keyframes sofirSpinner {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.sofir-preview-modal__iframe.loading {
+    opacity: 0;
+}
+
+.sofir-preview-modal__iframe.loaded {
+    opacity: 1;
+    transition: opacity 0.4s ease;
 }
 
 .sofir-copy-modal {
@@ -655,4 +755,57 @@
     background: #f8d7da;
     color: #721c24;
     border: 1px solid #f5c6cb;
+}
+
+@media (max-width: 1280px) {
+    .sofir-template-group__grid {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 20px;
+    }
+}
+
+@media (max-width: 782px) {
+    .sofir-templates {
+        padding-right: 0;
+    }
+    
+    .sofir-template-group {
+        margin-left: 0;
+    }
+    
+    .sofir-template-group__grid {
+        grid-template-columns: 1fr;
+        padding-left: 0;
+        gap: 16px;
+    }
+    
+    .sofir-template-card__actions {
+        flex-direction: column;
+    }
+    
+    .sofir-template-card__actions .button {
+        width: 100%;
+        min-width: auto;
+    }
+    
+    .sofir-preview-modal {
+        padding: 10px;
+    }
+    
+    .sofir-preview-modal__content {
+        height: 96vh;
+        border-radius: 12px;
+    }
+    
+    .sofir-preview-modal__header {
+        padding: 16px 20px;
+    }
+    
+    .sofir-preview-modal__title {
+        font-size: 16px;
+    }
+    
+    .sofir-preview-modal__body {
+        padding: 16px;
+    }
 }
