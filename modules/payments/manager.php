@@ -30,6 +30,7 @@ class Manager {
         \add_action( 'rest_api_init', [ $this, 'register_rest_routes' ] );
         \add_action( 'wp_enqueue_scripts', [ $this, 'register_assets' ] );
         \add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_assets' ] );
+        \add_action( 'sofir_process_mock_payment', [ $this, 'process_mock_payment' ], 10, 2 );
         \add_shortcode( 'sofir_payment_form', [ $this, 'render_payment_form' ] );
         \add_shortcode( 'sofir_donation_form', [ $this, 'render_donation_form' ] );
         \add_shortcode( 'sofir_subscription_form', [ $this, 'render_subscription_form' ] );
@@ -59,14 +60,17 @@ class Manager {
         $duitku_merchant = isset( $_POST['duitku_merchant_code'] ) ? \sanitize_text_field( \wp_unslash( $_POST['duitku_merchant_code'] ) ) : '';
         $duitku_api = isset( $_POST['duitku_api_key'] ) ? \sanitize_text_field( \wp_unslash( $_POST['duitku_api_key'] ) ) : '';
         $duitku_enabled = isset( $_POST['enable_duitku'] );
+        $duitku_test_mode = isset( $_POST['duitku_test_mode'] );
         
         $xendit_api = isset( $_POST['xendit_api_key'] ) ? \sanitize_text_field( \wp_unslash( $_POST['xendit_api_key'] ) ) : '';
         $xendit_enabled = isset( $_POST['enable_xendit'] );
+        $xendit_test_mode = isset( $_POST['xendit_test_mode'] );
         
         $midtrans_server = isset( $_POST['midtrans_server_key'] ) ? \sanitize_text_field( \wp_unslash( $_POST['midtrans_server_key'] ) ) : '';
         $midtrans_client = isset( $_POST['midtrans_client_key'] ) ? \sanitize_text_field( \wp_unslash( $_POST['midtrans_client_key'] ) ) : '';
         $midtrans_sandbox = isset( $_POST['midtrans_sandbox'] );
         $midtrans_enabled = isset( $_POST['enable_midtrans'] );
+        $midtrans_test_mode = isset( $_POST['midtrans_test_mode'] );
 
         $this->settings = [
             'currency' => $currency,
@@ -74,12 +78,15 @@ class Manager {
             'duitku_merchant_code' => $duitku_merchant,
             'duitku_api_key' => $duitku_api,
             'duitku_enabled' => $duitku_enabled,
+            'duitku_test_mode' => $duitku_test_mode,
             'xendit_api_key' => $xendit_api,
             'xendit_enabled' => $xendit_enabled,
+            'xendit_test_mode' => $xendit_test_mode,
             'midtrans_server_key' => $midtrans_server,
             'midtrans_client_key' => $midtrans_client,
             'midtrans_sandbox' => $midtrans_sandbox,
             'midtrans_enabled' => $midtrans_enabled,
+            'midtrans_test_mode' => $midtrans_test_mode,
         ];
 
         \update_option( self::OPTION_SETTINGS, $this->settings );
@@ -237,6 +244,18 @@ class Manager {
                 },
             ]
         );
+
+        \register_rest_route(
+            'sofir/v1',
+            '/payments/test/trigger',
+            [
+                'methods' => 'POST',
+                'callback' => [ $this, 'rest_trigger_test_payment' ],
+                'permission_callback' => function () {
+                    return \current_user_can( 'manage_options' );
+                },
+            ]
+        );
     }
 
     public function rest_create_payment( \WP_REST_Request $request ): \WP_REST_Response {
@@ -267,6 +286,19 @@ class Manager {
     private function create_transaction( string $gateway, float $amount, string $item_name ): string {
         $transaction_id = 'TRX-' . \wp_rand( 100000, 999999 ) . '-' . \time();
         
+        $is_test_mode = false;
+        switch ( $gateway ) {
+            case 'duitku':
+                $is_test_mode = $this->settings['duitku_test_mode'] ?? false;
+                break;
+            case 'xendit':
+                $is_test_mode = $this->settings['xendit_test_mode'] ?? false;
+                break;
+            case 'midtrans':
+                $is_test_mode = $this->settings['midtrans_test_mode'] ?? false;
+                break;
+        }
+        
         $transaction = [
             'id' => $transaction_id,
             'gateway' => $gateway,
@@ -274,6 +306,7 @@ class Manager {
             'item_name' => $item_name,
             'status' => 'pending',
             'user_id' => \get_current_user_id(),
+            'test_mode' => $is_test_mode,
             'created_at' => \current_time( 'mysql' ),
         ];
 
@@ -294,6 +327,12 @@ class Manager {
     }
 
     private function create_duitku_payment( string $transaction_id, float $amount, string $item_name ): \WP_REST_Response {
+        $test_mode = $this->settings['duitku_test_mode'] ?? false;
+        
+        if ( $test_mode ) {
+            return $this->create_mock_duitku_payment( $transaction_id, $amount, $item_name );
+        }
+        
         $merchant_code = $this->settings['duitku_merchant_code'] ?? '';
         $api_key = $this->settings['duitku_api_key'] ?? '';
 
@@ -323,6 +362,12 @@ class Manager {
     }
 
     private function create_xendit_payment( string $transaction_id, float $amount, string $item_name ): \WP_REST_Response {
+        $test_mode = $this->settings['xendit_test_mode'] ?? false;
+        
+        if ( $test_mode ) {
+            return $this->create_mock_xendit_payment( $transaction_id, $amount, $item_name );
+        }
+        
         $api_key = $this->settings['xendit_api_key'] ?? '';
 
         if ( ! $api_key ) {
@@ -349,6 +394,12 @@ class Manager {
     }
 
     private function create_midtrans_payment( string $transaction_id, float $amount, string $item_name ): \WP_REST_Response {
+        $test_mode = $this->settings['midtrans_test_mode'] ?? false;
+        
+        if ( $test_mode ) {
+            return $this->create_mock_midtrans_payment( $transaction_id, $amount, $item_name );
+        }
+        
         $server_key = $this->settings['midtrans_server_key'] ?? '';
         $client_key = $this->settings['midtrans_client_key'] ?? '';
         $sandbox = $this->settings['midtrans_sandbox'] ?? false;
@@ -428,6 +479,33 @@ class Manager {
         return \rest_ensure_response( array_values( $transactions ) );
     }
 
+    public function rest_trigger_test_payment( \WP_REST_Request $request ): \WP_REST_Response {
+        $transaction_id = \sanitize_text_field( (string) $request->get_param( 'transaction_id' ) );
+        
+        if ( ! $transaction_id ) {
+            return new \WP_REST_Response( [ 'message' => \__( 'Transaction ID required', 'sofir' ) ], 400 );
+        }
+        
+        $transactions = \get_option( 'sofir_payment_transactions', [] );
+        
+        if ( ! isset( $transactions[ $transaction_id ] ) ) {
+            return new \WP_REST_Response( [ 'message' => \__( 'Transaction not found', 'sofir' ) ], 404 );
+        }
+        
+        if ( ! ( $transactions[ $transaction_id ]['test_mode'] ?? false ) ) {
+            return new \WP_REST_Response( [ 'message' => \__( 'Not a test transaction', 'sofir' ) ], 400 );
+        }
+        
+        $gateway = $transactions[ $transaction_id ]['gateway'];
+        $this->process_mock_payment( $transaction_id, $gateway );
+        
+        return \rest_ensure_response( [
+            'status' => 'success',
+            'message' => \__( 'Test payment processed', 'sofir' ),
+            'transaction_id' => $transaction_id,
+        ] );
+    }
+
     private function update_transaction_status( string $transaction_id, string $status ): void {
         $transactions = \get_option( 'sofir_payment_transactions', [] );
 
@@ -445,6 +523,120 @@ class Manager {
         return $currency . ' ' . \number_format_i18n( $amount, 2 );
     }
 
+    private function create_mock_duitku_payment( string $transaction_id, float $amount, string $item_name ): \WP_REST_Response {
+        $mock_reference = 'MOCK-DUITKU-' . \wp_rand( 10000, 99999 );
+        $mock_va_number = '8808' . \wp_rand( 1000000000, 9999999999 );
+        
+        $this->schedule_mock_webhook( $transaction_id, 'duitku', 10 );
+        
+        return \rest_ensure_response( [
+            'status' => 'success',
+            'payment_method' => 'duitku',
+            'transaction_id' => $transaction_id,
+            'test_mode' => true,
+            'reference' => $mock_reference,
+            'va_number' => $mock_va_number,
+            'payment_url' => \admin_url( 'admin.php?page=sofir-dashboard&tab=payments&test_payment=' . $transaction_id ),
+            'instructions' => \__( '🧪 TEST MODE - This is a simulated Duitku payment. Payment will auto-complete in 10 seconds.', 'sofir' ),
+            'bank_info' => [
+                'bank' => 'BCA Virtual Account (Test)',
+                'account_number' => $mock_va_number,
+                'account_name' => 'SOFIR Payment Test',
+            ],
+        ] );
+    }
+
+    private function create_mock_xendit_payment( string $transaction_id, float $amount, string $item_name ): \WP_REST_Response {
+        $mock_invoice_id = 'MOCK-XEN-' . \wp_rand( 10000, 99999 );
+        $mock_invoice_url = \admin_url( 'admin.php?page=sofir-dashboard&tab=payments&test_payment=' . $transaction_id );
+        
+        $this->schedule_mock_webhook( $transaction_id, 'xendit', 10 );
+        
+        return \rest_ensure_response( [
+            'status' => 'success',
+            'payment_method' => 'xendit',
+            'transaction_id' => $transaction_id,
+            'test_mode' => true,
+            'invoice_id' => $mock_invoice_id,
+            'invoice_url' => $mock_invoice_url,
+            'payment_methods' => [ 'Bank Transfer', 'E-Wallet', 'Credit Card', 'Retail Outlets' ],
+            'instructions' => \__( '🧪 TEST MODE - This is a simulated Xendit payment. Payment will auto-complete in 10 seconds.', 'sofir' ),
+            'qr_code' => 'https://placehold.co/300x300/667eea/ffffff?text=Xendit+QR+Test',
+        ] );
+    }
+
+    private function create_mock_midtrans_payment( string $transaction_id, float $amount, string $item_name ): \WP_REST_Response {
+        $mock_snap_token = 'MOCK-SNAP-' . \wp_rand( 10000, 99999 );
+        $mock_redirect_url = \admin_url( 'admin.php?page=sofir-dashboard&tab=payments&test_payment=' . $transaction_id );
+        
+        $this->schedule_mock_webhook( $transaction_id, 'midtrans', 10 );
+        
+        return \rest_ensure_response( [
+            'status' => 'success',
+            'payment_method' => 'midtrans',
+            'transaction_id' => $transaction_id,
+            'test_mode' => true,
+            'snap_token' => $mock_snap_token,
+            'redirect_url' => $mock_redirect_url,
+            'payment_methods' => [ 'Credit Card', 'Bank Transfer', 'GoPay', 'ShopeePay', 'Alfamart', 'Indomaret' ],
+            'instructions' => \__( '🧪 TEST MODE - This is a simulated Midtrans payment. Payment will auto-complete in 10 seconds.', 'sofir' ),
+            'snap_url' => $mock_redirect_url,
+        ] );
+    }
+
+    private function schedule_mock_webhook( string $transaction_id, string $gateway, int $delay_seconds ): void {
+        \wp_schedule_single_event(
+            \time() + $delay_seconds,
+            'sofir_process_mock_payment',
+            [ $transaction_id, $gateway ]
+        );
+    }
+
+    public function process_mock_payment( string $transaction_id, string $gateway ): void {
+        $success_rate = 90;
+        $is_success = \wp_rand( 1, 100 ) <= $success_rate;
+        
+        if ( $is_success ) {
+            $this->update_transaction_status( $transaction_id, 'completed' );
+            
+            switch ( $gateway ) {
+                case 'duitku':
+                    \do_action( 'sofir/payment/duitku_webhook', $transaction_id, '00', [
+                        'merchantOrderId' => $transaction_id,
+                        'resultCode' => '00',
+                        'reference' => 'MOCK-REF-' . \wp_rand( 100000, 999999 ),
+                        'amount' => 0,
+                        'test_mode' => true,
+                    ] );
+                    break;
+                    
+                case 'xendit':
+                    \do_action( 'sofir/payment/xendit_webhook', $transaction_id, 'PAID', [
+                        'external_id' => $transaction_id,
+                        'status' => 'PAID',
+                        'id' => 'MOCK-INV-' . \wp_rand( 100000, 999999 ),
+                        'amount' => 0,
+                        'test_mode' => true,
+                    ] );
+                    break;
+                    
+                case 'midtrans':
+                    \do_action( 'sofir/payment/midtrans_webhook', $transaction_id, 'settlement', [
+                        'order_id' => $transaction_id,
+                        'transaction_status' => 'settlement',
+                        'transaction_id' => 'MOCK-TRX-' . \wp_rand( 100000, 999999 ),
+                        'gross_amount' => 0,
+                        'test_mode' => true,
+                    ] );
+                    break;
+            }
+        } else {
+            $this->update_transaction_status( $transaction_id, 'failed' );
+        }
+        
+        \do_action( 'sofir/payment/mock_processed', $transaction_id, $gateway, $is_success );
+    }
+
     private function load_settings(): array {
         $defaults = [
             'currency' => 'IDR',
@@ -452,12 +644,15 @@ class Manager {
             'duitku_merchant_code' => '',
             'duitku_api_key' => '',
             'duitku_enabled' => false,
+            'duitku_test_mode' => false,
             'xendit_api_key' => '',
             'xendit_enabled' => false,
+            'xendit_test_mode' => false,
             'midtrans_server_key' => '',
             'midtrans_client_key' => '',
             'midtrans_sandbox' => true,
             'midtrans_enabled' => false,
+            'midtrans_test_mode' => false,
         ];
 
         $settings = \get_option( self::OPTION_SETTINGS, [] );
