@@ -1,10 +1,10 @@
 <?php
 namespace Sofir\Elementor\Widgets;
 
-use Elementor\Widget_Base;
+use Sofir\Elementor\BaseWidget;
 use Elementor\Controls_Manager;
 
-class Voxel_Search_Form extends Widget_Base {
+class Voxel_Search_Form extends BaseWidget {
 
     public function get_name(): string {
         return 'sofir-voxel-search-form';

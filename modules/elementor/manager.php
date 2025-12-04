@@ -3,6 +3,8 @@ namespace Sofir\Elementor;
 
 class Manager {
     private static ?Manager $instance = null;
+    private const MIN_ELEMENTOR_VERSION = '3.0.0';
+    private const MIN_PHP_VERSION = '7.4';
 
     public static function instance(): Manager {
         if ( null === self::$instance ) {
@@ -13,6 +15,10 @@ class Manager {
     }
 
     public function boot(): void {
+        if ( ! $this->is_elementor_compatible() ) {
+            return;
+        }
+
         \add_action( 'elementor/widgets/register', [ $this, 'register_widgets' ] );
         \add_action( 'elementor/elements/categories_registered', [ $this, 'register_category' ] );
         \add_action( 'elementor/editor/after_enqueue_styles', [ $this, 'enqueue_editor_styles' ] );
@@ -23,6 +29,56 @@ class Manager {
             require_once SOFIR_PLUGIN_DIR . '/modules/elementor/templates-manager.php';
             Templates_Manager::instance()->boot();
         }
+    }
+
+    private function is_elementor_compatible(): bool {
+        if ( ! \did_action( 'elementor/loaded' ) ) {
+            return false;
+        }
+
+        if ( ! \class_exists( '\Elementor\Plugin' ) ) {
+            return false;
+        }
+
+        if ( \version_compare( PHP_VERSION, self::MIN_PHP_VERSION, '<' ) ) {
+            \add_action( 'admin_notices', [ $this, 'admin_notice_minimum_php_version' ] );
+            return false;
+        }
+
+        if ( \defined( 'ELEMENTOR_VERSION' ) && \version_compare( ELEMENTOR_VERSION, self::MIN_ELEMENTOR_VERSION, '<' ) ) {
+            \add_action( 'admin_notices', [ $this, 'admin_notice_minimum_elementor_version' ] );
+            return false;
+        }
+
+        return true;
+    }
+
+    public function admin_notice_minimum_php_version(): void {
+        if ( ! \current_user_can( 'activate_plugins' ) ) {
+            return;
+        }
+
+        $message = sprintf(
+            \esc_html__( 'SOFIR Elementor widgets require PHP version %1$s or greater. You are running version %2$s.', 'sofir' ),
+            self::MIN_PHP_VERSION,
+            PHP_VERSION
+        );
+
+        printf( '<div class="notice notice-warning is-dismissible"><p>%s</p></div>', $message );
+    }
+
+    public function admin_notice_minimum_elementor_version(): void {
+        if ( ! \current_user_can( 'activate_plugins' ) ) {
+            return;
+        }
+
+        $message = sprintf(
+            \esc_html__( 'SOFIR Elementor widgets require Elementor version %1$s or greater. You are running version %2$s.', 'sofir' ),
+            self::MIN_ELEMENTOR_VERSION,
+            \defined( 'ELEMENTOR_VERSION' ) ? ELEMENTOR_VERSION : '0.0.0'
+        );
+
+        printf( '<div class="notice notice-warning is-dismissible"><p>%s</p></div>', $message );
     }
 
     public function register_category( $elements_manager ): void {
@@ -99,14 +155,26 @@ class Manager {
         ];
 
         foreach ( $widget_files as $widget_file ) {
-            $file_path = SOFIR_PLUGIN_DIR . '/modules/elementor/widgets/' . $widget_file . '.php';
-            if ( file_exists( $file_path ) ) {
+            try {
+                $file_path = SOFIR_PLUGIN_DIR . '/modules/elementor/widgets/' . $widget_file . '.php';
+                if ( ! file_exists( $file_path ) ) {
+                    continue;
+                }
+                
                 require_once $file_path;
                 
                 $class_name = $this->get_widget_class_name( $widget_file );
-                if ( class_exists( $class_name ) ) {
-                    $widgets_manager->register( new $class_name() );
+                if ( ! class_exists( $class_name ) ) {
+                    continue;
                 }
+
+                $widget_instance = new $class_name();
+                $widgets_manager->register( $widget_instance );
+            } catch ( \Exception $e ) {
+                if ( \defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+                    \error_log( sprintf( 'SOFIR Elementor: Failed to register widget %s - %s', $widget_file, $e->getMessage() ) );
+                }
+                continue;
             }
         }
 
@@ -133,14 +201,26 @@ class Manager {
         ];
 
         foreach ( $wc_widgets as $widget_file ) {
-            $file_path = SOFIR_PLUGIN_DIR . '/modules/elementor/widgets/' . $widget_file . '.php';
-            if ( file_exists( $file_path ) ) {
+            try {
+                $file_path = SOFIR_PLUGIN_DIR . '/modules/elementor/widgets/' . $widget_file . '.php';
+                if ( ! file_exists( $file_path ) ) {
+                    continue;
+                }
+                
                 require_once $file_path;
                 
                 $class_name = $this->get_widget_class_name( $widget_file );
-                if ( class_exists( $class_name ) ) {
-                    $widgets_manager->register( new $class_name() );
+                if ( ! class_exists( $class_name ) ) {
+                    continue;
                 }
+
+                $widget_instance = new $class_name();
+                $widgets_manager->register( $widget_instance );
+            } catch ( \Exception $e ) {
+                if ( \defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+                    \error_log( sprintf( 'SOFIR Elementor: Failed to register WooCommerce widget %s - %s', $widget_file, $e->getMessage() ) );
+                }
+                continue;
             }
         }
     }
@@ -155,14 +235,26 @@ class Manager {
         ];
 
         foreach ( $edd_widgets as $widget_file ) {
-            $file_path = SOFIR_PLUGIN_DIR . '/modules/elementor/widgets/' . $widget_file . '.php';
-            if ( file_exists( $file_path ) ) {
+            try {
+                $file_path = SOFIR_PLUGIN_DIR . '/modules/elementor/widgets/' . $widget_file . '.php';
+                if ( ! file_exists( $file_path ) ) {
+                    continue;
+                }
+                
                 require_once $file_path;
                 
                 $class_name = $this->get_widget_class_name( $widget_file );
-                if ( class_exists( $class_name ) ) {
-                    $widgets_manager->register( new $class_name() );
+                if ( ! class_exists( $class_name ) ) {
+                    continue;
                 }
+
+                $widget_instance = new $class_name();
+                $widgets_manager->register( $widget_instance );
+            } catch ( \Exception $e ) {
+                if ( \defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+                    \error_log( sprintf( 'SOFIR Elementor: Failed to register EDD widget %s - %s', $widget_file, $e->getMessage() ) );
+                }
+                continue;
             }
         }
     }
@@ -176,14 +268,26 @@ class Manager {
         ];
 
         foreach ( $north_widgets as $widget_file ) {
-            $file_path = SOFIR_PLUGIN_DIR . '/modules/elementor/widgets/' . $widget_file . '.php';
-            if ( file_exists( $file_path ) ) {
+            try {
+                $file_path = SOFIR_PLUGIN_DIR . '/modules/elementor/widgets/' . $widget_file . '.php';
+                if ( ! file_exists( $file_path ) ) {
+                    continue;
+                }
+                
                 require_once $file_path;
                 
                 $class_name = $this->get_widget_class_name( $widget_file );
-                if ( class_exists( $class_name ) ) {
-                    $widgets_manager->register( new $class_name() );
+                if ( ! class_exists( $class_name ) ) {
+                    continue;
                 }
+
+                $widget_instance = new $class_name();
+                $widgets_manager->register( $widget_instance );
+            } catch ( \Exception $e ) {
+                if ( \defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+                    \error_log( sprintf( 'SOFIR Elementor: Failed to register North Commerce widget %s - %s', $widget_file, $e->getMessage() ) );
+                }
+                continue;
             }
         }
     }
