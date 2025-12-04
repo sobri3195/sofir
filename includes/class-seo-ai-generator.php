@@ -3,7 +3,7 @@ namespace Sofir\Seo;
 
 class AiGenerator {
     private const OPTION_API_KEY = 'sofir_gemini_api_key';
-    private const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
+    private const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent';
     
     private static ?AiGenerator $instance = null;
     private string $api_key = '';
