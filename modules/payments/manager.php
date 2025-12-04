@@ -31,6 +31,7 @@ class Manager {
         \add_action( 'wp_enqueue_scripts', [ $this, 'register_assets' ] );
         \add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_assets' ] );
         \add_action( 'sofir_process_mock_payment', [ $this, 'process_mock_payment' ], 10, 2 );
+        \add_action( 'admin_init', [ $this, 'maybe_flush_rewrite_rules' ] );
         \add_shortcode( 'sofir_payment_form', [ $this, 'render_payment_form' ] );
         \add_shortcode( 'sofir_donation_form', [ $this, 'render_donation_form' ] );
         \add_shortcode( 'sofir_subscription_form', [ $this, 'render_subscription_form' ] );
@@ -696,12 +697,25 @@ class Manager {
             'sofir_product',
             [
                 'label' => \__( 'Products', 'sofir' ),
+                'labels' => [
+                    'name' => \__( 'Products', 'sofir' ),
+                    'singular_name' => \__( 'Product', 'sofir' ),
+                    'add_new' => \__( 'Add New', 'sofir' ),
+                    'add_new_item' => \__( 'Add New Product', 'sofir' ),
+                    'edit_item' => \__( 'Edit Product', 'sofir' ),
+                    'new_item' => \__( 'New Product', 'sofir' ),
+                    'view_item' => \__( 'View Product', 'sofir' ),
+                    'search_items' => \__( 'Search Products', 'sofir' ),
+                    'not_found' => \__( 'No products found', 'sofir' ),
+                    'all_items' => \__( 'All Products', 'sofir' ),
+                ],
                 'public' => true,
                 'show_ui' => true,
-                'show_in_menu' => false,
+                'show_in_menu' => 'sofir-payments',
                 'supports' => [ 'title', 'editor', 'thumbnail' ],
                 'capability_type' => 'post',
                 'has_archive' => true,
+                'menu_position' => 4,
             ]
         );
 
@@ -709,11 +723,24 @@ class Manager {
             'sofir_coupon',
             [
                 'label' => \__( 'Coupons', 'sofir' ),
+                'labels' => [
+                    'name' => \__( 'Coupons', 'sofir' ),
+                    'singular_name' => \__( 'Coupon', 'sofir' ),
+                    'add_new' => \__( 'Add New', 'sofir' ),
+                    'add_new_item' => \__( 'Add New Coupon', 'sofir' ),
+                    'edit_item' => \__( 'Edit Coupon', 'sofir' ),
+                    'new_item' => \__( 'New Coupon', 'sofir' ),
+                    'view_item' => \__( 'View Coupon', 'sofir' ),
+                    'search_items' => \__( 'Search Coupons', 'sofir' ),
+                    'not_found' => \__( 'No coupons found', 'sofir' ),
+                    'all_items' => \__( 'All Coupons', 'sofir' ),
+                ],
                 'public' => false,
                 'show_ui' => true,
-                'show_in_menu' => false,
+                'show_in_menu' => 'sofir-payments',
                 'supports' => [ 'title' ],
                 'capability_type' => 'post',
+                'menu_position' => 5,
             ]
         );
 
@@ -721,11 +748,24 @@ class Manager {
             'sofir_subscription',
             [
                 'label' => \__( 'Subscriptions', 'sofir' ),
+                'labels' => [
+                    'name' => \__( 'Subscriptions', 'sofir' ),
+                    'singular_name' => \__( 'Subscription', 'sofir' ),
+                    'add_new' => \__( 'Add New', 'sofir' ),
+                    'add_new_item' => \__( 'Add New Subscription', 'sofir' ),
+                    'edit_item' => \__( 'Edit Subscription', 'sofir' ),
+                    'new_item' => \__( 'New Subscription', 'sofir' ),
+                    'view_item' => \__( 'View Subscription', 'sofir' ),
+                    'search_items' => \__( 'Search Subscriptions', 'sofir' ),
+                    'not_found' => \__( 'No subscriptions found', 'sofir' ),
+                    'all_items' => \__( 'All Subscriptions', 'sofir' ),
+                ],
                 'public' => false,
                 'show_ui' => true,
-                'show_in_menu' => false,
+                'show_in_menu' => 'sofir-payments',
                 'supports' => [ 'title' ],
                 'capability_type' => 'post',
+                'menu_position' => 6,
             ]
         );
 
@@ -733,11 +773,24 @@ class Manager {
             'sofir_invoice',
             [
                 'label' => \__( 'Invoices', 'sofir' ),
+                'labels' => [
+                    'name' => \__( 'Invoices', 'sofir' ),
+                    'singular_name' => \__( 'Invoice', 'sofir' ),
+                    'add_new' => \__( 'Add New', 'sofir' ),
+                    'add_new_item' => \__( 'Add New Invoice', 'sofir' ),
+                    'edit_item' => \__( 'Edit Invoice', 'sofir' ),
+                    'new_item' => \__( 'New Invoice', 'sofir' ),
+                    'view_item' => \__( 'View Invoice', 'sofir' ),
+                    'search_items' => \__( 'Search Invoices', 'sofir' ),
+                    'not_found' => \__( 'No invoices found', 'sofir' ),
+                    'all_items' => \__( 'All Invoices', 'sofir' ),
+                ],
                 'public' => false,
                 'show_ui' => true,
-                'show_in_menu' => false,
+                'show_in_menu' => 'sofir-payments',
                 'supports' => [ 'title' ],
                 'capability_type' => 'post',
+                'menu_position' => 7,
             ]
         );
     }
@@ -769,38 +822,6 @@ class Manager {
             'manage_options',
             'sofir-transactions',
             [ $this, 'render_transactions_page' ]
-        );
-
-        \add_submenu_page(
-            'sofir-payments',
-            \__( 'Products', 'sofir' ),
-            \__( 'Products', 'sofir' ),
-            'manage_options',
-            'edit.php?post_type=sofir_product'
-        );
-
-        \add_submenu_page(
-            'sofir-payments',
-            \__( 'Coupons', 'sofir' ),
-            \__( 'Coupons', 'sofir' ),
-            'manage_options',
-            'edit.php?post_type=sofir_coupon'
-        );
-
-        \add_submenu_page(
-            'sofir-payments',
-            \__( 'Subscriptions', 'sofir' ),
-            \__( 'Subscriptions', 'sofir' ),
-            'manage_options',
-            'edit.php?post_type=sofir_subscription'
-        );
-
-        \add_submenu_page(
-            'sofir-payments',
-            \__( 'Invoices', 'sofir' ),
-            \__( 'Invoices', 'sofir' ),
-            'manage_options',
-            'edit.php?post_type=sofir_invoice'
         );
 
         \add_submenu_page(
@@ -1307,5 +1328,15 @@ class Manager {
             'monthly_revenue' => $monthly_revenue,
             'conversion_rate' => \count( $transactions ) > 0 ? ( $completed / \count( $transactions ) ) * 100 : 0,
         ];
+    }
+
+    public function maybe_flush_rewrite_rules(): void {
+        $version = \get_option( 'sofir_payment_cpt_version', '1.0.0' );
+        $current_version = '1.0.1';
+
+        if ( \version_compare( $version, $current_version, '<' ) ) {
+            \flush_rewrite_rules();
+            \update_option( 'sofir_payment_cpt_version', $current_version );
+        }
     }
 }
