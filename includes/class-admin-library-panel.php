@@ -18,7 +18,47 @@ class LibraryPanel {
         \add_action( 'admin_post_sofir_export_cpt', [ $this, 'handle_export_cpt' ] );
         \add_action( 'admin_post_sofir_import_cpt', [ $this, 'handle_import_cpt' ] );
         \add_action( 'admin_post_sofir_install_ready_cpt', [ $this, 'handle_install_ready_cpt' ] );
+        \add_action( 'admin_post_sofir_fix_cpt_visibility', [ $this, 'handle_fix_cpt_visibility' ] );
         \add_action( 'wp_ajax_sofir_get_export_preview', [ $this, 'handle_export_preview_ajax' ] );
+        \add_action( 'admin_init', [ $this, 'auto_fix_cpt_visibility' ], 5 );
+    }
+    
+    public function auto_fix_cpt_visibility(): void {
+        $fixed = \get_transient( 'sofir_cpt_visibility_fixed' );
+        
+        if ( $fixed ) {
+            return;
+        }
+        
+        $this->ensure_cpt_menus_visible();
+        
+        \set_transient( 'sofir_cpt_visibility_fixed', true, DAY_IN_SECONDS );
+    }
+    
+    public function handle_fix_cpt_visibility(): void {
+        $this->verify_request( 'sofir_fix_cpt_visibility' );
+        
+        $manager = CptManager::instance();
+        $this->ensure_cpt_menus_visible();
+        
+        $manager->register_dynamic_post_types();
+        $manager->register_dynamic_taxonomies();
+        
+        \flush_rewrite_rules();
+        
+        \delete_transient( 'sofir_cpt_visibility_fixed' );
+        
+        $redirect = \add_query_arg(
+            [
+                'page'         => 'sofir-dashboard',
+                'tab'          => 'library',
+                'sofir_notice' => 'cpt_visibility_fixed',
+            ],
+            \admin_url( 'admin.php' )
+        );
+        
+        \wp_safe_redirect( $redirect );
+        exit;
     }
 
     public function render(): void {
@@ -177,6 +217,27 @@ class LibraryPanel {
         echo '</div>';
         echo '</div>';
 
+        echo '<div class="sofir-card" style="background: #fff3cd; border-left: 4px solid #ff9800;">';
+        echo '<h2>🔧 ' . \esc_html__( 'Troubleshooting: Fix CPT Menu Visibility', 'sofir' ) . '</h2>';
+        echo '<p style="font-size: 14px; line-height: 1.6;">' . \esc_html__( 'Jika admin menu untuk Custom Post Type (seperti Vehicle, Listing, dll) tidak tampil di sidebar WordPress, gunakan tombol ini untuk fix visibility settings secara otomatis.', 'sofir' ) . '</p>';
+        echo '<div class="notice notice-info inline" style="margin: 15px 0; padding: 12px;">';
+        echo '<p style="margin: 0;"><strong>' . \esc_html__( 'Apa yang akan di-fix:', 'sofir' ) . '</strong></p>';
+        echo '<ul style="margin: 8px 0 0 20px;">';
+        echo '<li>' . \esc_html__( 'Set <code>show_in_menu</code> menjadi <code>true</code>', 'sofir' ) . '</li>';
+        echo '<li>' . \esc_html__( 'Set <code>show_ui</code> menjadi <code>true</code>', 'sofir' ) . '</li>';
+        echo '<li>' . \esc_html__( 'Set <code>public</code> menjadi <code>true</code>', 'sofir' ) . '</li>';
+        echo '<li>' . \esc_html__( 'Re-register semua CPT dan flush rewrite rules', 'sofir' ) . '</li>';
+        echo '</ul>';
+        echo '</div>';
+        echo '<form method="post" action="' . \esc_url( \admin_url( 'admin-post.php' ) ) . '">';
+        echo '<input type="hidden" name="action" value="sofir_fix_cpt_visibility" />';
+        \wp_nonce_field( 'sofir_fix_cpt_visibility', '_sofir_nonce' );
+        echo '<p class="submit">';
+        echo '<button type="submit" class="button button-primary" style="background: #ff9800; border-color: #ff9800; font-weight: 600;">' . \esc_html__( '🔧 Fix CPT Menu Visibility', 'sofir' ) . '</button>';
+        echo '</p>';
+        echo '</form>';
+        echo '</div>';
+
         echo '</div>';
         echo '</div>';
 
@@ -211,7 +272,11 @@ class LibraryPanel {
             \wp_die( $result->get_error_message() );
         }
 
+        $manager = CptManager::instance();
         $this->ensure_cpt_menus_visible();
+        
+        $manager->register_dynamic_post_types();
+        $manager->register_dynamic_taxonomies();
 
         $message = sprintf(
             \__( 'Berhasil import %d CPT, %d taxonomies, dan %d posts.', 'sofir' ),
@@ -285,7 +350,21 @@ class LibraryPanel {
         $installer = new ReadyCptInstaller();
         
         foreach ( $template['cpts'] as $cpt_slug => $cpt_config ) {
-            $manager->save_post_type( $cpt_config );
+            $payload = [
+                'slug'         => $cpt_config['slug'],
+                'singular'     => $cpt_config['singular'],
+                'plural'       => $cpt_config['plural'],
+                'menu_icon'    => $cpt_config['menu_icon'] ?? 'dashicons-admin-post',
+                'supports'     => $cpt_config['supports'] ?? [ 'title', 'editor' ],
+                'has_archive'  => $cpt_config['has_archive'] ?? false,
+                'hierarchical' => $cpt_config['hierarchical'] ?? false,
+                'rest_base'    => $cpt_config['rest_base'] ?? $cpt_config['slug'],
+                'rewrite'      => $cpt_config['rewrite'] ?? $cpt_config['slug'],
+                'taxonomies'   => $cpt_config['taxonomies'] ?? [],
+                'fields'       => $cpt_config['fields'] ?? [],
+                'filters'      => $cpt_config['filters'] ?? [],
+            ];
+            $manager->save_post_type( $payload );
         }
         
         foreach ( $template['taxonomies'] as $tax_slug => $tax_config ) {
@@ -296,6 +375,9 @@ class LibraryPanel {
         $installer->create_menu_items( $template_key, $template );
 
         $this->ensure_cpt_menus_visible();
+        
+        $manager->register_dynamic_post_types();
+        $manager->register_dynamic_taxonomies();
 
         \flush_rewrite_rules();
 
@@ -319,8 +401,21 @@ class LibraryPanel {
         $updated = false;
 
         foreach ( $post_types as $slug => $definition ) {
-            if ( ! isset( $definition['args']['show_in_menu'] ) || ! $definition['args']['show_in_menu'] 
-                || ! isset( $definition['args']['public'] ) || ! $definition['args']['public'] ) {
+            $needs_update = false;
+            
+            if ( ! isset( $definition['args']['show_in_menu'] ) || ! $definition['args']['show_in_menu'] ) {
+                $needs_update = true;
+            }
+            
+            if ( ! isset( $definition['args']['public'] ) || ! $definition['args']['public'] ) {
+                $needs_update = true;
+            }
+            
+            if ( ! isset( $definition['args']['show_ui'] ) || ! $definition['args']['show_ui'] ) {
+                $needs_update = true;
+            }
+            
+            if ( $needs_update ) {
                 $definition['args']['public'] = true;
                 $definition['args']['show_in_menu'] = true;
                 $definition['args']['show_ui'] = true;
@@ -328,13 +423,17 @@ class LibraryPanel {
                 $definition['args']['publicly_queryable'] = true;
                 $definition['args']['can_export'] = true;
                 $definition['args']['exclude_from_search'] = false;
-                $manager->save_post_type( array_merge( [ 'slug' => $slug ], $this->convert_definition_to_payload( $slug, $definition ) ) );
+                
+                $payload = $this->convert_definition_to_payload( $slug, $definition );
+                $payload['slug'] = $slug;
+                
+                $manager->save_post_type( $payload );
                 $updated = true;
             }
         }
 
         if ( $updated ) {
-            \update_option( 'sofir_cpt_definitions_version', '1.0.6' );
+            \update_option( 'sofir_cpt_definitions_version', '1.0.7' );
         }
     }
 
@@ -1074,6 +1173,23 @@ class LibraryPanel {
         } elseif ( 'cpt_imported' === $notice ) {
             $message = isset( $_GET['sofir_message'] ) ? urldecode( $_GET['sofir_message'] ) : \__( 'CPT package imported successfully.', 'sofir' );
             echo '<div class="notice notice-success is-dismissible"><p>' . \esc_html( $message ) . '</p></div>';
+        } elseif ( 'cpt_visibility_fixed' === $notice ) {
+            echo '<div class="notice notice-success is-dismissible">';
+            echo '<h3 style="margin: 0.5em 0;">✅ ' . \esc_html__( 'CPT Menu Visibility Berhasil Di-Fix!', 'sofir' ) . '</h3>';
+            echo '<p style="margin: 0.5em 0;">' . \esc_html__( 'Semua Custom Post Type telah diperbarui dengan visibility settings yang benar. Admin menu untuk CPT sekarang harusnya sudah tampil di sidebar WordPress.', 'sofir' ) . '</p>';
+            echo '<p style="margin: 0.5em 0;"><strong>' . \esc_html__( 'Perubahan yang dilakukan:', 'sofir' ) . '</strong></p>';
+            echo '<ul style="margin: 0.5em 0 1em 20px;">';
+            echo '<li>✓ ' . \esc_html__( 'Visibility settings diperbarui untuk semua CPT', 'sofir' ) . '</li>';
+            echo '<li>✓ ' . \esc_html__( 'CPT di-register ulang dengan settings baru', 'sofir' ) . '</li>';
+            echo '<li>✓ ' . \esc_html__( 'Rewrite rules telah di-flush', 'sofir' ) . '</li>';
+            echo '</ul>';
+            echo '<p style="margin: 0.5em 0;"><em>' . \esc_html__( 'Jika menu masih belum tampil, coba:', 'sofir' ) . '</em></p>';
+            echo '<ol style="margin: 0.5em 0 1em 20px;">';
+            echo '<li>' . \esc_html__( 'Refresh halaman ini (Ctrl+R atau Cmd+R)', 'sofir' ) . '</li>';
+            echo '<li>' . \esc_html__( 'Pergi ke Settings → Permalinks dan klik Save Changes', 'sofir' ) . '</li>';
+            echo '<li>' . \esc_html__( 'Logout dan login kembali', 'sofir' ) . '</li>';
+            echo '</ol>';
+            echo '</div>';
         }
     }
 
