@@ -18,6 +18,12 @@ class Manager {
         \add_action( 'rest_api_init', [ $this, 'register_rest_routes' ] );
         \add_action( 'admin_post_sofir_submit_form', [ $this, 'handle_form_submission' ] );
         \add_action( 'admin_post_nopriv_sofir_submit_form', [ $this, 'handle_form_submission' ] );
+        \add_action( 'wp_ajax_sofir_save_partial_submission', [ $this, 'save_partial_submission' ] );
+        \add_action( 'wp_ajax_nopriv_sofir_save_partial_submission', [ $this, 'save_partial_submission' ] );
+        \add_action( 'wp_ajax_sofir_load_partial_submission', [ $this, 'load_partial_submission' ] );
+        \add_action( 'wp_ajax_nopriv_sofir_load_partial_submission', [ $this, 'load_partial_submission' ] );
+        \add_action( 'wp_ajax_sofir_process_payment', [ $this, 'process_payment' ] );
+        \add_action( 'wp_ajax_nopriv_sofir_process_payment', [ $this, 'process_payment' ] );
         \add_action( 'add_meta_boxes', [ $this, 'add_submission_meta_boxes' ] );
         \add_action( 'add_meta_boxes', [ $this, 'add_form_meta_boxes' ] );
         \add_action( 'admin_init', [ $this, 'redirect_form_edit' ] );
@@ -26,6 +32,7 @@ class Manager {
         \add_shortcode( 'sofir_form', [ $this, 'render_form' ] );
         
         $this->register_form_cron();
+        $this->register_payment_webhooks();
     }
 
     public function register_form_cpt(): void {
@@ -227,35 +234,398 @@ class Manager {
 
                 <h2><?php \esc_html_e( 'Form Settings', 'sofir' ); ?></h2>
 
-                <table class="form-table">
-                    <tr>
-                        <th scope="row">
-                            <label for="success_message"><?php \esc_html_e( 'Success Message', 'sofir' ); ?></label>
-                        </th>
-                        <td>
-                            <input type="text" id="success_message" name="success_message" value="<?php echo \esc_attr( $settings['success_message'] ?? 'Thank you for your submission!' ); ?>" class="regular-text" />
-                        </td>
-                    </tr>
+                <div class="sofir-form-settings-tabs">
+                    <ul class="nav-tab-wrapper">
+                        <li><a href="#tab-general" class="nav-tab nav-tab-active"><?php \esc_html_e( 'General', 'sofir' ); ?></a></li>
+                        <li><a href="#tab-notifications" class="nav-tab"><?php \esc_html_e( 'Notifications', 'sofir' ); ?></a></li>
+                        <li><a href="#tab-confirmations" class="nav-tab"><?php \esc_html_e( 'Confirmations', 'sofir' ); ?></a></li>
+                        <li><a href="#tab-actions" class="nav-tab"><?php \esc_html_e( 'Actions', 'sofir' ); ?></a></li>
+                        <li><a href="#tab-restrictions" class="nav-tab"><?php \esc_html_e( 'Restrictions', 'sofir' ); ?></a></li>
+                        <li><a href="#tab-payment" class="nav-tab"><?php \esc_html_e( 'Payment', 'sofir' ); ?></a></li>
+                        <li><a href="#tab-advanced" class="nav-tab"><?php \esc_html_e( 'Advanced', 'sofir' ); ?></a></li>
+                    </ul>
 
-                    <tr>
-                        <th scope="row">
-                            <label for="button_text"><?php \esc_html_e( 'Submit Button Text', 'sofir' ); ?></label>
-                        </th>
-                        <td>
-                            <input type="text" id="button_text" name="button_text" value="<?php echo \esc_attr( $settings['button_text'] ?? 'Submit' ); ?>" class="regular-text" />
-                        </td>
-                    </tr>
+                    <div id="tab-general" class="tab-content active">
+                        <table class="form-table">
+                            <tr>
+                                <th><label for="button_text"><?php \esc_html_e( 'Submit Button Text', 'sofir' ); ?></label></th>
+                                <td><input type="text" id="button_text" name="button_text" value="<?php echo \esc_attr( $settings['button_text'] ?? 'Submit' ); ?>" class="regular-text" /></td>
+                            </tr>
+                            <tr>
+                                <th><label><?php \esc_html_e( 'Multi-Step Form', 'sofir' ); ?></label></th>
+                                <td>
+                                    <label>
+                                        <input type="checkbox" name="enable_multistep" value="1" <?php \checked( $settings['enable_multistep'] ?? '', '1' ); ?> />
+                                        <?php \esc_html_e( 'Enable multi-step form', 'sofir' ); ?>
+                                    </label>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th><label><?php \esc_html_e( 'Save & Resume', 'sofir' ); ?></label></th>
+                                <td>
+                                    <label>
+                                        <input type="checkbox" name="enable_save_resume" value="1" <?php \checked( $settings['enable_save_resume'] ?? '', '1' ); ?> />
+                                        <?php \esc_html_e( 'Allow users to save progress and resume later', 'sofir' ); ?>
+                                    </label>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th><label><?php \esc_html_e( 'Form Scheduling', 'sofir' ); ?></label></th>
+                                <td>
+                                    <label>
+                                        <input type="checkbox" name="enable_scheduling" value="1" <?php \checked( $settings['enable_scheduling'] ?? '', '1' ); ?> />
+                                        <?php \esc_html_e( 'Schedule form availability', 'sofir' ); ?>
+                                    </label>
+                                    <div class="scheduling-options" style="<?php echo isset( $settings['enable_scheduling'] ) && '1' === $settings['enable_scheduling'] ? '' : 'display:none;'; ?> margin-top:10px;">
+                                        <input type="datetime-local" name="schedule_start" value="<?php echo \esc_attr( $settings['schedule_start'] ?? '' ); ?>" />
+                                        <span>to</span>
+                                        <input type="datetime-local" name="schedule_end" value="<?php echo \esc_attr( $settings['schedule_end'] ?? '' ); ?>" />
+                                        <p class="description"><?php \esc_html_e( 'Form will only be available during this period', 'sofir' ); ?></p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
 
-                    <tr>
-                        <th scope="row">
-                            <label for="notification_email"><?php \esc_html_e( 'Notification Email', 'sofir' ); ?></label>
-                        </th>
-                        <td>
-                            <input type="email" id="notification_email" name="notification_email" value="<?php echo \esc_attr( $settings['notification_email'] ?? \get_option( 'admin_email' ) ); ?>" class="regular-text" />
-                            <p class="description"><?php \esc_html_e( 'Email address to receive form submissions.', 'sofir' ); ?></p>
-                        </td>
-                    </tr>
-                </table>
+                    <div id="tab-notifications" class="tab-content" style="display:none;">
+                        <table class="form-table">
+                            <tr>
+                                <th><label><?php \esc_html_e( 'Admin Notification', 'sofir' ); ?></label></th>
+                                <td>
+                                    <label>
+                                        <input type="checkbox" name="enable_admin_notification" value="1" <?php \checked( $settings['enable_admin_notification'] ?? '1', '1' ); ?> />
+                                        <?php \esc_html_e( 'Send notification to admin', 'sofir' ); ?>
+                                    </label>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th><label for="notification_email"><?php \esc_html_e( 'Notification Email', 'sofir' ); ?></label></th>
+                                <td>
+                                    <input type="email" id="notification_email" name="notification_email" value="<?php echo \esc_attr( $settings['notification_email'] ?? \get_option( 'admin_email' ) ); ?>" class="regular-text" />
+                                    <p class="description"><?php \esc_html_e( 'Separate multiple emails with commas', 'sofir' ); ?></p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th><label for="notification_subject"><?php \esc_html_e( 'Email Subject', 'sofir' ); ?></label></th>
+                                <td><input type="text" id="notification_subject" name="notification_subject" value="<?php echo \esc_attr( $settings['notification_subject'] ?? 'New Form Submission' ); ?>" class="regular-text" /></td>
+                            </tr>
+                            <tr>
+                                <th><label><?php \esc_html_e( 'User Notification', 'sofir' ); ?></label></th>
+                                <td>
+                                    <label>
+                                        <input type="checkbox" name="enable_user_notification" value="1" <?php \checked( $settings['enable_user_notification'] ?? '', '1' ); ?> />
+                                        <?php \esc_html_e( 'Send confirmation email to user', 'sofir' ); ?>
+                                    </label>
+                                    <div class="user-notification-options" style="<?php echo isset( $settings['enable_user_notification'] ) && '1' === $settings['enable_user_notification'] ? '' : 'display:none;'; ?> margin-top:10px;">
+                                        <input type="text" name="user_notification_subject" value="<?php echo \esc_attr( $settings['user_notification_subject'] ?? 'Thank you for your submission' ); ?>" class="regular-text" placeholder="Subject" />
+                                        <textarea name="user_notification_message" rows="5" class="large-text"><?php echo \esc_textarea( $settings['user_notification_message'] ?? 'Thank you for contacting us. We will get back to you soon.' ); ?></textarea>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div id="tab-confirmations" class="tab-content" style="display:none;">
+                        <table class="form-table">
+                            <tr>
+                                <th><label><?php \esc_html_e( 'Confirmation Type', 'sofir' ); ?></label></th>
+                                <td>
+                                    <select name="confirmation_type">
+                                        <option value="message" <?php \selected( $settings['confirmation_type'] ?? 'message', 'message' ); ?>><?php \esc_html_e( 'Show Message', 'sofir' ); ?></option>
+                                        <option value="redirect" <?php \selected( $settings['confirmation_type'] ?? '', 'redirect' ); ?>><?php \esc_html_e( 'Redirect to URL', 'sofir' ); ?></option>
+                                        <option value="page" <?php \selected( $settings['confirmation_type'] ?? '', 'page' ); ?>><?php \esc_html_e( 'Redirect to Page', 'sofir' ); ?></option>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr class="confirmation-message-row">
+                                <th><label for="success_message"><?php \esc_html_e( 'Success Message', 'sofir' ); ?></label></th>
+                                <td><textarea id="success_message" name="success_message" rows="3" class="large-text"><?php echo \esc_textarea( $settings['success_message'] ?? 'Thank you for your submission!' ); ?></textarea></td>
+                            </tr>
+                            <tr class="confirmation-redirect-row" style="display:none;">
+                                <th><label for="redirect_url"><?php \esc_html_e( 'Redirect URL', 'sofir' ); ?></label></th>
+                                <td><input type="url" id="redirect_url" name="redirect_url" value="<?php echo \esc_attr( $settings['redirect_url'] ?? '' ); ?>" class="regular-text" /></td>
+                            </tr>
+                            <tr class="confirmation-page-row" style="display:none;">
+                                <th><label for="redirect_page"><?php \esc_html_e( 'Redirect Page', 'sofir' ); ?></label></th>
+                                <td>
+                                    <?php
+                                    \wp_dropdown_pages( [
+                                        'name' => 'redirect_page',
+                                        'selected' => $settings['redirect_page'] ?? 0,
+                                        'show_option_none' => \__( 'Select Page', 'sofir' ),
+                                    ] );
+                                    ?>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div id="tab-actions" class="tab-content" style="display:none;">
+                        <table class="form-table">
+                            <tr>
+                                <th><label><?php \esc_html_e( 'Create Post', 'sofir' ); ?></label></th>
+                                <td>
+                                    <label>
+                                        <input type="checkbox" name="enable_post_creation" value="1" <?php \checked( $settings['enable_post_creation'] ?? '', '1' ); ?> />
+                                        <?php \esc_html_e( 'Create WordPress post from submission', 'sofir' ); ?>
+                                    </label>
+                                    <div class="post-creation-options" style="<?php echo isset( $settings['enable_post_creation'] ) && '1' === $settings['enable_post_creation'] ? '' : 'display:none;'; ?> margin-top:10px;">
+                                        <select name="post_type">
+                                            <option value="post"><?php \esc_html_e( 'Post', 'sofir' ); ?></option>
+                                            <option value="page"><?php \esc_html_e( 'Page', 'sofir' ); ?></option>
+                                            <?php
+                                            $post_types = \get_post_types( [ 'public' => true, '_builtin' => false ], 'objects' );
+                                            foreach ( $post_types as $post_type ) {
+                                                echo '<option value="' . \esc_attr( $post_type->name ) . '">' . \esc_html( $post_type->label ) . '</option>';
+                                            }
+                                            ?>
+                                        </select>
+                                        <select name="post_status">
+                                            <option value="draft"><?php \esc_html_e( 'Draft', 'sofir' ); ?></option>
+                                            <option value="pending"><?php \esc_html_e( 'Pending Review', 'sofir' ); ?></option>
+                                            <option value="publish"><?php \esc_html_e( 'Published', 'sofir' ); ?></option>
+                                        </select>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th><label><?php \esc_html_e( 'User Registration', 'sofir' ); ?></label></th>
+                                <td>
+                                    <label>
+                                        <input type="checkbox" name="enable_user_registration" value="1" <?php \checked( $settings['enable_user_registration'] ?? '', '1' ); ?> />
+                                        <?php \esc_html_e( 'Register WordPress user from submission', 'sofir' ); ?>
+                                    </label>
+                                    <div class="user-registration-options" style="<?php echo isset( $settings['enable_user_registration'] ) && '1' === $settings['enable_user_registration'] ? '' : 'display:none;'; ?> margin-top:10px;">
+                                        <select name="user_role">
+                                            <?php
+                                            $roles = \wp_roles()->get_names();
+                                            foreach ( $roles as $role => $label ) {
+                                                echo '<option value="' . \esc_attr( $role ) . '">' . \esc_html( $label ) . '</option>';
+                                            }
+                                            ?>
+                                        </select>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th><label><?php \esc_html_e( 'Webhooks', 'sofir' ); ?></label></th>
+                                <td>
+                                    <textarea name="webhook_urls" rows="3" class="large-text" placeholder="<?php \esc_attr_e( 'Enter webhook URLs (one per line)', 'sofir' ); ?>"><?php echo \esc_textarea( $settings['webhook_urls'] ?? '' ); ?></textarea>
+                                    <p class="description"><?php \esc_html_e( 'Form data will be sent to these URLs via POST request', 'sofir' ); ?></p>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div id="tab-restrictions" class="tab-content" style="display:none;">
+                        <table class="form-table">
+                            <tr>
+                                <th><label><?php \esc_html_e( 'Limit Submissions', 'sofir' ); ?></label></th>
+                                <td>
+                                    <label>
+                                        <input type="checkbox" name="enable_submission_limit" value="1" <?php \checked( $settings['enable_submission_limit'] ?? '', '1' ); ?> />
+                                        <?php \esc_html_e( 'Limit total number of submissions', 'sofir' ); ?>
+                                    </label>
+                                    <input type="number" name="submission_limit" value="<?php echo \esc_attr( $settings['submission_limit'] ?? '' ); ?>" style="width:100px; margin-left:10px;" placeholder="e.g., 100" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <th><label><?php \esc_html_e( 'One Submission Per User', 'sofir' ); ?></label></th>
+                                <td>
+                                    <label>
+                                        <input type="checkbox" name="one_submission_per_user" value="1" <?php \checked( $settings['one_submission_per_user'] ?? '', '1' ); ?> />
+                                        <?php \esc_html_e( 'Allow only one submission per logged-in user', 'sofir' ); ?>
+                                    </label>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th><label><?php \esc_html_e( 'Require Login', 'sofir' ); ?></label></th>
+                                <td>
+                                    <label>
+                                        <input type="checkbox" name="require_login" value="1" <?php \checked( $settings['require_login'] ?? '', '1' ); ?> />
+                                        <?php \esc_html_e( 'Only logged-in users can submit', 'sofir' ); ?>
+                                    </label>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th><label><?php \esc_html_e( 'Google reCAPTCHA', 'sofir' ); ?></label></th>
+                                <td>
+                                    <label>
+                                        <input type="checkbox" name="enable_recaptcha" value="1" <?php \checked( $settings['enable_recaptcha'] ?? '', '1' ); ?> />
+                                        <?php \esc_html_e( 'Enable reCAPTCHA protection', 'sofir' ); ?>
+                                    </label>
+                                    <div class="recaptcha-options" style="<?php echo isset( $settings['enable_recaptcha'] ) && '1' === $settings['enable_recaptcha'] ? '' : 'display:none;'; ?> margin-top:10px;">
+                                        <input type="text" name="recaptcha_site_key" value="<?php echo \esc_attr( $settings['recaptcha_site_key'] ?? '' ); ?>" class="regular-text" placeholder="Site Key" />
+                                        <input type="text" name="recaptcha_secret_key" value="<?php echo \esc_attr( $settings['recaptcha_secret_key'] ?? '' ); ?>" class="regular-text" placeholder="Secret Key" />
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div id="tab-payment" class="tab-content" style="display:none;">
+                        <table class="form-table">
+                            <tr>
+                                <th><label><?php \esc_html_e( 'Enable Payment', 'sofir' ); ?></label></th>
+                                <td>
+                                    <label>
+                                        <input type="checkbox" name="enable_payment" value="1" <?php \checked( $settings['enable_payment'] ?? '', '1' ); ?> />
+                                        <?php \esc_html_e( 'Accept payments with this form', 'sofir' ); ?>
+                                    </label>
+                                </td>
+                            </tr>
+                            <tr class="payment-options" style="<?php echo isset( $settings['enable_payment'] ) && '1' === $settings['enable_payment'] ? '' : 'display:none;'; ?>">
+                                <th><label><?php \esc_html_e( 'Payment Gateway', 'sofir' ); ?></label></th>
+                                <td>
+                                    <select name="payment_gateway">
+                                        <option value="stripe" <?php \selected( $settings['payment_gateway'] ?? '', 'stripe' ); ?>>Stripe</option>
+                                        <option value="paypal" <?php \selected( $settings['payment_gateway'] ?? '', 'paypal' ); ?>>PayPal</option>
+                                        <option value="razorpay" <?php \selected( $settings['payment_gateway'] ?? '', 'razorpay' ); ?>>Razorpay</option>
+                                        <option value="manual" <?php \selected( $settings['payment_gateway'] ?? '', 'manual' ); ?>>Manual/Bank Transfer</option>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr class="payment-options stripe-options" style="<?php echo isset( $settings['payment_gateway'] ) && 'stripe' === $settings['payment_gateway'] ? '' : 'display:none;'; ?>">
+                                <th><label><?php \esc_html_e( 'Stripe Settings', 'sofir' ); ?></label></th>
+                                <td>
+                                    <input type="text" name="stripe_publishable_key" value="<?php echo \esc_attr( $settings['stripe_publishable_key'] ?? '' ); ?>" class="regular-text" placeholder="Publishable Key" /><br/>
+                                    <input type="text" name="stripe_secret_key" value="<?php echo \esc_attr( $settings['stripe_secret_key'] ?? '' ); ?>" class="regular-text" placeholder="Secret Key" style="margin-top:5px;" />
+                                </td>
+                            </tr>
+                            <tr class="payment-options paypal-options" style="<?php echo isset( $settings['payment_gateway'] ) && 'paypal' === $settings['payment_gateway'] ? '' : 'display:none;'; ?>">
+                                <th><label><?php \esc_html_e( 'PayPal Settings', 'sofir' ); ?></label></th>
+                                <td>
+                                    <input type="email" name="paypal_email" value="<?php echo \esc_attr( $settings['paypal_email'] ?? '' ); ?>" class="regular-text" placeholder="PayPal Email" />
+                                    <label style="margin-top:10px; display:block;">
+                                        <input type="checkbox" name="paypal_sandbox" value="1" <?php \checked( $settings['paypal_sandbox'] ?? '', '1' ); ?> />
+                                        <?php \esc_html_e( 'Enable sandbox mode', 'sofir' ); ?>
+                                    </label>
+                                </td>
+                            </tr>
+                            <tr class="payment-options" style="<?php echo isset( $settings['enable_payment'] ) && '1' === $settings['enable_payment'] ? '' : 'display:none;'; ?>">
+                                <th><label><?php \esc_html_e( 'Payment Currency', 'sofir' ); ?></label></th>
+                                <td>
+                                    <select name="payment_currency">
+                                        <option value="USD" <?php \selected( $settings['payment_currency'] ?? 'USD', 'USD' ); ?>>USD</option>
+                                        <option value="EUR" <?php \selected( $settings['payment_currency'] ?? '', 'EUR' ); ?>>EUR</option>
+                                        <option value="GBP" <?php \selected( $settings['payment_currency'] ?? '', 'GBP' ); ?>>GBP</option>
+                                        <option value="IDR" <?php \selected( $settings['payment_currency'] ?? '', 'IDR' ); ?>>IDR</option>
+                                        <option value="INR" <?php \selected( $settings['payment_currency'] ?? '', 'INR' ); ?>>INR</option>
+                                    </select>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div id="tab-advanced" class="tab-content" style="display:none;">
+                        <table class="form-table">
+                            <tr>
+                                <th><label><?php \esc_html_e( 'Quiz Mode', 'sofir' ); ?></label></th>
+                                <td>
+                                    <label>
+                                        <input type="checkbox" name="enable_quiz_mode" value="1" <?php \checked( $settings['enable_quiz_mode'] ?? '', '1' ); ?> />
+                                        <?php \esc_html_e( 'Enable quiz/survey scoring', 'sofir' ); ?>
+                                    </label>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th><label><?php \esc_html_e( 'Generate PDF', 'sofir' ); ?></label></th>
+                                <td>
+                                    <label>
+                                        <input type="checkbox" name="enable_pdf_generation" value="1" <?php \checked( $settings['enable_pdf_generation'] ?? '', '1' ); ?> />
+                                        <?php \esc_html_e( 'Generate PDF from submissions', 'sofir' ); ?>
+                                    </label>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th><label for="custom_css"><?php \esc_html_e( 'Custom CSS', 'sofir' ); ?></label></th>
+                                <td><textarea id="custom_css" name="custom_css" rows="8" class="large-text code"><?php echo \esc_textarea( $settings['custom_css'] ?? '' ); ?></textarea></td>
+                            </tr>
+                            <tr>
+                                <th><label for="custom_js"><?php \esc_html_e( 'Custom JavaScript', 'sofir' ); ?></label></th>
+                                <td><textarea id="custom_js" name="custom_js" rows="8" class="large-text code"><?php echo \esc_textarea( $settings['custom_js'] ?? '' ); ?></textarea></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <script>
+                jQuery(document).ready(function($) {
+                    $('.nav-tab').on('click', function(e) {
+                        e.preventDefault();
+                        var target = $(this).attr('href');
+                        $('.nav-tab').removeClass('nav-tab-active');
+                        $(this).addClass('nav-tab-active');
+                        $('.tab-content').hide();
+                        $(target).show();
+                    });
+
+                    $('input[name="enable_scheduling"]').on('change', function() {
+                        $('.scheduling-options').toggle(this.checked);
+                    });
+
+                    $('input[name="enable_user_notification"]').on('change', function() {
+                        $('.user-notification-options').toggle(this.checked);
+                    });
+
+                    $('select[name="confirmation_type"]').on('change', function() {
+                        $('.confirmation-message-row, .confirmation-redirect-row, .confirmation-page-row').hide();
+                        if ($(this).val() === 'message') {
+                            $('.confirmation-message-row').show();
+                        } else if ($(this).val() === 'redirect') {
+                            $('.confirmation-redirect-row').show();
+                        } else if ($(this).val() === 'page') {
+                            $('.confirmation-page-row').show();
+                        }
+                    }).trigger('change');
+
+                    $('input[name="enable_post_creation"]').on('change', function() {
+                        $('.post-creation-options').toggle(this.checked);
+                    });
+
+                    $('input[name="enable_user_registration"]').on('change', function() {
+                        $('.user-registration-options').toggle(this.checked);
+                    });
+
+                    $('input[name="enable_recaptcha"]').on('change', function() {
+                        $('.recaptcha-options').toggle(this.checked);
+                    });
+
+                    $('input[name="enable_payment"]').on('change', function() {
+                        $('.payment-options').toggle(this.checked);
+                    });
+
+                    $('select[name="payment_gateway"]').on('change', function() {
+                        $('.stripe-options, .paypal-options').hide();
+                        if ($(this).val() === 'stripe') {
+                            $('.stripe-options').show();
+                        } else if ($(this).val() === 'paypal') {
+                            $('.paypal-options').show();
+                        }
+                    });
+
+                    $(document).on('change', 'input[name*="[enable_conditional]"]', function() {
+                        $(this).closest('tr').find('.conditional-rules').toggle(this.checked);
+                    });
+
+                    $(document).on('change', '.field-type-selector', function() {
+                        var $editor = $(this).closest('.field-editor');
+                        var type = $(this).val();
+                        
+                        $editor.find('.calculation-row, .min-max-row, .file-types-row').hide();
+                        
+                        if (type === 'calculation') {
+                            $editor.find('.calculation-row').show();
+                        }
+                        if (['number', 'range'].includes(type)) {
+                            $editor.find('.min-max-row').show();
+                        }
+                        if (type === 'file') {
+                            $editor.find('.file-types-row').show();
+                        }
+                    });
+                });
+                </script>
 
                 <?php \submit_button( \__( 'Save Form', 'sofir' ) ); ?>
             </form>
@@ -287,23 +657,43 @@ class Manager {
                             <tr>
                                 <th><label>Type</label></th>
                                 <td>
-                                    <select name="form_fields[${fieldIndex}][type]">
-                                        <option value="text">Text</option>
-                                        <option value="email">Email</option>
-                                        <option value="tel">Phone</option>
-                                        <option value="number">Number</option>
-                                        <option value="textarea">Textarea</option>
-                                        <option value="select">Select</option>
-                                        <option value="radio">Radio</option>
-                                        <option value="checkbox">Checkbox</option>
-                                        <option value="date">Date</option>
-                                        <option value="time">Time</option>
-                                        <option value="file">File Upload</option>
-                                        <option value="rating">Rating (Star)</option>
-                                        <option value="hidden">Hidden Field</option>
-                                        <option value="html">HTML Block</option>
-                                        <option value="section">Section Break</option>
-                                        <option value="signature">Signature</option>
+                                    <select name="form_fields[${fieldIndex}][type]" class="field-type-selector">
+                                        <optgroup label="Basic Fields">
+                                            <option value="text">Text</option>
+                                            <option value="email">Email</option>
+                                            <option value="tel">Phone</option>
+                                            <option value="number">Number</option>
+                                            <option value="textarea">Textarea</option>
+                                            <option value="url">URL</option>
+                                            <option value="password">Password</option>
+                                        </optgroup>
+                                        <optgroup label="Choice Fields">
+                                            <option value="select">Select Dropdown</option>
+                                            <option value="radio">Radio Buttons</option>
+                                            <option value="checkbox">Checkboxes</option>
+                                            <option value="multiselect">Multi-Select</option>
+                                        </optgroup>
+                                        <optgroup label="Advanced Fields">
+                                            <option value="date">Date</option>
+                                            <option value="time">Time</option>
+                                            <option value="datetime">Date & Time</option>
+                                            <option value="file">File Upload</option>
+                                            <option value="rating">Rating (Star)</option>
+                                            <option value="range">Range Slider</option>
+                                            <option value="calculation">Calculation</option>
+                                            <option value="repeater">Repeater Field</option>
+                                        </optgroup>
+                                        <optgroup label="Content Fields">
+                                            <option value="hidden">Hidden Field</option>
+                                            <option value="html">HTML Block</option>
+                                            <option value="section">Section Break</option>
+                                            <option value="signature">Signature</option>
+                                            <option value="terms">Terms & Conditions</option>
+                                        </optgroup>
+                                        <optgroup label="Payment Fields">
+                                            <option value="payment_amount">Payment Amount</option>
+                                            <option value="payment_method">Payment Method</option>
+                                        </optgroup>
                                     </select>
                                 </td>
                             </tr>
@@ -320,6 +710,47 @@ class Manager {
                                 <td>
                                     <textarea name="form_fields[${fieldIndex}][options]" rows="3" class="regular-text"></textarea>
                                     <p class="description">For select/radio/checkbox. One per line.</p>
+                                </td>
+                            </tr>
+                            <tr class="conditional-logic-row">
+                                <th><label>Conditional Logic</label></th>
+                                <td>
+                                    <input type="checkbox" name="form_fields[${fieldIndex}][enable_conditional]" value="1" />
+                                    <span class="description">Show field based on other field values</span>
+                                    <div class="conditional-rules" style="display:none; margin-top:10px; padding:10px; background:#f5f5f5;">
+                                        <select name="form_fields[${fieldIndex}][conditional_field]">
+                                            <option value="">Select field...</option>
+                                        </select>
+                                        <select name="form_fields[${fieldIndex}][conditional_operator]">
+                                            <option value="equals">Equals</option>
+                                            <option value="not_equals">Not Equals</option>
+                                            <option value="contains">Contains</option>
+                                            <option value="greater_than">Greater Than</option>
+                                            <option value="less_than">Less Than</option>
+                                        </select>
+                                        <input type="text" name="form_fields[${fieldIndex}][conditional_value]" placeholder="Value" />
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="calculation-row" style="display:none;">
+                                <th><label>Calculation Formula</label></th>
+                                <td>
+                                    <input type="text" name="form_fields[${fieldIndex}][calculation_formula]" class="regular-text" placeholder="e.g., {field_1} * {field_2}" />
+                                    <p class="description">Use {field_X} to reference other numeric fields</p>
+                                </td>
+                            </tr>
+                            <tr class="min-max-row" style="display:none;">
+                                <th><label>Min/Max Value</label></th>
+                                <td>
+                                    <input type="number" name="form_fields[${fieldIndex}][min_value]" placeholder="Min" style="width:100px;" />
+                                    <input type="number" name="form_fields[${fieldIndex}][max_value]" placeholder="Max" style="width:100px;" />
+                                </td>
+                            </tr>
+                            <tr class="file-types-row" style="display:none;">
+                                <th><label>Allowed File Types</label></th>
+                                <td>
+                                    <input type="text" name="form_fields[${fieldIndex}][allowed_types]" class="regular-text" placeholder="jpg,png,pdf,doc" />
+                                    <p class="description">Comma-separated file extensions</p>
                                 </td>
                             </tr>
                         </table>
@@ -353,23 +784,43 @@ class Manager {
                 <tr>
                     <th><label>Type</label></th>
                     <td>
-                        <select name="form_fields[<?php echo \esc_attr( $index ); ?>][type]">
-                            <option value="text" <?php \selected( $field['type'] ?? '', 'text' ); ?>>Text</option>
-                            <option value="email" <?php \selected( $field['type'] ?? '', 'email' ); ?>>Email</option>
-                            <option value="tel" <?php \selected( $field['type'] ?? '', 'tel' ); ?>>Phone</option>
-                            <option value="number" <?php \selected( $field['type'] ?? '', 'number' ); ?>>Number</option>
-                            <option value="textarea" <?php \selected( $field['type'] ?? '', 'textarea' ); ?>>Textarea</option>
-                            <option value="select" <?php \selected( $field['type'] ?? '', 'select' ); ?>>Select</option>
-                            <option value="radio" <?php \selected( $field['type'] ?? '', 'radio' ); ?>>Radio</option>
-                            <option value="checkbox" <?php \selected( $field['type'] ?? '', 'checkbox' ); ?>>Checkbox</option>
-                            <option value="date" <?php \selected( $field['type'] ?? '', 'date' ); ?>>Date</option>
-                            <option value="time" <?php \selected( $field['type'] ?? '', 'time' ); ?>>Time</option>
-                            <option value="file" <?php \selected( $field['type'] ?? '', 'file' ); ?>>File Upload</option>
-                            <option value="rating" <?php \selected( $field['type'] ?? '', 'rating' ); ?>>Rating (Star)</option>
-                            <option value="hidden" <?php \selected( $field['type'] ?? '', 'hidden' ); ?>>Hidden Field</option>
-                            <option value="html" <?php \selected( $field['type'] ?? '', 'html' ); ?>>HTML Block</option>
-                            <option value="section" <?php \selected( $field['type'] ?? '', 'section' ); ?>>Section Break</option>
-                            <option value="signature" <?php \selected( $field['type'] ?? '', 'signature' ); ?>>Signature</option>
+                        <select name="form_fields[<?php echo \esc_attr( $index ); ?>][type]" class="field-type-selector">
+                            <optgroup label="Basic Fields">
+                                <option value="text" <?php \selected( $field['type'] ?? '', 'text' ); ?>>Text</option>
+                                <option value="email" <?php \selected( $field['type'] ?? '', 'email' ); ?>>Email</option>
+                                <option value="tel" <?php \selected( $field['type'] ?? '', 'tel' ); ?>>Phone</option>
+                                <option value="number" <?php \selected( $field['type'] ?? '', 'number' ); ?>>Number</option>
+                                <option value="textarea" <?php \selected( $field['type'] ?? '', 'textarea' ); ?>>Textarea</option>
+                                <option value="url" <?php \selected( $field['type'] ?? '', 'url' ); ?>>URL</option>
+                                <option value="password" <?php \selected( $field['type'] ?? '', 'password' ); ?>>Password</option>
+                            </optgroup>
+                            <optgroup label="Choice Fields">
+                                <option value="select" <?php \selected( $field['type'] ?? '', 'select' ); ?>>Select Dropdown</option>
+                                <option value="radio" <?php \selected( $field['type'] ?? '', 'radio' ); ?>>Radio Buttons</option>
+                                <option value="checkbox" <?php \selected( $field['type'] ?? '', 'checkbox' ); ?>>Checkboxes</option>
+                                <option value="multiselect" <?php \selected( $field['type'] ?? '', 'multiselect' ); ?>>Multi-Select</option>
+                            </optgroup>
+                            <optgroup label="Advanced Fields">
+                                <option value="date" <?php \selected( $field['type'] ?? '', 'date' ); ?>>Date</option>
+                                <option value="time" <?php \selected( $field['type'] ?? '', 'time' ); ?>>Time</option>
+                                <option value="datetime" <?php \selected( $field['type'] ?? '', 'datetime' ); ?>>Date & Time</option>
+                                <option value="file" <?php \selected( $field['type'] ?? '', 'file' ); ?>>File Upload</option>
+                                <option value="rating" <?php \selected( $field['type'] ?? '', 'rating' ); ?>>Rating (Star)</option>
+                                <option value="range" <?php \selected( $field['type'] ?? '', 'range' ); ?>>Range Slider</option>
+                                <option value="calculation" <?php \selected( $field['type'] ?? '', 'calculation' ); ?>>Calculation</option>
+                                <option value="repeater" <?php \selected( $field['type'] ?? '', 'repeater' ); ?>>Repeater Field</option>
+                            </optgroup>
+                            <optgroup label="Content Fields">
+                                <option value="hidden" <?php \selected( $field['type'] ?? '', 'hidden' ); ?>>Hidden Field</option>
+                                <option value="html" <?php \selected( $field['type'] ?? '', 'html' ); ?>>HTML Block</option>
+                                <option value="section" <?php \selected( $field['type'] ?? '', 'section' ); ?>>Section Break</option>
+                                <option value="signature" <?php \selected( $field['type'] ?? '', 'signature' ); ?>>Signature</option>
+                                <option value="terms" <?php \selected( $field['type'] ?? '', 'terms' ); ?>>Terms & Conditions</option>
+                            </optgroup>
+                            <optgroup label="Payment Fields">
+                                <option value="payment_amount" <?php \selected( $field['type'] ?? '', 'payment_amount' ); ?>>Payment Amount</option>
+                                <option value="payment_method" <?php \selected( $field['type'] ?? '', 'payment_method' ); ?>>Payment Method</option>
+                            </optgroup>
                         </select>
                     </td>
                 </tr>
@@ -526,6 +977,77 @@ class Manager {
                 echo '</div>';
                 break;
 
+            case 'multiselect':
+                echo '<select id="' . \esc_attr( $name ) . '" name="' . \esc_attr( $name ) . '[]" multiple ' . ( $required ? 'required' : '' ) . ' size="5">';
+                $options = \explode( "\n", $field['options'] ?? '' );
+                foreach ( $options as $option ) {
+                    $option = \trim( $option );
+                    if ( $option ) {
+                        echo '<option value="' . \esc_attr( $option ) . '">' . \esc_html( $option ) . '</option>';
+                    }
+                }
+                echo '</select>';
+                echo '<p class="description">' . \esc_html__( 'Hold Ctrl (Windows) or Cmd (Mac) to select multiple', 'sofir' ) . '</p>';
+                break;
+
+            case 'datetime':
+                echo '<input type="datetime-local" id="' . \esc_attr( $name ) . '" name="' . \esc_attr( $name ) . '" ' . ( $required ? 'required' : '' ) . ' />';
+                break;
+
+            case 'url':
+                echo '<input type="url" id="' . \esc_attr( $name ) . '" name="' . \esc_attr( $name ) . '" placeholder="' . \esc_attr( $placeholder ) . '" ' . ( $required ? 'required' : '' ) . ' />';
+                break;
+
+            case 'password':
+                echo '<input type="password" id="' . \esc_attr( $name ) . '" name="' . \esc_attr( $name ) . '" placeholder="' . \esc_attr( $placeholder ) . '" ' . ( $required ? 'required' : '' ) . ' />';
+                break;
+
+            case 'range':
+                $min = $field['min_value'] ?? 0;
+                $max = $field['max_value'] ?? 100;
+                echo '<input type="range" id="' . \esc_attr( $name ) . '" name="' . \esc_attr( $name ) . '" min="' . \esc_attr( $min ) . '" max="' . \esc_attr( $max ) . '" ' . ( $required ? 'required' : '' ) . ' />';
+                echo '<output for="' . \esc_attr( $name ) . '" id="' . \esc_attr( $name ) . '_output">50</output>';
+                echo '<script>document.getElementById("' . \esc_js( $name ) . '").addEventListener("input", function() { document.getElementById("' . \esc_js( $name ) . '_output").value = this.value; });</script>';
+                break;
+
+            case 'calculation':
+                echo '<input type="text" id="' . \esc_attr( $name ) . '" name="' . \esc_attr( $name ) . '" readonly class="sofir-calculation-field" data-formula="' . \esc_attr( $field['calculation_formula'] ?? '' ) . '" />';
+                break;
+
+            case 'terms':
+                $terms_text = $field['html_content'] ?? \__( 'I agree to the terms and conditions', 'sofir' );
+                echo '<label><input type="checkbox" id="' . \esc_attr( $name ) . '" name="' . \esc_attr( $name ) . '" value="1" ' . ( $required ? 'required' : '' ) . ' /> ' . \wp_kses_post( $terms_text ) . '</label>';
+                break;
+
+            case 'payment_amount':
+                $currency = $field['currency'] ?? 'USD';
+                echo '<div class="sofir-payment-amount">';
+                echo '<span class="currency-symbol">' . \esc_html( $currency ) . '</span> ';
+                echo '<input type="number" id="' . \esc_attr( $name ) . '" name="' . \esc_attr( $name ) . '" placeholder="0.00" step="0.01" min="0" ' . ( $required ? 'required' : '' ) . ' />';
+                echo '</div>';
+                break;
+
+            case 'payment_method':
+                echo '<select id="' . \esc_attr( $name ) . '" name="' . \esc_attr( $name ) . '" ' . ( $required ? 'required' : '' ) . '>';
+                echo '<option value="">' . \esc_html__( 'Select payment method', 'sofir' ) . '</option>';
+                $options = $field['options'] ?? "Credit Card\nPayPal\nBank Transfer";
+                $payment_options = \explode( "\n", $options );
+                foreach ( $payment_options as $option ) {
+                    $option = \trim( $option );
+                    if ( $option ) {
+                        echo '<option value="' . \esc_attr( $option ) . '">' . \esc_html( $option ) . '</option>';
+                    }
+                }
+                echo '</select>';
+                break;
+
+            case 'repeater':
+                echo '<div class="sofir-repeater-field" data-field="' . \esc_attr( $name ) . '">';
+                echo '<div class="sofir-repeater-items"></div>';
+                echo '<button type="button" class="button sofir-add-repeater-item">' . \esc_html__( 'Add Item', 'sofir' ) . '</button>';
+                echo '</div>';
+                break;
+
             default:
                 echo '<input type="' . \esc_attr( $type ) . '" id="' . \esc_attr( $name ) . '" name="' . \esc_attr( $name ) . '" placeholder="' . \esc_attr( $placeholder ) . '" ' . ( $required ? 'required' : '' ) . ' />';
                 break;
@@ -546,8 +1068,23 @@ class Manager {
             \wp_die( \esc_html__( 'Form not found.', 'sofir' ) );
         }
 
+        if ( ! $this->check_form_restrictions( $form_id ) ) {
+            \wp_die( \esc_html__( 'Form submission not allowed at this time.', 'sofir' ) );
+        }
+
         $fields = \get_post_meta( $form_id, 'sofir_form_fields', true ) ?: [];
         $settings = \get_post_meta( $form_id, 'sofir_form_settings', true ) ?: [];
+
+        if ( isset( $settings['enable_recaptcha'] ) && '1' === $settings['enable_recaptcha'] ) {
+            $recaptcha_response = $_POST['g-recaptcha-response'] ?? '';
+            if ( ! $this->verify_recaptcha( $recaptcha_response ) ) {
+                \wp_die( \esc_html__( 'reCAPTCHA verification failed.', 'sofir' ) );
+            }
+        }
+
+        if ( $this->check_spam( $_POST ) ) {
+            \wp_die( \esc_html__( 'Spam detected.', 'sofir' ) );
+        }
 
         $submission_data = [];
         $attachments = [];
@@ -611,9 +1148,9 @@ class Manager {
             \update_post_meta( $submission_id, 'submission_user_id', \get_current_user_id() );
         }
 
-        if ( ! empty( $settings['notification_email'] ) ) {
+        if ( ! empty( $settings['enable_admin_notification'] ) && '1' === $settings['enable_admin_notification'] && ! empty( $settings['notification_email'] ) ) {
             $to = $settings['notification_email'];
-            $subject = \sprintf( \__( 'New form submission: %s', 'sofir' ), $form->post_title );
+            $subject = $settings['notification_subject'] ?? \sprintf( \__( 'New form submission: %s', 'sofir' ), $form->post_title );
             $message = \__( 'You have received a new form submission:', 'sofir' ) . "\n\n";
             
             foreach ( $submission_data as $label => $value ) {
@@ -630,9 +1167,58 @@ class Manager {
             \wp_mail( $to, $subject, $message );
         }
 
+        if ( ! empty( $settings['enable_user_notification'] ) && '1' === $settings['enable_user_notification'] ) {
+            $user_email = '';
+            foreach ( $submission_data as $label => $value ) {
+                if ( \stripos( $label, 'email' ) !== false && \is_email( $value ) ) {
+                    $user_email = $value;
+                    break;
+                }
+            }
+
+            if ( $user_email ) {
+                $subject = $settings['user_notification_subject'] ?? \__( 'Thank you for your submission', 'sofir' );
+                $message = $settings['user_notification_message'] ?? \__( 'Thank you for contacting us. We will get back to you soon.', 'sofir' );
+                \wp_mail( $user_email, $subject, $message );
+            }
+        }
+
         \do_action( 'sofir/form/submitted', $submission_id, $form_id, $submission_data );
 
-        \wp_redirect( \add_query_arg( 'form_submitted', '1', \wp_get_referer() ) );
+        $this->create_post_from_submission( $submission_id, $form_id, $submission_data );
+        $this->register_user_from_submission( $submission_id, $form_id, $submission_data );
+        $this->send_webhooks( $submission_id, $form_id, $submission_data );
+
+        if ( ! empty( $settings['enable_pdf_generation'] ) && '1' === $settings['enable_pdf_generation'] ) {
+            $pdf_url = $this->generate_pdf( $submission_id );
+            if ( $pdf_url ) {
+                \update_post_meta( $submission_id, 'submission_pdf', $pdf_url );
+            }
+        }
+
+        $redirect_url = \wp_get_referer();
+
+        if ( ! empty( $settings['confirmation_type'] ) ) {
+            switch ( $settings['confirmation_type'] ) {
+                case 'redirect':
+                    if ( ! empty( $settings['redirect_url'] ) ) {
+                        $redirect_url = $settings['redirect_url'];
+                    }
+                    break;
+                case 'page':
+                    if ( ! empty( $settings['redirect_page'] ) ) {
+                        $redirect_url = \get_permalink( $settings['redirect_page'] );
+                    }
+                    break;
+                default:
+                    $redirect_url = \add_query_arg( 'form_submitted', '1', $redirect_url );
+                    break;
+            }
+        } else {
+            $redirect_url = \add_query_arg( 'form_submitted', '1', $redirect_url );
+        }
+
+        \wp_redirect( $redirect_url );
         exit;
     }
 
@@ -1195,5 +1781,428 @@ class Manager {
         }
 
         return false;
+    }
+
+    public function save_partial_submission(): void {
+        \check_ajax_referer( 'sofir_forms', 'nonce' );
+
+        $form_id = isset( $_POST['form_id'] ) ? (int) $_POST['form_id'] : 0;
+        $data = $_POST['data'] ?? [];
+
+        if ( ! $form_id ) {
+            \wp_send_json_error( [ 'message' => \__( 'Invalid form ID', 'sofir' ) ] );
+        }
+
+        $session_id = isset( $_COOKIE['sofir_session_id'] ) ? $_COOKIE['sofir_session_id'] : \wp_generate_password( 32, false );
+        
+        if ( ! isset( $_COOKIE['sofir_session_id'] ) ) {
+            \setcookie( 'sofir_session_id', $session_id, \time() + ( 30 * DAY_IN_SECONDS ), '/' );
+        }
+
+        \update_option( 'sofir_partial_' . $session_id . '_' . $form_id, $data );
+
+        \wp_send_json_success( [ 'message' => \__( 'Progress saved', 'sofir' ), 'session_id' => $session_id ] );
+    }
+
+    public function load_partial_submission(): void {
+        \check_ajax_referer( 'sofir_forms', 'nonce' );
+
+        $form_id = isset( $_POST['form_id'] ) ? (int) $_POST['form_id'] : 0;
+        $session_id = isset( $_COOKIE['sofir_session_id'] ) ? $_COOKIE['sofir_session_id'] : '';
+
+        if ( ! $form_id || ! $session_id ) {
+            \wp_send_json_error( [ 'message' => \__( 'No saved progress found', 'sofir' ) ] );
+        }
+
+        $data = \get_option( 'sofir_partial_' . $session_id . '_' . $form_id, [] );
+
+        if ( empty( $data ) ) {
+            \wp_send_json_error( [ 'message' => \__( 'No saved progress found', 'sofir' ) ] );
+        }
+
+        \wp_send_json_success( [ 'data' => $data ] );
+    }
+
+    public function process_payment(): void {
+        \check_ajax_referer( 'sofir_forms', 'nonce' );
+
+        $form_id = isset( $_POST['form_id'] ) ? (int) $_POST['form_id'] : 0;
+        $amount = isset( $_POST['amount'] ) ? (float) $_POST['amount'] : 0;
+        $gateway = $_POST['gateway'] ?? '';
+
+        if ( ! $form_id || ! $amount || ! $gateway ) {
+            \wp_send_json_error( [ 'message' => \__( 'Invalid payment data', 'sofir' ) ] );
+        }
+
+        $settings = \get_post_meta( $form_id, 'sofir_form_settings', true );
+
+        switch ( $gateway ) {
+            case 'stripe':
+                $result = $this->process_stripe_payment( $amount, $settings );
+                break;
+            case 'paypal':
+                $result = $this->process_paypal_payment( $amount, $settings );
+                break;
+            case 'razorpay':
+                $result = $this->process_razorpay_payment( $amount, $settings );
+                break;
+            default:
+                $result = [ 'success' => false, 'message' => \__( 'Invalid gateway', 'sofir' ) ];
+        }
+
+        if ( $result['success'] ) {
+            \wp_send_json_success( $result );
+        } else {
+            \wp_send_json_error( $result );
+        }
+    }
+
+    private function process_stripe_payment( float $amount, array $settings ): array {
+        try {
+            if ( empty( $settings['stripe_secret_key'] ) ) {
+                return [ 'success' => false, 'message' => \__( 'Stripe not configured', 'sofir' ) ];
+            }
+
+            $response = \wp_remote_post(
+                'https://api.stripe.com/v1/payment_intents',
+                [
+                    'headers' => [
+                        'Authorization' => 'Bearer ' . $settings['stripe_secret_key'],
+                        'Content-Type' => 'application/x-www-form-urlencoded',
+                    ],
+                    'body' => [
+                        'amount' => (int) ( $amount * 100 ),
+                        'currency' => \strtolower( $settings['payment_currency'] ?? 'usd' ),
+                    ],
+                ]
+            );
+
+            if ( \is_wp_error( $response ) ) {
+                return [ 'success' => false, 'message' => $response->get_error_message() ];
+            }
+
+            $body = \json_decode( \wp_remote_retrieve_body( $response ), true );
+
+            return [
+                'success' => true,
+                'client_secret' => $body['client_secret'] ?? '',
+                'intent_id' => $body['id'] ?? '',
+            ];
+        } catch ( \Exception $e ) {
+            return [ 'success' => false, 'message' => $e->getMessage() ];
+        }
+    }
+
+    private function process_paypal_payment( float $amount, array $settings ): array {
+        if ( empty( $settings['paypal_email'] ) ) {
+            return [ 'success' => false, 'message' => \__( 'PayPal not configured', 'sofir' ) ];
+        }
+
+        $sandbox = isset( $settings['paypal_sandbox'] ) && '1' === $settings['paypal_sandbox'];
+        $url = $sandbox ? 'https://www.sandbox.paypal.com/cgi-bin/webscr' : 'https://www.paypal.com/cgi-bin/webscr';
+
+        return [
+            'success' => true,
+            'redirect_url' => \add_query_arg(
+                [
+                    'cmd' => '_xclick',
+                    'business' => $settings['paypal_email'],
+                    'amount' => $amount,
+                    'currency_code' => $settings['payment_currency'] ?? 'USD',
+                    'return' => \home_url( '?paypal_return=1' ),
+                    'cancel_return' => \home_url( '?paypal_cancel=1' ),
+                ],
+                $url
+            ),
+        ];
+    }
+
+    private function process_razorpay_payment( float $amount, array $settings ): array {
+        return [ 'success' => false, 'message' => \__( 'Razorpay integration coming soon', 'sofir' ) ];
+    }
+
+    public function register_payment_webhooks(): void {
+        \add_action( 'init', function() {
+            if ( isset( $_GET['sofir_stripe_webhook'] ) ) {
+                $this->handle_stripe_webhook();
+            }
+            if ( isset( $_GET['sofir_paypal_ipn'] ) ) {
+                $this->handle_paypal_ipn();
+            }
+        } );
+    }
+
+    private function handle_stripe_webhook(): void {
+        $payload = @\file_get_contents( 'php://input' );
+        $event = \json_decode( $payload, true );
+
+        if ( isset( $event['type'] ) && 'payment_intent.succeeded' === $event['type'] ) {
+            $intent_id = $event['data']['object']['id'] ?? '';
+            
+            \do_action( 'sofir/form/payment_completed', $intent_id, 'stripe', $event );
+        }
+
+        \http_response_code( 200 );
+        exit;
+    }
+
+    private function handle_paypal_ipn(): void {
+        $raw_post_data = \file_get_contents( 'php://input' );
+        $raw_post_array = \explode( '&', $raw_post_data );
+        $myPost = [];
+        foreach ( $raw_post_array as $keyval ) {
+            $keyval = \explode( '=', $keyval );
+            if ( \count( $keyval ) === 2 ) {
+                $myPost[ $keyval[0] ] = \urldecode( $keyval[1] );
+            }
+        }
+
+        \do_action( 'sofir/form/payment_completed', $myPost['txn_id'] ?? '', 'paypal', $myPost );
+
+        \http_response_code( 200 );
+        exit;
+    }
+
+    public function create_post_from_submission( int $submission_id, int $form_id, array $data ): void {
+        $settings = \get_post_meta( $form_id, 'sofir_form_settings', true );
+
+        if ( empty( $settings['enable_post_creation'] ) || '1' !== $settings['enable_post_creation'] ) {
+            return;
+        }
+
+        $post_type = $settings['post_type'] ?? 'post';
+        $post_status = $settings['post_status'] ?? 'draft';
+
+        $title = $data['Title'] ?? $data['Name'] ?? \__( 'Submission', 'sofir' ) . ' #' . $submission_id;
+        $content = '';
+
+        foreach ( $data as $label => $value ) {
+            $content .= '<p><strong>' . \esc_html( $label ) . ':</strong> ' . \esc_html( $value ) . '</p>';
+        }
+
+        $post_id = \wp_insert_post( [
+            'post_title' => \sanitize_text_field( $title ),
+            'post_content' => $content,
+            'post_type' => $post_type,
+            'post_status' => $post_status,
+        ] );
+
+        if ( $post_id && ! \is_wp_error( $post_id ) ) {
+            \update_post_meta( $submission_id, 'created_post_id', $post_id );
+            \update_post_meta( $post_id, 'source_submission_id', $submission_id );
+        }
+    }
+
+    public function register_user_from_submission( int $submission_id, int $form_id, array $data ): void {
+        $settings = \get_post_meta( $form_id, 'sofir_form_settings', true );
+
+        if ( empty( $settings['enable_user_registration'] ) || '1' !== $settings['enable_user_registration'] ) {
+            return;
+        }
+
+        $username = $data['Username'] ?? $data['Email'] ?? '';
+        $email = $data['Email'] ?? '';
+        $password = $data['Password'] ?? \wp_generate_password();
+
+        if ( ! $username || ! $email || ! \is_email( $email ) ) {
+            return;
+        }
+
+        if ( \username_exists( $username ) || \email_exists( $email ) ) {
+            return;
+        }
+
+        $user_id = \wp_create_user( $username, $password, $email );
+
+        if ( ! \is_wp_error( $user_id ) ) {
+            $role = $settings['user_role'] ?? 'subscriber';
+            $user = new \WP_User( $user_id );
+            $user->set_role( $role );
+
+            if ( isset( $data['First Name'] ) ) {
+                \update_user_meta( $user_id, 'first_name', \sanitize_text_field( $data['First Name'] ) );
+            }
+            if ( isset( $data['Last Name'] ) ) {
+                \update_user_meta( $user_id, 'last_name', \sanitize_text_field( $data['Last Name'] ) );
+            }
+
+            \update_post_meta( $submission_id, 'created_user_id', $user_id );
+
+            \wp_new_user_notification( $user_id, null, 'both' );
+        }
+    }
+
+    public function send_webhooks( int $submission_id, int $form_id, array $data ): void {
+        $settings = \get_post_meta( $form_id, 'sofir_form_settings', true );
+
+        if ( empty( $settings['webhook_urls'] ) ) {
+            return;
+        }
+
+        $urls = \explode( "\n", $settings['webhook_urls'] );
+
+        foreach ( $urls as $url ) {
+            $url = \trim( $url );
+            if ( ! \filter_var( $url, FILTER_VALIDATE_URL ) ) {
+                continue;
+            }
+
+            \wp_remote_post(
+                $url,
+                [
+                    'body' => \wp_json_encode( [
+                        'form_id' => $form_id,
+                        'submission_id' => $submission_id,
+                        'data' => $data,
+                        'timestamp' => \current_time( 'mysql' ),
+                    ] ),
+                    'headers' => [
+                        'Content-Type' => 'application/json',
+                    ],
+                    'timeout' => 30,
+                ]
+            );
+        }
+    }
+
+    public function generate_pdf( int $submission_id ): string {
+        $submission_data = \get_post_meta( $submission_id, 'submission_data', true );
+        $form_id = \get_post_meta( $submission_id, 'form_id', true );
+        $form = \get_post( $form_id );
+
+        if ( ! $submission_data || ! $form ) {
+            return '';
+        }
+
+        $html = '<html><head><style>';
+        $html .= 'body { font-family: Arial, sans-serif; padding: 20px; }';
+        $html .= 'h1 { color: #333; border-bottom: 2px solid #0073aa; padding-bottom: 10px; }';
+        $html .= 'table { width: 100%; border-collapse: collapse; margin-top: 20px; }';
+        $html .= 'table td { padding: 10px; border: 1px solid #ddd; }';
+        $html .= 'table td:first-child { background: #f5f5f5; font-weight: bold; width: 30%; }';
+        $html .= '</style></head><body>';
+        $html .= '<h1>' . \esc_html( $form->post_title ) . '</h1>';
+        $html .= '<p><strong>' . \__( 'Submission Date:', 'sofir' ) . '</strong> ' . \get_the_date( 'Y-m-d H:i:s', $submission_id ) . '</p>';
+        $html .= '<table>';
+
+        foreach ( $submission_data as $label => $value ) {
+            $html .= '<tr><td>' . \esc_html( $label ) . '</td><td>' . \esc_html( $value ) . '</td></tr>';
+        }
+
+        $html .= '</table></body></html>';
+
+        $upload_dir = \wp_upload_dir();
+        $pdf_dir = $upload_dir['basedir'] . '/sofir-forms-pdfs';
+
+        if ( ! \file_exists( $pdf_dir ) ) {
+            \wp_mkdir_p( $pdf_dir );
+        }
+
+        $pdf_file = $pdf_dir . '/submission-' . $submission_id . '.html';
+        \file_put_contents( $pdf_file, $html );
+
+        return $upload_dir['baseurl'] . '/sofir-forms-pdfs/submission-' . $submission_id . '.html';
+    }
+
+    public function calculate_field_value( string $formula, array $field_values ): float {
+        $formula = \preg_replace_callback(
+            '/\{field_(\d+)\}/',
+            function( $matches ) use ( $field_values ) {
+                $field_name = 'field_' . $matches[1];
+                return $field_values[ $field_name ] ?? 0;
+            },
+            $formula
+        );
+
+        try {
+            $result = eval( 'return ' . $formula . ';' );
+            return (float) $result;
+        } catch ( \Exception $e ) {
+            return 0;
+        }
+    }
+
+    public function check_form_restrictions( int $form_id ): bool {
+        $settings = \get_post_meta( $form_id, 'sofir_form_settings', true );
+
+        if ( isset( $settings['require_login'] ) && '1' === $settings['require_login'] && ! \is_user_logged_in() ) {
+            return false;
+        }
+
+        if ( isset( $settings['enable_scheduling'] ) && '1' === $settings['enable_scheduling'] ) {
+            $now = \current_time( 'timestamp' );
+            $start = isset( $settings['schedule_start'] ) ? \strtotime( $settings['schedule_start'] ) : 0;
+            $end = isset( $settings['schedule_end'] ) ? \strtotime( $settings['schedule_end'] ) : 0;
+
+            if ( ( $start && $now < $start ) || ( $end && $now > $end ) ) {
+                return false;
+            }
+        }
+
+        if ( isset( $settings['enable_submission_limit'] ) && '1' === $settings['enable_submission_limit'] ) {
+            $limit = (int) ( $settings['submission_limit'] ?? 0 );
+            $count = \count( \get_posts( [
+                'post_type' => 'sofir_submission',
+                'meta_key' => 'form_id',
+                'meta_value' => $form_id,
+                'posts_per_page' => -1,
+                'fields' => 'ids',
+            ] ) );
+
+            if ( $limit && $count >= $limit ) {
+                return false;
+            }
+        }
+
+        if ( isset( $settings['one_submission_per_user'] ) && '1' === $settings['one_submission_per_user'] && \is_user_logged_in() ) {
+            $existing = \get_posts( [
+                'post_type' => 'sofir_submission',
+                'meta_query' => [
+                    [
+                        'key' => 'form_id',
+                        'value' => $form_id,
+                    ],
+                    [
+                        'key' => 'submission_user_id',
+                        'value' => \get_current_user_id(),
+                    ],
+                ],
+                'posts_per_page' => 1,
+                'fields' => 'ids',
+            ] );
+
+            if ( ! empty( $existing ) ) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public function verify_recaptcha( string $response ): bool {
+        $form_id = isset( $_POST['form_id'] ) ? (int) $_POST['form_id'] : 0;
+        $settings = \get_post_meta( $form_id, 'sofir_form_settings', true );
+
+        if ( empty( $settings['recaptcha_secret_key'] ) ) {
+            return true;
+        }
+
+        $verify_response = \wp_remote_post(
+            'https://www.google.com/recaptcha/api/siteverify',
+            [
+                'body' => [
+                    'secret' => $settings['recaptcha_secret_key'],
+                    'response' => $response,
+                ],
+            ]
+        );
+
+        if ( \is_wp_error( $verify_response ) ) {
+            return false;
+        }
+
+        $result = \json_decode( \wp_remote_retrieve_body( $verify_response ), true );
+
+        return isset( $result['success'] ) && true === $result['success'];
     }
 }
