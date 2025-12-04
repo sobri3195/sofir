@@ -28,6 +28,8 @@ class Manager {
         \add_action( 'voxel/post-types/register', [ $this, 'register_sofir_cpts_to_voxel' ] );
         \add_filter( 'voxel/templates/available', [ $this, 'add_sofir_templates_to_voxel' ] );
         \add_action( 'admin_notices', [ $this, 'show_compatibility_notice' ] );
+        \add_action( 'init', [ $this, 'ensure_sofir_cpts_visibility' ], 999 );
+        \add_action( 'registered_post_type', [ $this, 'restore_cpt_menu_after_voxel' ], 999, 2 );
     }
 
     public function is_voxel_active(): bool {
@@ -45,6 +47,18 @@ class Manager {
         
         if ( ! in_array( 'custom-fields', $args['supports'], true ) ) {
             $args['supports'][] = 'custom-fields';
+        }
+        
+        if ( ! isset( $args['show_in_menu'] ) ) {
+            $args['show_in_menu'] = true;
+        }
+        
+        if ( ! isset( $args['show_ui'] ) ) {
+            $args['show_ui'] = true;
+        }
+        
+        if ( ! isset( $args['public'] ) ) {
+            $args['public'] = true;
         }
         
         return $args;
@@ -235,7 +249,9 @@ class Manager {
         echo '<li>' . \esc_html__( 'Native Voxel template support', 'sofir' ) . '</li>';
         echo '<li>' . \esc_html__( 'Elementor widgets compatible with Voxel', 'sofir' ) . '</li>';
         echo '<li>' . \esc_html__( 'Advanced search & filters integrated', 'sofir' ) . '</li>';
+        echo '<li><strong>' . \esc_html__( '✅ CPT Menu Visibility Optimized - Triple-layer protection ensures SOFIR CPTs always appear in admin menu', 'sofir' ) . '</strong></li>';
         echo '</ul>';
+        echo '<p style="margin-top: 10px;"><em>' . \esc_html__( '📚 Read more: ', 'sofir' ) . '<a href="' . \esc_url( SOFIR_PLUGIN_URL . 'modules/voxel/VOXEL-CPT-OPTIMIZATION.md' ) . '" target="_blank">' . \esc_html__( 'Voxel CPT Optimization Guide', 'sofir' ) . '</a></em></p>';
         echo '</div>';
     }
 
@@ -525,5 +541,66 @@ class Manager {
         }
 
         return array_unique( $suggestions );
+    }
+
+    public function ensure_sofir_cpts_visibility(): void {
+        $cpt_manager = \Sofir\Cpt\Manager::instance();
+        $post_types = $cpt_manager->get_post_types();
+
+        foreach ( $post_types as $slug => $definition ) {
+            if ( ! \post_type_exists( $slug ) ) {
+                continue;
+            }
+
+            $post_type_obj = \get_post_type_object( $slug );
+            if ( ! $post_type_obj ) {
+                continue;
+            }
+
+            if ( ! $post_type_obj->show_in_menu || ! $post_type_obj->show_ui || ! $post_type_obj->public ) {
+                $post_type_obj->show_in_menu = true;
+                $post_type_obj->show_ui = true;
+                $post_type_obj->public = true;
+                $post_type_obj->show_in_nav_menus = true;
+                $post_type_obj->publicly_queryable = true;
+                $post_type_obj->can_export = true;
+                $post_type_obj->exclude_from_search = false;
+
+                global $wp_post_types;
+                $wp_post_types[ $slug ] = $post_type_obj;
+
+                \do_action( 'sofir/voxel/cpt_visibility_restored', $slug );
+
+                if ( \defined( 'WP_DEBUG' ) && \WP_DEBUG ) {
+                    \error_log( sprintf( '[SOFIR Voxel] Restored visibility for CPT: %s', $slug ) );
+                }
+            }
+        }
+    }
+
+    public function restore_cpt_menu_after_voxel( string $post_type, \WP_Post_Type $args ): void {
+        $cpt_manager = \Sofir\Cpt\Manager::instance();
+        $post_types = $cpt_manager->get_post_types();
+
+        if ( ! isset( $post_types[ $post_type ] ) ) {
+            return;
+        }
+
+        if ( ! $args->show_in_menu || ! $args->show_ui ) {
+            $args->show_in_menu = true;
+            $args->show_ui = true;
+            $args->public = true;
+            $args->show_in_nav_menus = true;
+            $args->publicly_queryable = true;
+
+            global $wp_post_types;
+            $wp_post_types[ $post_type ] = $args;
+
+            \do_action( 'sofir/voxel/cpt_visibility_restored', $post_type );
+
+            if ( \defined( 'WP_DEBUG' ) && \WP_DEBUG ) {
+                \error_log( sprintf( '[SOFIR Voxel] Restored visibility after registration for CPT: %s', $post_type ) );
+            }
+        }
     }
 }
