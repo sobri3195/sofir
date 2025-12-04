@@ -166,6 +166,11 @@ class PaymentPanel {
         echo '<input type="text" name="duitku_api_key" class="regular-text" value="' . \esc_attr( $settings['duitku_api_key'] ?? '' ) . '" placeholder="xxxxxxxxxxxxxxxx" />';
         echo '</label>';
 
+        echo '<label class="sofir-toggle" style="display: flex; align-items: center; gap: 10px; margin-top: 10px; background: #e7f3ff; padding: 12px; border-radius: 6px;">';
+        echo '<input type="checkbox" name="duitku_test_mode" value="1" ' . \checked( $settings['duitku_test_mode'] ?? false, true, false ) . ' />';
+        echo '<span><strong>🧪 ' . \esc_html__( 'Test Mode', 'sofir' ) . '</strong> - ' . \esc_html__( 'Simulasi pembayaran tanpa API key asli', 'sofir' ) . '</span>';
+        echo '</label>';
+
         echo '</div>';
         
         echo '<div class="sofir-help-box" style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 12px; margin-top: 10px;">';
@@ -174,6 +179,11 @@ class PaymentPanel {
         echo '2. Login ke dashboard merchant<br>';
         echo '3. Buka menu <strong>Settings → API</strong><br>';
         echo '4. Copy Merchant Code dan API Key';
+        echo '</div>';
+        
+        echo '<div class="sofir-info-box" style="background: #d1f2eb; border-left: 4px solid #28a745; padding: 12px; margin-top: 10px;">';
+        echo '<strong>💡 ' . \esc_html__( 'Test Mode:', 'sofir' ) . '</strong> ';
+        echo \esc_html__( 'Aktifkan untuk mencoba fitur pembayaran dengan data simulasi. Payment akan otomatis selesai dalam 10 detik. Tidak memerlukan API key.', 'sofir' );
         echo '</div>';
         
         echo '</div>';
@@ -199,6 +209,11 @@ class PaymentPanel {
         echo '<small class="description">' . \esc_html__( 'Gunakan xnd_development_* untuk testing, xnd_production_* untuk live.', 'sofir' ) . '</small>';
         echo '</label>';
 
+        echo '<label class="sofir-toggle" style="display: flex; align-items: center; gap: 10px; margin-top: 10px; background: #e7f3ff; padding: 12px; border-radius: 6px;">';
+        echo '<input type="checkbox" name="xendit_test_mode" value="1" ' . \checked( $settings['xendit_test_mode'] ?? false, true, false ) . ' />';
+        echo '<span><strong>🧪 ' . \esc_html__( 'Test Mode', 'sofir' ) . '</strong> - ' . \esc_html__( 'Simulasi pembayaran tanpa API key asli', 'sofir' ) . '</span>';
+        echo '</label>';
+
         echo '</div>';
         
         echo '<div class="sofir-help-box" style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 12px; margin-top: 10px;">';
@@ -207,6 +222,11 @@ class PaymentPanel {
         echo '2. Verifikasi akun bisnis Anda<br>';
         echo '3. Buka menu <strong>Settings → Developers → API Keys</strong><br>';
         echo '4. Copy Secret Key (gunakan yang Development untuk testing)';
+        echo '</div>';
+        
+        echo '<div class="sofir-info-box" style="background: #d1f2eb; border-left: 4px solid #28a745; padding: 12px; margin-top: 10px;">';
+        echo '<strong>💡 ' . \esc_html__( 'Test Mode:', 'sofir' ) . '</strong> ';
+        echo \esc_html__( 'Aktifkan untuk mencoba fitur pembayaran dengan data simulasi. Payment akan otomatis selesai dalam 10 detik. Tidak memerlukan API key.', 'sofir' );
         echo '</div>';
         
         echo '</div>';
@@ -241,6 +261,11 @@ class PaymentPanel {
         echo '<span>' . \esc_html__( 'Sandbox Mode (Testing)', 'sofir' ) . '</span>';
         echo '</label>';
 
+        echo '<label class="sofir-toggle" style="display: flex; align-items: center; gap: 10px; margin-top: 10px; background: #e7f3ff; padding: 12px; border-radius: 6px;">';
+        echo '<input type="checkbox" name="midtrans_test_mode" value="1" ' . \checked( $settings['midtrans_test_mode'] ?? false, true, false ) . ' />';
+        echo '<span><strong>🧪 ' . \esc_html__( 'Test Mode', 'sofir' ) . '</strong> - ' . \esc_html__( 'Simulasi pembayaran tanpa API key asli', 'sofir' ) . '</span>';
+        echo '</label>';
+
         echo '</div>';
         
         echo '<div class="sofir-help-box" style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 12px; margin-top: 10px;">';
@@ -250,6 +275,11 @@ class PaymentPanel {
         echo '3. Buka menu <strong>Settings → Access Keys</strong><br>';
         echo '4. Copy Server Key dan Client Key<br>';
         echo '5. Nonaktifkan Sandbox Mode saat go live';
+        echo '</div>';
+        
+        echo '<div class="sofir-info-box" style="background: #d1f2eb; border-left: 4px solid #28a745; padding: 12px; margin-top: 10px;">';
+        echo '<strong>💡 ' . \esc_html__( 'Test Mode:', 'sofir' ) . '</strong> ';
+        echo \esc_html__( 'Aktifkan untuk mencoba fitur pembayaran dengan data simulasi. Payment akan otomatis selesai dalam 10 detik. Tidak memerlukan API key.', 'sofir' );
         echo '</div>';
         
         echo '</div>';
@@ -331,6 +361,7 @@ class PaymentPanel {
             foreach ( $recent_transactions as $transaction ) {
                 $status_class = '';
                 $status_label = $transaction['status'];
+                $is_test = isset( $transaction['test_mode'] ) && $transaction['test_mode'];
                 
                 switch ( $transaction['status'] ) {
                     case 'completed':
@@ -349,7 +380,11 @@ class PaymentPanel {
                 
                 echo '<tr>';
                 echo '<td><code>' . \esc_html( $transaction['id'] ) . '</code></td>';
-                echo '<td><strong>' . \esc_html( ucfirst( $transaction['gateway'] ) ) . '</strong></td>';
+                echo '<td><strong>' . \esc_html( ucfirst( $transaction['gateway'] ) ) . '</strong>';
+                if ( $is_test ) {
+                    echo ' <span style="background: #e7f3ff; color: #0066cc; padding: 2px 6px; border-radius: 3px; font-size: 11px; font-weight: normal;">🧪 TEST</span>';
+                }
+                echo '</td>';
                 echo '<td>' . \esc_html( $transaction['item_name'] ) . '</td>';
                 echo '<td><strong>' . \esc_html( $this->format_price( $transaction['amount'], $transaction ) ) . '</strong></td>';
                 echo '<td><span class="' . \esc_attr( $status_class ) . '" style="padding: 4px 8px; border-radius: 4px; font-size: 12px; display: inline-block;">' . $status_label . '</span></td>';
@@ -385,6 +420,11 @@ class PaymentPanel {
         echo '&nbsp;&nbsp;item_name="Premium Package"<br>';
         echo '&nbsp;&nbsp;return_url="/thank-you"<br>';
         echo ']';
+        echo '</div>';
+        echo '<div style="margin-top: 10px; padding: 10px; background: rgba(255,255,255,0.15); border-radius: 6px;">';
+        echo '<strong>🧪 Test Payment Form:</strong><br>';
+        echo '<small>Create a test page with this shortcode to try payments:</small><br>';
+        echo '<code style="background: rgba(0,0,0,0.2); padding: 4px 8px; border-radius: 3px; margin-top: 5px; display: inline-block;">[sofir_payment_form amount="50000" item_name="Test Payment"]</code>';
         echo '</div>';
         echo '</div>';
         
