@@ -65,7 +65,7 @@ class Manager {
 
     public function check_and_update_definitions(): void {
         $version = \get_option( 'sofir_cpt_definitions_version', '0' );
-        $current_version = '1.0.7';
+        $current_version = '1.0.8';
 
         if ( $version !== $current_version ) {
             $this->load_definitions();

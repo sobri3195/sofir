@@ -3,7 +3,7 @@ namespace Sofir\Seo;
 
 class AiGenerator {
     private const OPTION_API_KEY = 'sofir_gemini_api_key';
-    private const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent';
+    private const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent';
     
     private static ?AiGenerator $instance = null;
     private string $api_key = '';
@@ -449,6 +449,13 @@ Return ONLY the JSON response.";
     }
 
     private function call_gemini_api( string $prompt, float $temperature = 0.7 ) {
+        if ( empty( $this->api_key ) ) {
+            if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+                \error_log( '[SOFIR SEO] Gemini API key is not configured' );
+            }
+            return new \WP_Error( 'no_api_key', 'Google Gemini API key tidak dikonfigurasi. Silakan masukkan API key di tab SEO.' );
+        }
+
         $url = self::GEMINI_API_URL . '?key=' . $this->api_key;
 
         $body = [
@@ -469,6 +476,10 @@ Return ONLY the JSON response.";
             ],
         ];
 
+        if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+            \error_log( sprintf( '[SOFIR SEO] Calling Gemini API - URL: %s, Temperature: %.2f', $url, $temperature ) );
+        }
+
         $response = \wp_remote_post(
             $url,
             [
@@ -481,7 +492,13 @@ Return ONLY the JSON response.";
         );
 
         if ( \is_wp_error( $response ) ) {
-            return $response;
+            if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+                \error_log( sprintf( '[SOFIR SEO] API request error: %s', $response->get_error_message() ) );
+            }
+            return new \WP_Error( 
+                'api_connection_error', 
+                'Gagal terhubung ke Google Gemini API: ' . $response->get_error_message() 
+            );
         }
 
         $code = \wp_remote_retrieve_response_code( $response );
@@ -491,14 +508,38 @@ Return ONLY the JSON response.";
             $error = json_decode( $body, true );
             $message = $error['error']['message'] ?? 'API request failed';
             
-            return new \WP_Error( 'api_error', $message );
+            if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+                \error_log( sprintf( '[SOFIR SEO] API error (Code %d): %s', $code, $message ) );
+                \error_log( '[SOFIR SEO] Response body: ' . $body );
+            }
+            
+            if ( $code === 400 && strpos( $message, 'API_KEY_INVALID' ) !== false ) {
+                $message = 'API key tidak valid. Silakan periksa kembali API key Anda di tab SEO.';
+            } elseif ( $code === 429 ) {
+                $message = 'Rate limit tercapai. Silakan coba lagi beberapa saat.';
+            } elseif ( $code === 403 ) {
+                $message = 'API key tidak memiliki akses. Pastikan API key Anda memiliki izin untuk Generative Language API.';
+            }
+            
+            return new \WP_Error( 'api_error', $message . ' (HTTP ' . $code . ')' );
         }
 
         $body = \wp_remote_retrieve_body( $response );
         $data = json_decode( $body, true );
 
+        if ( json_last_error() !== JSON_ERROR_NONE ) {
+            if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+                \error_log( '[SOFIR SEO] JSON decode error: ' . json_last_error_msg() );
+            }
+            return new \WP_Error( 'json_error', 'Gagal mem-parse response dari API: ' . json_last_error_msg() );
+        }
+
         if ( empty( $data['candidates'][0]['content']['parts'][0]['text'] ) ) {
-            return new \WP_Error( 'empty_response', 'Empty response from Gemini API' );
+            if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+                \error_log( '[SOFIR SEO] Empty response from Gemini API' );
+                \error_log( '[SOFIR SEO] Full response: ' . print_r( $data, true ) );
+            }
+            return new \WP_Error( 'empty_response', 'Response kosong dari Gemini API. Silakan coba lagi.' );
         }
 
         $text = $data['candidates'][0]['content']['parts'][0]['text'];
@@ -506,6 +547,10 @@ Return ONLY the JSON response.";
         $text = preg_replace( '/```json\s*/', '', $text );
         $text = preg_replace( '/```\s*$/', '', $text );
         $text = trim( $text );
+
+        if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+            \error_log( sprintf( '[SOFIR SEO] API response received - Length: %d characters', strlen( $text ) ) );
+        }
 
         return $text;
     }
