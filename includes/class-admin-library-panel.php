@@ -20,19 +20,62 @@ class LibraryPanel {
         \add_action( 'admin_post_sofir_install_ready_cpt', [ $this, 'handle_install_ready_cpt' ] );
         \add_action( 'admin_post_sofir_fix_cpt_visibility', [ $this, 'handle_fix_cpt_visibility' ] );
         \add_action( 'wp_ajax_sofir_get_export_preview', [ $this, 'handle_export_preview_ajax' ] );
-        \add_action( 'admin_init', [ $this, 'auto_fix_cpt_visibility' ], 5 );
+        \add_action( 'admin_init', [ $this, 'auto_fix_cpt_visibility' ], 999 );
+        \add_action( 'init', [ $this, 'force_cpt_visibility_on_init' ], 999 );
+    }
+    
+    public function force_cpt_visibility_on_init(): void {
+        global $wp_post_types;
+        
+        $manager = CptManager::instance();
+        $post_types = $manager->get_post_types();
+        
+        foreach ( $post_types as $slug => $definition ) {
+            if ( ! isset( $wp_post_types[ $slug ] ) ) {
+                continue;
+            }
+            
+            $post_type_obj = $wp_post_types[ $slug ];
+            
+            if ( ! $post_type_obj->show_in_menu || ! $post_type_obj->show_ui || ! $post_type_obj->public ) {
+                $post_type_obj->public = true;
+                $post_type_obj->show_in_menu = true;
+                $post_type_obj->show_ui = true;
+                $post_type_obj->show_in_nav_menus = true;
+                $post_type_obj->publicly_queryable = true;
+                $post_type_obj->can_export = true;
+                $post_type_obj->exclude_from_search = false;
+                
+                if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+                    \error_log( sprintf( '[SOFIR CPT] Forced visibility for CPT: %s (show_in_menu=%s, show_ui=%s, public=%s)', 
+                        $slug, 
+                        $post_type_obj->show_in_menu ? 'true' : 'false',
+                        $post_type_obj->show_ui ? 'true' : 'false',
+                        $post_type_obj->public ? 'true' : 'false'
+                    ) );
+                }
+            }
+        }
     }
     
     public function auto_fix_cpt_visibility(): void {
-        $fixed = \get_transient( 'sofir_cpt_visibility_fixed' );
-        
-        if ( $fixed ) {
+        if ( ! \function_exists( 'is_admin' ) || ! \is_admin() ) {
             return;
         }
-        
+
         $this->ensure_cpt_menus_visible();
         
-        \set_transient( 'sofir_cpt_visibility_fixed', true, DAY_IN_SECONDS );
+        $current_version = '1.0.8';
+        $rewrite_flushed = \get_option( 'sofir_cpt_rewrite_flushed', '0' );
+        
+        if ( $rewrite_flushed !== $current_version ) {
+            \flush_rewrite_rules();
+            \update_option( 'sofir_cpt_rewrite_flushed', $current_version );
+            
+            if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+                \error_log( '[SOFIR CPT] Rewrite rules flushed - version: ' . $current_version );
+            }
+        }
     }
     
     public function handle_fix_cpt_visibility(): void {
@@ -429,11 +472,19 @@ class LibraryPanel {
                 
                 $manager->save_post_type( $payload );
                 $updated = true;
+                
+                if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+                    \error_log( sprintf( '[SOFIR CPT] Updated visibility settings for: %s', $slug ) );
+                }
             }
         }
 
         if ( $updated ) {
-            \update_option( 'sofir_cpt_definitions_version', '1.0.7' );
+            \update_option( 'sofir_cpt_definitions_version', '1.0.8' );
+            
+            if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+                \error_log( '[SOFIR CPT] CPT definitions version updated to 1.0.8' );
+            }
         }
     }
 
