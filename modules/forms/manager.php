@@ -171,9 +171,61 @@ class Manager {
             $title = \sanitize_text_field( $_POST['form_title'] ?? '' );
             $fields = $_POST['form_fields'] ?? [];
             $settings = [
-                'success_message' => \sanitize_text_field( $_POST['success_message'] ?? '' ),
-                'button_text' => \sanitize_text_field( $_POST['button_text'] ?? '' ),
-                'notification_email' => \sanitize_email( $_POST['notification_email'] ?? '' ),
+                'success_message' => \sanitize_text_field( $_POST['success_message'] ?? 'Thank you for your submission!' ),
+                'button_text' => \sanitize_text_field( $_POST['button_text'] ?? 'Submit' ),
+                'notification_email' => \sanitize_email( $_POST['notification_email'] ?? \get_option( 'admin_email' ) ),
+                
+                // General tab
+                'enable_multistep' => isset( $_POST['enable_multistep'] ) ? '1' : '',
+                'enable_save_resume' => isset( $_POST['enable_save_resume'] ) ? '1' : '',
+                'enable_scheduling' => isset( $_POST['enable_scheduling'] ) ? '1' : '',
+                'schedule_start' => \sanitize_text_field( $_POST['schedule_start'] ?? '' ),
+                'schedule_end' => \sanitize_text_field( $_POST['schedule_end'] ?? '' ),
+                
+                // Notifications tab
+                'enable_admin_notification' => isset( $_POST['enable_admin_notification'] ) ? '1' : '1',
+                'notification_subject' => \sanitize_text_field( $_POST['notification_subject'] ?? 'New Form Submission' ),
+                'enable_user_notification' => isset( $_POST['enable_user_notification'] ) ? '1' : '',
+                'user_notification_subject' => \sanitize_text_field( $_POST['user_notification_subject'] ?? 'Thank you for your submission' ),
+                'user_notification_message' => \sanitize_textarea_field( $_POST['user_notification_message'] ?? 'Thank you for contacting us. We will get back to you soon.' ),
+                
+                // Confirmations tab
+                'confirmation_type' => \sanitize_text_field( $_POST['confirmation_type'] ?? 'message' ),
+                'redirect_url' => \esc_url_raw( $_POST['redirect_url'] ?? '' ),
+                'redirect_page' => (int) ( $_POST['redirect_page'] ?? 0 ),
+                
+                // Actions tab
+                'enable_post_creation' => isset( $_POST['enable_post_creation'] ) ? '1' : '',
+                'post_type' => \sanitize_text_field( $_POST['post_type'] ?? 'post' ),
+                'post_status' => \sanitize_text_field( $_POST['post_status'] ?? 'draft' ),
+                'enable_user_registration' => isset( $_POST['enable_user_registration'] ) ? '1' : '',
+                'user_role' => \sanitize_text_field( $_POST['user_role'] ?? 'subscriber' ),
+                'webhook_urls' => \sanitize_textarea_field( $_POST['webhook_urls'] ?? '' ),
+                
+                // Restrictions tab
+                'enable_submission_limit' => isset( $_POST['enable_submission_limit'] ) ? '1' : '',
+                'submission_limit' => (int) ( $_POST['submission_limit'] ?? 0 ),
+                'one_submission_per_user' => isset( $_POST['one_submission_per_user'] ) ? '1' : '',
+                'require_login' => isset( $_POST['require_login'] ) ? '1' : '',
+                'enable_recaptcha' => isset( $_POST['enable_recaptcha'] ) ? '1' : '',
+                'recaptcha_site_key' => \sanitize_text_field( $_POST['recaptcha_site_key'] ?? '' ),
+                'recaptcha_secret_key' => \sanitize_text_field( $_POST['recaptcha_secret_key'] ?? '' ),
+                
+                // Payment tab
+                'enable_payment' => isset( $_POST['enable_payment'] ) ? '1' : '',
+                'payment_currency' => \sanitize_text_field( $_POST['payment_currency'] ?? 'USD' ),
+                'stripe_secret_key' => \sanitize_text_field( $_POST['stripe_secret_key'] ?? '' ),
+                'stripe_publishable_key' => \sanitize_text_field( $_POST['stripe_publishable_key'] ?? '' ),
+                'paypal_email' => \sanitize_email( $_POST['paypal_email'] ?? '' ),
+                'paypal_sandbox' => isset( $_POST['paypal_sandbox'] ) ? '1' : '',
+                'razorpay_key_id' => \sanitize_text_field( $_POST['razorpay_key_id'] ?? '' ),
+                'razorpay_key_secret' => \sanitize_text_field( $_POST['razorpay_key_secret'] ?? '' ),
+                
+                // Advanced tab
+                'enable_quiz' => isset( $_POST['enable_quiz'] ) ? '1' : '',
+                'enable_pdf' => isset( $_POST['enable_pdf'] ) ? '1' : '',
+                'custom_css' => \sanitize_textarea_field( $_POST['custom_css'] ?? '' ),
+                'custom_js' => \sanitize_textarea_field( $_POST['custom_js'] ?? '' ),
             ];
 
             $post_data = [
