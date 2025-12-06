@@ -239,7 +239,7 @@ tail -f wp-content/debug.log
 
 4. **Expected log entries**:
 ```
-[22-Jan-2025 10:30:15 UTC] [SOFIR SEO] Calling Gemini API - URL: https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=AIza..., Temperature: 0.70
+[22-Jan-2025 10:30:15 UTC] [SOFIR SEO] Calling Gemini API - URL: https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIza..., Temperature: 0.70
 [22-Jan-2025 10:30:17 UTC] [SOFIR SEO] API response received - Length: 3421 characters
 ```
 
@@ -271,7 +271,7 @@ if ( empty( $api_key ) ) {
 ### Test API Connection
 
 ```php
-$url = 'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=' . $api_key;
+$url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' . $api_key;
 
 $response = wp_remote_post( $url, [
     'headers' => [ 'Content-Type' => 'application/json' ],

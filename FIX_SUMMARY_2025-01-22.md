@@ -146,14 +146,16 @@
    error_log( sprintf( '[SOFIR SEO] API response received - Length: %d characters', strlen( $text ) ) );
    ```
 
-7. **Updated API Endpoint**
-   ```php
-   // Before
-   private const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent';
-   
-   // After
-   private const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent';
-   ```
+7. **Updated API Endpoint & Model**
+    ```php
+    // Before (INVALID - model doesn't exist)
+    private const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent';
+
+    // After (VALID - correct model name)
+    private const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
+    ```
+
+    **Reason**: `gemini-1.5-flash-latest` model is not supported by v1beta API. The correct model name is `gemini-1.5-flash` (without `-latest` suffix).
 
 ---
 
