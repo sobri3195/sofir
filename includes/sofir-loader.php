@@ -27,6 +27,7 @@ use Sofir\Ecommerce\Manager as EcommerceManager;
 use Sofir\Restaurant\Manager as RestaurantManager;
 use Sofir\Ecourse\Manager as EcourseManager;
 use Sofir\Voxel\Manager as VoxelManager;
+use Sofir\WooCommerceAddon\Manager as WooCommerceAddonManager;
 
 class Loader {
     /** @var class-string[] */
@@ -103,6 +104,7 @@ class Loader {
             RestaurantManager::class,
             EcourseManager::class,
             VoxelManager::class,
+            WooCommerceAddonManager::class,
         ];
 
         /** @var class-string[] $modules */
