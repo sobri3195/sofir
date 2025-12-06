@@ -1092,3 +1092,143 @@
         padding: 20px;
     }
 }
+
+/* Form Builder Styles */
+.field-editor {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.field-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.field-header h3 {
+    margin: 0;
+    color: #23282d;
+    font-size: 16px;
+}
+
+.remove-field {
+    background: #d63638;
+    color: #fff;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.remove-field:hover {
+    background: #b32d2e;
+}
+
+#add-field {
+    margin-bottom: 20px;
+    background: #0073aa;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+#add-field:hover {
+    background: #006691;
+}
+
+.sofir-form-settings-tabs {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-top: 20px;
+    overflow: hidden;
+}
+
+.sofir-form-settings-tabs .nav-tab-wrapper {
+    background: #f8f9fa;
+    border-bottom: 1px solid #ddd;
+    padding: 0;
+    margin: 0;
+    display: flex;
+}
+
+.sofir-form-settings-tabs .nav-tab {
+    background: transparent;
+    border: none;
+    padding: 12px 20px;
+    font-size: 14px;
+    color: #666;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.sofir-form-settings-tabs .nav-tab:hover {
+    color: #0073aa;
+}
+
+.sofir-form-settings-tabs .nav-tab.nav-tab-active {
+    color: #0073aa;
+    background: #fff;
+    border-bottom-color: #0073aa;
+}
+
+.sofir-form-settings-tabs .tab-content {
+    padding: 24px;
+}
+
+.sofir-form-settings-tabs .tab-content[style*="display: none"] {
+    display: none !important;
+}
+
+.sofir-form-settings-tabs .tab-content[style*="display: block"] {
+    display: block !important;
+}
+
+.sofir-form-settings-tabs .form-table {
+    margin: 0;
+}
+
+.sofir-form-settings-tabs .form-table th {
+    width: 200px;
+}
+
+.scheduling-options,
+.user-notification-options,
+.post-creation-options,
+.user-registration-options {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 6px;
+    margin-top: 10px;
+    border-left: 4px solid #0073aa;
+}
+
+@media (max-width: 782px) {
+    .field-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .sofir-form-settings-tabs .nav-tab-wrapper {
+        flex-wrap: wrap;
+    }
+    
+    .sofir-form-settings-tabs .nav-tab {
+        flex: 1;
+        min-width: 120px;
+        text-align: center;
+    }
+}

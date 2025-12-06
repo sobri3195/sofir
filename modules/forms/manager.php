@@ -2205,4 +2205,127 @@ class Manager {
 
         return isset( $result['success'] ) && true === $result['success'];
     }
+
+    public function render_field_editor( int $index, array $field ): void {
+        $field_types = [
+            'text' => \\_\( 'Text', 'sofir' ),
+            'email' => \\_\( 'Email', 'sofir' ),
+            'tel' => \\_\( 'Phone', 'sofir' ),
+            'number' => \\_\( 'Number', 'sofir' ),
+            'textarea' => \\_\( 'Textarea', 'sofir' ),
+            'url' => \\_\( 'URL', 'sofir' ),
+            'password' => \\_\( 'Password', 'sofir' ),
+            'select' => \\_\( 'Select Dropdown', 'sofir' ),
+            'radio' => \\_\( 'Radio Buttons', 'sofir' ),
+            'checkbox' => \\_\( 'Checkbox', 'sofir' ),
+            'multiselect' => \\_\( 'Multi Select', 'sofir' ),
+            'date' => \\_\( 'Date', 'sofir' ),
+            'time' => \\_\( 'Time', 'sofir' ),
+            'datetime' => \\_\( 'Date & Time', 'sofir' ),
+            'file' => \\_\( 'File Upload', 'sofir' ),
+            'rating' => \\_\( 'Rating', 'sofir' ),
+            'range' => \\_\( 'Range Slider', 'sofir' ),
+            'calculation' => \\_\( 'Calculation', 'sofir' ),
+            'repeater' => \\_\( 'Repeater', 'sofir' ),
+            'terms' => \\_\( 'Terms & Conditions', 'sofir' ),
+            'payment_amount' => \\_\( 'Payment Amount', 'sofir' ),
+            'payment_method' => \\_\( 'Payment Method', 'sofir' ),
+            'hidden' => \\_\( 'Hidden', 'sofir' ),
+            'html' => \\_\( 'HTML', 'sofir' ),
+            'section' => \\_\( 'Section', 'sofir' ),
+            'signature' => \\_\( 'Signature', 'sofir' ),
+        ];
+
+        $field_type = $field['type'] ?? 'text';
+        $field_label = $field['label'] ?? '';
+        $field_name = $field['name'] ?? '';
+        $field_required = $field['required'] ?? '';
+        $field_placeholder = $field['placeholder'] ?? '';
+        $field_options = $field['options'] ?? [];
+        $field_description = $field['description'] ?? '';
+
+        ?>
+        <div class="field-editor" data-index="<?php echo \esc_attr( $index ); ?>">
+            <div class="field-header">
+                <h3><?php \esc_html_e( 'Field', 'sofir' ); ?> #<?php echo $index + 1; ?></h3>
+                <button type="button" class="button remove-field"><?php \esc_html_e( 'Remove', 'sofir' ); ?></button>
+            </div>
+            
+            <table class="form-table">
+                <tr>
+                    <th><label><?php \esc_html_e( 'Field Type', 'sofir' ); ?></label></th>
+                    <td>
+                        <select name="form_fields[<?php echo $index; ?>][type]" class="field-type-select">
+                            <?php foreach ( $field_types as $type => $label ): ?>
+                                <option value="<?php echo \esc_attr( $type ); ?>" <?php \selected( $field_type, $type ); ?>><?php echo \esc_html( $label ); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </td>
+                </tr>
+                
+                <tr>
+                    <th><label><?php \esc_html_e( 'Field Label', 'sofir' ); ?></label></th>
+                    <td><input type="text" name="form_fields[<?php echo $index; ?>][label]" value="<?php echo \esc_attr( $field_label ); ?>" class="regular-text" /></td>
+                </tr>
+                
+                <tr>
+                    <th><label><?php \esc_html_e( 'Field Name', 'sofir' ); ?></label></th>
+                    <td><input type="text" name="form_fields[<?php echo $index; ?>][name]" value="<?php echo \esc_attr( $field_name ); ?>" class="regular-text" /></td>
+                </tr>
+                
+                <tr>
+                    <th><label><?php \esc_html_e( 'Placeholder', 'sofir' ); ?></label></th>
+                    <td><input type="text" name="form_fields[<?php echo $index; ?>][placeholder]" value="<?php echo \esc_attr( $field_placeholder ); ?>" class="regular-text" /></td>
+                </tr>
+                
+                <tr class="field-options-row" style="<?php echo in_array( $field_type, [ 'select', 'radio', 'checkbox', 'multiselect', 'payment_method' ] ) ? '' : 'display:none;'; ?>">
+                    <th><label><?php \esc_html_e( 'Options', 'sofir' ); ?></label></th>
+                    <td>
+                        <textarea name="form_fields[<?php echo $index; ?>][options]" rows="4" class="large-text" placeholder="<?php \esc_attr_e( 'Enter options one per line', 'sofir' ); ?>"><?php echo \esc_textarea( implode( "\n", $field_options ) ); ?></textarea>
+                        <p class="description"><?php \esc_html_e( 'Enter one option per line', 'sofir' ); ?></p>
+                    </td>
+                </tr>
+                
+                <tr>
+                    <th><label><?php \esc_html_e( 'Required', 'sofir' ); ?></label></th>
+                    <td>
+                        <label>
+                            <input type="checkbox" name="form_fields[<?php echo $index; ?>][required]" value="1" <?php \checked( $field_required, '1' ); ?> />
+                            <?php \esc_html_e( 'Make this field required', 'sofir' ); ?>
+                        </label>
+                    </td>
+                </tr>
+                
+                <tr>
+                    <th><label><?php \esc_html_e( 'Description', 'sofir' ); ?></label></th>
+                    <td><textarea name="form_fields[<?php echo $index; ?>][description]" rows="2" class="large-text"><?php echo \esc_textarea( $field_description ); ?></textarea></td>
+                </tr>
+            </table>
+        </div>
+        <?php
+    }
+
+    public function enqueue_admin_assets(): void {
+        $screen = \get_current_screen();
+        
+        if ( $screen && ( 'sofir-forms' === $screen->base || 'sofir-forms_page_sofir-forms-new' === $screen->base ) ) {
+            \wp_enqueue_style( 'sofir-forms-admin', \plugins_url( 'assets/css/admin.css', SOFIR_PLUGIN_FILE ), [], '2.0.0' );
+            \wp_enqueue_script( 'sofir-forms-admin', \plugins_url( 'assets/js/forms.js', SOFIR_PLUGIN_FILE ), [ 'jquery' ], '2.0.0', true );
+            
+            \wp_localize_script( 'sofir-forms-admin', 'sofirForms', [
+                'ajaxUrl' => \admin_url( 'admin-ajax.php' ),
+                'nonce' => \wp_create_nonce( 'sofir_forms' ),
+            ]);
+        }
+    }
+
+    public function enqueue_frontend_assets(): void {
+        \wp_enqueue_style( 'sofir-forms-frontend', \plugins_url( 'assets/css/forms.css', SOFIR_PLUGIN_FILE ), [], '2.0.0' );
+        \wp_enqueue_script( 'sofir-forms-frontend', \plugins_url( 'assets/js/forms.js', SOFIR_PLUGIN_FILE ), [ 'jquery' ], '2.0.0', true );
+        
+        \wp_localize_script( 'sofir-forms-frontend', 'sofirForms', [
+            'ajaxUrl' => \admin_url( 'admin-ajax.php' ),
+            'nonce' => \wp_create_nonce( 'sofir_forms' ),
+        ]);
+    }
 }
