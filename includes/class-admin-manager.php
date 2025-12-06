@@ -179,7 +179,141 @@ class Manager {
     }
 
     public function render_enhancement_tab(): void {
-        echo '<p>' . \esc_html__( 'Aktifkan modul login, keamanan, performa, dan dashboard pengguna.', 'sofir' ) . '</p>';
+        $modules     = $this->get_enhancement_modules();
+        $hero_points = [
+            \__( 'Login & registrasi siap pakai untuk semua funnel.', 'sofir' ),
+            \__( 'Keamanan anti brute force + honeypot komentar otomatis.', 'sofir' ),
+            \__( 'Optimasi performa front-end tanpa konfigurasi tambahan.', 'sofir' ),
+            \__( 'Dashboard anggota dengan metrik real-time dari seluruh CPT.', 'sofir' ),
+        ];
+        $hero_tags   = [
+            \__( 'Shortcode siap pakai', 'sofir' ),
+            \__( 'REST API', 'sofir' ),
+            \__( 'Hooks untuk developer', 'sofir' ),
+            \__( 'Tanpa add-on tambahan', 'sofir' ),
+        ];
+
+        echo '<section class="sofir-enhancement">';
+        echo '<div class="sofir-enhancement__hero">';
+        echo '<p class="sofir-enhancement__eyebrow">' . \esc_html__( 'SOFIR Control Center · Enhancement', 'sofir' ) . '</p>';
+        echo '<h2>' . \esc_html__( 'Aktifkan Login, Keamanan, Performa, dan Dashboard Pengguna', 'sofir' ) . '</h2>';
+        echo '<p>' . \esc_html__( 'Semua modul di bawah ini sudah aktif otomatis. Tinggal sisipkan shortcode atau panggil REST API-nya — tidak perlu instal plugin tambahan.', 'sofir' ) . '</p>';
+
+        if ( ! empty( $hero_points ) ) {
+            echo '<ul class="sofir-enhancement__pillars">';
+            foreach ( $hero_points as $point ) {
+                echo '<li>' . \esc_html( $point ) . '</li>';
+            }
+            echo '</ul>';
+        }
+
+        if ( ! empty( $hero_tags ) ) {
+            echo '<div class="sofir-enhancement__chips">';
+            foreach ( $hero_tags as $tag ) {
+                echo '<span class="sofir-chip">' . \esc_html( $tag ) . '</span>';
+            }
+            echo '</div>';
+        }
+
+        echo '</div>';
+
+        if ( ! empty( $modules ) ) {
+            echo '<div class="sofir-enhancement__grid">';
+            foreach ( $modules as $module ) {
+                $status_class = 'sofir-module-card__status';
+
+                if ( ! empty( $module['status'] ) ) {
+                    $status_class .= ' is-' . \sanitize_html_class( (string) $module['status'] );
+                }
+
+                echo '<article class="sofir-module-card">';
+                echo '<header class="sofir-module-card__header">';
+                echo '<div class="sofir-module-card__title">';
+
+                if ( ! empty( $module['icon'] ) ) {
+                    echo '<span class="sofir-module-card__icon" aria-hidden="true">' . \esc_html( (string) $module['icon'] ) . '</span>';
+                }
+
+                echo '<div>';
+                if ( ! empty( $module['category'] ) ) {
+                    echo '<p class="sofir-module-card__category">' . \esc_html( (string) $module['category'] ) . '</p>';
+                }
+                echo '<h3>' . \esc_html( (string) $module['title'] ) . '</h3>';
+                echo '</div>';
+                echo '</div>';
+
+                if ( ! empty( $module['status_label'] ) ) {
+                    echo '<span class="' . \esc_attr( $status_class ) . '">' . \esc_html( (string) $module['status_label'] ) . '</span>';
+                }
+
+                echo '</header>';
+
+                if ( ! empty( $module['description'] ) ) {
+                    echo '<p class="sofir-module-card__description">' . \esc_html( (string) $module['description'] ) . '</p>';
+                }
+
+                if ( ! empty( $module['features'] ) && is_array( $module['features'] ) ) {
+                    echo '<ul class="sofir-module-card__features">';
+                    foreach ( $module['features'] as $feature ) {
+                        echo '<li>' . \esc_html( (string) $feature ) . '</li>';
+                    }
+                    echo '</ul>';
+                }
+
+                if ( ! empty( $module['shortcodes'] ) && is_array( $module['shortcodes'] ) ) {
+                    echo '<div class="sofir-module-card__section">';
+                    echo '<span class="sofir-module-card__label">' . \esc_html__( 'Shortcode', 'sofir' ) . '</span>';
+                    foreach ( $module['shortcodes'] as $shortcode => $label ) {
+                        echo '<div class="sofir-module-snippet">';
+                        echo '<code>' . \esc_html( (string) $shortcode ) . '</code>';
+                        echo '<p>' . \esc_html( (string) $label ) . '</p>';
+                        echo '</div>';
+                    }
+                    echo '</div>';
+                }
+
+                if ( ! empty( $module['rest'] ) && is_array( $module['rest'] ) ) {
+                    echo '<div class="sofir-module-card__section">';
+                    echo '<span class="sofir-module-card__label">' . \esc_html__( 'REST API', 'sofir' ) . '</span>';
+                    echo '<ul class="sofir-module-card__list">';
+                    foreach ( $module['rest'] as $endpoint => $label ) {
+                        echo '<li><code>' . \esc_html( (string) $endpoint ) . '</code><p>' . \esc_html( (string) $label ) . '</p></li>';
+                    }
+                    echo '</ul>';
+                    echo '</div>';
+                }
+
+                if ( ! empty( $module['filters'] ) && is_array( $module['filters'] ) ) {
+                    echo '<div class="sofir-module-card__section">';
+                    echo '<span class="sofir-module-card__label">' . \esc_html__( 'Hooks & Filters', 'sofir' ) . '</span>';
+                    echo '<ul class="sofir-module-card__list">';
+                    foreach ( $module['filters'] as $hook => $label ) {
+                        echo '<li><code>' . \esc_html( (string) $hook ) . '</code><p>' . \esc_html( (string) $label ) . '</p></li>';
+                    }
+                    echo '</ul>';
+                    echo '</div>';
+                }
+
+                if ( ! empty( $module['notes'] ) ) {
+                    echo '<p class="sofir-module-card__note">' . \esc_html( (string) $module['notes'] ) . '</p>';
+                }
+
+                echo '</article>';
+            }
+            echo '</div>';
+        }
+
+        echo '<div class="sofir-enhancement__cta">';
+        echo '<h3>' . \esc_html__( 'Langkah cepat implementasi', 'sofir' ) . '</h3>';
+        echo '<ol>';
+        echo '<li>' . \esc_html__( 'Buat halaman "Dashboard" lalu sisipkan [sofir_user_dashboard] untuk menampilkan panel pengguna.', 'sofir' ) . '</li>';
+        echo '<li>' . \esc_html__( 'Tempatkan [sofir_login_form] atau [sofir_register_form] di halaman landing/popup agar pengguna bisa login tanpa backend.', 'sofir' ) . '</li>';
+        echo '<li>' . \esc_html__( 'Aktifkan opsi "Anyone can register" di Settings → General dan hubungkan dengan modul Membership/Payments untuk akses premium.', 'sofir' ) . '</li>';
+        echo '</ol>';
+        echo '<p>' . \esc_html__( 'Tip: gunakan filter di atas untuk mengatur limit login, waktu penguncian, atau resource hints sesuai kebutuhan brand Anda.', 'sofir' ) . '</p>';
+        echo '</div>';
+
+        echo '</section>';
     }
 
     public function render_payments_tab(): void {
@@ -267,6 +401,104 @@ class Manager {
         $tabs = \apply_filters( 'sofir/admin/tabs', $tabs );
 
         return $tabs;
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function get_enhancement_modules(): array {
+        return [
+            [
+                'slug'         => 'auth',
+                'icon'         => '🔑',
+                'category'     => \__( 'Autentikasi', 'sofir' ),
+                'title'        => \__( 'Login & Registrasi Pengguna', 'sofir' ),
+                'status'       => 'active',
+                'status_label' => \__( 'Aktif otomatis', 'sofir' ),
+                'description'  => \__( 'Shortcode login, registrasi, serta REST API phone login untuk funnel membership.', 'sofir' ),
+                'features'     => [
+                    \__( 'Form login modern lengkap dengan tautan lupa password & opsi remember me.', 'sofir' ),
+                    \__( 'Registrasi email atau nomor telepon saja yang tersimpan sebagai meta sofir_phone.', 'sofir' ),
+                    \__( 'Auto login setelah registrasi dan dukungan redirect custom.', 'sofir' ),
+                ],
+                'shortcodes'   => [
+                    '[sofir_login_form redirect="/dashboard"]' => \__( 'Form login dengan redirect otomatis setelah berhasil.', 'sofir' ),
+                    '[sofir_register_form]' => \__( 'Form registrasi lengkap (username, email, telepon, password).', 'sofir' ),
+                    '[sofir_register_form phone_only="1"]' => \__( 'Mode registrasi cepat hanya menggunakan nomor telepon.', 'sofir' ),
+                    '[sofir_logout_link]' => \__( 'Tautan logout yang aman untuk area anggota.', 'sofir' ),
+                ],
+                'rest'         => [
+                    'POST /wp-json/sofir/v1/auth/register'     => \__( 'Registrasi user baru melalui REST API dan auto-login.', 'sofir' ),
+                    'POST /wp-json/sofir/v1/auth/phone-login'  => \__( 'Login menggunakan nomor telepon yang telah terdaftar.', 'sofir' ),
+                ],
+                'filters'      => [],
+                'notes'        => '',
+            ],
+            [
+                'slug'         => 'security',
+                'icon'         => '🛡️',
+                'category'     => \__( 'Keamanan', 'sofir' ),
+                'title'        => \__( 'Proteksi Login & Anti-Spam', 'sofir' ),
+                'status'       => 'active',
+                'status_label' => \__( 'Aktif otomatis', 'sofir' ),
+                'description'  => \__( 'Mengunci brute force, menambah honeypot komentar, dan memblokir upload berbahaya tanpa konfigurasi.', 'sofir' ),
+                'features'     => [
+                    \__( 'Mengunci login selama 15 menit setelah 5 percobaan gagal.', 'sofir' ),
+                    \__( 'Honeypot otomatis pada form komentar WordPress.', 'sofir' ),
+                    \__( 'Blokir upload file berbahaya (php, exe, js, bat, ps1).', 'sofir' ),
+                    \__( 'Mencatat aktivitas login terakhir ke meta sofir_last_login.', 'sofir' ),
+                ],
+                'shortcodes'   => [],
+                'rest'         => [],
+                'filters'      => [
+                    'sofir/security/max_login_attempts' => \__( 'Ubah jumlah percobaan login sebelum dikunci (default 5).', 'sofir' ),
+                    'sofir/security/lock_minutes'       => \__( 'Atur durasi penguncian dalam menit (default 15).', 'sofir' ),
+                    'sofir/security/blocked_extensions' => \__( 'Sesuaikan daftar ekstensi file yang diblokir saat upload.', 'sofir' ),
+                ],
+                'notes'        => \__( 'Pesan error dan notifikasi akan menampilkan informasi berbahasa Indonesia secara otomatis.', 'sofir' ),
+            ],
+            [
+                'slug'         => 'performance',
+                'icon'         => '⚡',
+                'category'     => \__( 'Performa', 'sofir' ),
+                'title'        => \__( 'Optimasi Front-End', 'sofir' ),
+                'status'       => 'active',
+                'status_label' => \__( 'Aktif otomatis', 'sofir' ),
+                'description'  => \__( 'Menonaktifkan skrip tidak penting, membersihkan parameter asset, dan memastikan halaman siap untuk Core Web Vitals.', 'sofir' ),
+                'features'     => [
+                    \__( 'Nonaktifkan emoji dan wp-embed agar request berkurang.', 'sofir' ),
+                    \__( 'Menghapus parameter ?ver pada CSS/JS untuk caching CDN.', 'sofir' ),
+                    \__( 'Lazy load iframe serta optimasi atribut gambar (decoding async).', 'sofir' ),
+                    \__( 'Menambahkan resource hints (preconnect/dns-prefetch) via filter.', 'sofir' ),
+                ],
+                'shortcodes'   => [],
+                'rest'         => [],
+                'filters'      => [
+                    'sofir/performance/resource_hints' => \__( 'Tambahkan daftar preconnect/dns-prefetch untuk CDN, font, atau API Anda.', 'sofir' ),
+                ],
+                'notes'        => \__( 'Gunakan filter resource hints untuk mengoptimalkan koneksi awal (contoh: fonts.googleapis.com, maps.googleapis.com).', 'sofir' ),
+            ],
+            [
+                'slug'         => 'dashboard',
+                'icon'         => '📊',
+                'category'     => \__( 'User Experience', 'sofir' ),
+                'title'        => \__( 'Dashboard Pengguna', 'sofir' ),
+                'status'       => 'active',
+                'status_label' => \__( 'Aktif otomatis', 'sofir' ),
+                'description'  => \__( 'Panel front-end untuk anggota dengan greeting personal, metrik konten, dan daftar posting terbaru.', 'sofir' ),
+                'features'     => [
+                    \__( 'Menampilkan statistik total konten, role membership, dan aktivitas terakhir.', 'sofir' ),
+                    \__( 'Mengambil data dari semua CPT SOFIR tanpa konfigurasi tambahan.', 'sofir' ),
+                    \__( 'Fallback otomatis ke [sofir_login_form] bila pengguna belum login.', 'sofir' ),
+                ],
+                'shortcodes'   => [
+                    '[sofir_user_dashboard]' => \__( 'Panel pengguna lengkap untuk halaman "Dashboard" atau "My Account".', 'sofir' ),
+                ],
+                'rest'         => [],
+                'filters'      => [],
+                'notes'        => \__( 'Gabungkan dengan modul Membership/Payments untuk memberikan akses khusus plan tertentu.', 'sofir' ),
+            ],
+        ];
     }
 
     private function get_active_tab(): string {
