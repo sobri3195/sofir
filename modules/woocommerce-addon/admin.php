@@ -351,4 +351,126 @@ class Admin {
         </div>
         <?php
     }
+
+    public function render_addons_page(): void {
+        $addons_manager = Addons_Manager::instance();
+        $addons = $addons_manager->get_addons();
+        $categories = $addons_manager->get_categories();
+
+        $current_category = isset( $_GET['category'] ) ? \sanitize_text_field( $_GET['category'] ) : 'all';
+
+        if ( isset( $_POST['save_addon_settings'] ) && \check_admin_referer( 'sofir_addon_settings' ) ) {
+            $addon_id = \sanitize_text_field( $_POST['addon_id'] );
+            $addon = $addons_manager->get_addon( $addon_id );
+
+            if ( $addon ) {
+                $settings = [];
+                foreach ( $_POST as $key => $value ) {
+                    if ( strpos( $key, 'sofir_wc_addon_' . $addon_id . '_' ) === 0 ) {
+                        $setting_key = str_replace( 'sofir_wc_addon_' . $addon_id . '_', '', $key );
+                        $settings[ $setting_key ] = \sanitize_text_field( $value );
+                    }
+                }
+                $addon->save_settings( $settings );
+                echo '<div class="notice notice-success"><p>' . esc_html__( 'Settings saved successfully.', 'sofir' ) . '</p></div>';
+            }
+        }
+
+        ?>
+        <div class="wrap sofir-wc-addon-wrapper sofir-addons-page">
+            <h1><?php esc_html_e( 'WooCommerce Addons', 'sofir' ); ?></h1>
+            <p class="description"><?php esc_html_e( 'Enable or disable modular WooCommerce features. Inspired by WPClever and WPXPO.', 'sofir' ); ?></p>
+
+            <div class="sofir-addons-filters">
+                <div class="category-tabs">
+                    <a href="<?php echo esc_url( \admin_url( 'admin.php?page=sofir-woocommerce-addon-addons&category=all' ) ); ?>" 
+                       class="category-tab <?php echo $current_category === 'all' ? 'active' : ''; ?>">
+                        <?php esc_html_e( 'All Addons', 'sofir' ); ?>
+                        <span class="count"><?php echo count( $addons ); ?></span>
+                    </a>
+                    <?php foreach ( $categories as $cat_id => $cat_name ) :
+                        $cat_addons = $addons_manager->get_addons_by_category( $cat_id );
+                        if ( empty( $cat_addons ) ) {
+                            continue;
+                        }
+                    ?>
+                    <a href="<?php echo esc_url( \admin_url( 'admin.php?page=sofir-woocommerce-addon-addons&category=' . $cat_id ) ); ?>" 
+                       class="category-tab <?php echo $current_category === $cat_id ? 'active' : ''; ?>">
+                        <?php echo esc_html( $cat_name ); ?>
+                        <span class="count"><?php echo count( $cat_addons ); ?></span>
+                    </a>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+
+            <div class="sofir-addons-grid">
+                <?php
+                $filtered_addons = $current_category === 'all' ? $addons : $addons_manager->get_addons_by_category( $current_category );
+
+                foreach ( $filtered_addons as $addon ) :
+                    $is_enabled = $addon->is_enabled();
+                    $addon_class = $is_enabled ? 'enabled' : 'disabled';
+                ?>
+                <div class="sofir-addon-card <?php echo esc_attr( $addon_class ); ?>" data-addon-id="<?php echo esc_attr( $addon->get_id() ); ?>">
+                    <div class="addon-header">
+                        <div class="addon-icon"><?php echo $addon->get_icon(); ?></div>
+                        <div class="addon-title-wrap">
+                            <h3 class="addon-title"><?php echo esc_html( $addon->get_name() ); ?></h3>
+                            <?php if ( $addon->is_pro() ) : ?>
+                            <span class="pro-badge">PRO</span>
+                            <?php endif; ?>
+                        </div>
+                        <label class="addon-toggle">
+                            <input type="checkbox" 
+                                   class="addon-toggle-input" 
+                                   data-addon-id="<?php echo esc_attr( $addon->get_id() ); ?>"
+                                   <?php checked( $is_enabled ); ?>
+                                   <?php echo $addon->is_pro() ? 'disabled' : ''; ?>>
+                            <span class="addon-toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="addon-body">
+                        <p class="addon-description"><?php echo esc_html( $addon->get_description() ); ?></p>
+                        <span class="addon-category"><?php echo esc_html( $categories[ $addon->get_category() ] ?? $addon->get_category() ); ?></span>
+                    </div>
+                    <div class="addon-footer">
+                        <?php if ( $is_enabled && ! $addon->is_pro() ) : ?>
+                        <button type="button" class="button button-secondary sofir-addon-settings-btn" data-addon-id="<?php echo esc_attr( $addon->get_id() ); ?>">
+                            ⚙️ <?php esc_html_e( 'Settings', 'sofir' ); ?>
+                        </button>
+                        <?php elseif ( $addon->is_pro() ) : ?>
+                        <a href="#" class="button button-primary disabled">
+                            🔒 <?php esc_html_e( 'Upgrade to Pro', 'sofir' ); ?>
+                        </a>
+                        <?php endif; ?>
+                    </div>
+
+                    <?php if ( $is_enabled && ! $addon->is_pro() ) : ?>
+                    <div class="addon-settings-panel" style="display: none;">
+                        <h4><?php echo esc_html( $addon->get_name() ); ?> <?php esc_html_e( 'Settings', 'sofir' ); ?></h4>
+                        <form method="post" action="">
+                            <?php \wp_nonce_field( 'sofir_addon_settings' ); ?>
+                            <input type="hidden" name="addon_id" value="<?php echo esc_attr( $addon->get_id() ); ?>">
+                            <table class="form-table">
+                                <tbody>
+                                    <?php $addon->render_settings(); ?>
+                                </tbody>
+                            </table>
+                            <p class="submit">
+                                <button type="submit" name="save_addon_settings" class="button button-primary">
+                                    <?php esc_html_e( 'Save Settings', 'sofir' ); ?>
+                                </button>
+                                <button type="button" class="button sofir-addon-settings-close">
+                                    <?php esc_html_e( 'Cancel', 'sofir' ); ?>
+                                </button>
+                            </p>
+                        </form>
+                    </div>
+                    <?php endif; ?>
+                </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+        <?php
+    }
 }

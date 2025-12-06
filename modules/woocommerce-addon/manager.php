@@ -20,6 +20,7 @@ class Manager {
         require_once SOFIR_PLUGIN_DIR . '/modules/woocommerce-addon/integration.php';
         require_once SOFIR_PLUGIN_DIR . '/modules/woocommerce-addon/admin.php';
         require_once SOFIR_PLUGIN_DIR . '/modules/woocommerce-addon/snippets.php';
+        require_once SOFIR_PLUGIN_DIR . '/modules/woocommerce-addon/addons-manager.php';
 
         \add_action( 'init', [ $this, 'initialize' ] );
         \add_action( 'admin_menu', [ $this, 'add_admin_menu' ] );
@@ -28,6 +29,7 @@ class Manager {
 
     public function initialize(): void {
         Integration::instance()->init();
+        Addons_Manager::instance();
     }
 
     public function add_admin_menu(): void {
@@ -50,6 +52,15 @@ class Manager {
             'manage_options',
             'sofir-woocommerce-addon',
             [ $this, 'render_dashboard' ]
+        );
+
+        \add_submenu_page(
+            'sofir-woocommerce-addon',
+            \__( 'Addons', 'sofir' ),
+            \__( 'Addons', 'sofir' ),
+            'manage_options',
+            'sofir-woocommerce-addon-addons',
+            [ $this, 'render_addons_page' ]
         );
 
         \add_submenu_page(
@@ -82,6 +93,10 @@ class Manager {
 
     public function render_dashboard(): void {
         Admin::instance()->render_dashboard();
+    }
+
+    public function render_addons_page(): void {
+        Admin::instance()->render_addons_page();
     }
 
     public function render_snippets_page(): void {
