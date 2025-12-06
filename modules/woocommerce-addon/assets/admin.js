@@ -246,4 +246,67 @@ jQuery(document).ready(function($) {
             });
         }, 5000);
     }
+
+    // Addons Page Scripts
+    $('.addon-toggle-input').on('change', function() {
+        const $toggle = $(this);
+        const addonId = $toggle.data('addon-id');
+        const enabled = $toggle.is(':checked');
+        const $card = $toggle.closest('.sofir-addon-card');
+
+        $.ajax({
+            url: addon.ajaxurl,
+            type: 'POST',
+            data: {
+                action: 'sofir_toggle_addon',
+                nonce: addon.nonce,
+                addon_id: addonId,
+                enabled: enabled
+            },
+            beforeSend: function() {
+                $toggle.prop('disabled', true);
+            },
+            success: function(response) {
+                if (response.success) {
+                    showNotice(response.data.message, 'success');
+                    
+                    if (enabled) {
+                        $card.removeClass('disabled').addClass('enabled');
+                        
+                        setTimeout(function() {
+                            location.reload();
+                        }, 1000);
+                    } else {
+                        $card.removeClass('enabled').addClass('disabled');
+                        $card.find('.addon-settings-panel').slideUp();
+                    }
+                } else {
+                    $toggle.prop('checked', !enabled);
+                    showNotice(response.data.message || addon.i18n.error, 'error');
+                }
+            },
+            error: function() {
+                $toggle.prop('checked', !enabled);
+                showNotice(addon.i18n.error, 'error');
+            },
+            complete: function() {
+                $toggle.prop('disabled', false);
+            }
+        });
+    });
+
+    $('.sofir-addon-settings-btn').on('click', function() {
+        const $btn = $(this);
+        const $card = $btn.closest('.sofir-addon-card');
+        const $panel = $card.find('.addon-settings-panel');
+        
+        $('.addon-settings-panel').not($panel).slideUp();
+        $panel.slideToggle();
+    });
+
+    $('.sofir-addon-settings-close').on('click', function() {
+        const $btn = $(this);
+        const $panel = $btn.closest('.addon-settings-panel');
+        $panel.slideUp();
+    });
 });
