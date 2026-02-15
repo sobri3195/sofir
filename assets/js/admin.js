@@ -443,4 +443,206 @@
             }
         }
     } );
+
+    // Form Builder JavaScript
+    if ( document.getElementById( 'sofir-form-builder' ) ) {
+        let fieldIndex = 0;
+        
+        // Initialize form builder
+        function initFormBuilder() {
+            const container = document.getElementById( 'form-fields-container' );
+            const addButton = document.getElementById( 'add-field' );
+            
+            if ( ! container || ! addButton ) return;
+            
+            // Add field button click
+            addButton.addEventListener( 'click', function() {
+                addNewField();
+            } );
+            
+            // Remove field button click
+            container.addEventListener( 'click', function( e ) {
+                if ( e.target.classList.contains( 'remove-field' ) ) {
+                    const fieldEditor = e.target.closest( '.field-editor' );
+                    if ( fieldEditor ) {
+                        fieldEditor.remove();
+                    }
+                }
+            } );
+            
+            // Field type change
+            container.addEventListener( 'change', function( e ) {
+                if ( e.target.classList.contains( 'field-type-select' ) ) {
+                    const fieldType = e.target.value;
+                    const optionsRow = e.target.closest( '.field-editor' ).querySelector( '.field-options-row' );
+                    
+                    if ( optionsRow ) {
+                        const showOptions = [ 'select', 'radio', 'checkbox', 'multiselect', 'payment_method' ].includes( fieldType );
+                        optionsRow.style.display = showOptions ? '' : 'none';
+                    }
+                }
+            } );
+            
+            // Get initial field count
+            fieldIndex = container.querySelectorAll( '.field-editor' ).length;
+        }
+        
+        // Add new field
+        function addNewField() {
+            const container = document.getElementById( 'form-fields-container' );
+            if ( ! container ) return;
+            
+            const fieldHtml = `
+                <div class="field-editor" data-index="${fieldIndex}">
+                    <div class="field-header">
+                        <h3>Field #${fieldIndex + 1}</h3>
+                        <button type="button" class="button remove-field">Remove</button>
+                    </div>
+                    
+                    <table class="form-table">
+                        <tr>
+                            <th><label>Field Type</label></th>
+                            <td>
+                                <select name="form_fields[${fieldIndex}][type]" class="field-type-select">
+                                    <option value="text">Text</option>
+                                    <option value="email">Email</option>
+                                    <option value="tel">Phone</option>
+                                    <option value="number">Number</option>
+                                    <option value="textarea">Textarea</option>
+                                    <option value="url">URL</option>
+                                    <option value="password">Password</option>
+                                    <option value="select">Select Dropdown</option>
+                                    <option value="radio">Radio Buttons</option>
+                                    <option value="checkbox">Checkbox</option>
+                                    <option value="multiselect">Multi Select</option>
+                                    <option value="date">Date</option>
+                                    <option value="time">Time</option>
+                                    <option value="datetime">Date & Time</option>
+                                    <option value="file">File Upload</option>
+                                    <option value="rating">Rating</option>
+                                    <option value="range">Range Slider</option>
+                                    <option value="calculation">Calculation</option>
+                                    <option value="repeater">Repeater</option>
+                                    <option value="terms">Terms & Conditions</option>
+                                    <option value="payment_amount">Payment Amount</option>
+                                    <option value="payment_method">Payment Method</option>
+                                    <option value="hidden">Hidden</option>
+                                    <option value="html">HTML</option>
+                                    <option value="section">Section</option>
+                                    <option value="signature">Signature</option>
+                                </select>
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <th><label>Field Label</label></th>
+                            <td><input type="text" name="form_fields[${fieldIndex}][label]" class="regular-text" /></td>
+                        </tr>
+                        
+                        <tr>
+                            <th><label>Field Name</label></th>
+                            <td><input type="text" name="form_fields[${fieldIndex}][name]" class="regular-text" /></td>
+                        </tr>
+                        
+                        <tr>
+                            <th><label>Placeholder</label></th>
+                            <td><input type="text" name="form_fields[${fieldIndex}][placeholder]" class="regular-text" /></td>
+                        </tr>
+                        
+                        <tr class="field-options-row" style="display:none;">
+                            <th><label>Options</label></th>
+                            <td>
+                                <textarea name="form_fields[${fieldIndex}][options]" rows="4" class="large-text" placeholder="Enter options one per line"></textarea>
+                                <p class="description">Enter one option per line</p>
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <th><label>Required</label></th>
+                            <td>
+                                <label>
+                                    <input type="checkbox" name="form_fields[${fieldIndex}][required]" value="1" />
+                                    Make this field required
+                                </label>
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <th><label>Description</label></th>
+                            <td><textarea name="form_fields[${fieldIndex}][description]" rows="2" class="large-text"></textarea></td>
+                        </tr>
+                    </table>
+                </div>
+            `;
+            
+            container.insertAdjacentHTML( 'beforeend', fieldHtml );
+            fieldIndex++;
+        }
+        
+        // Initialize form builder
+        initFormBuilder();
+    }
+    
+    // Form settings tabs
+    const tabs = document.querySelectorAll( '.sofir-form-settings-tabs .nav-tab' );
+    const tabContents = document.querySelectorAll( '.tab-content' );
+    
+    if ( tabs.length > 0 && tabContents.length > 0 ) {
+        tabs.forEach( function( tab ) {
+            tab.addEventListener( 'click', function( e ) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute( 'href' ).substring( 1 );
+                
+                // Remove active class from all tabs and contents
+                tabs.forEach( function( t ) {
+                    t.classList.remove( 'nav-tab-active' );
+                } );
+                tabContents.forEach( function( content ) {
+                    content.style.display = 'none';
+                } );
+                
+                // Add active class to clicked tab
+                this.classList.add( 'nav-tab-active' );
+                
+                // Show target content
+                const targetContent = document.getElementById( targetId );
+                if ( targetContent ) {
+                    targetContent.style.display = 'block';
+                }
+            } );
+        } );
+    }
+    
+    // Conditional logic for checkboxes
+    const checkboxes = document.querySelectorAll( 'input[type="checkbox"][name*="enable_"]' );
+    checkboxes.forEach( function( checkbox ) {
+        const optionsDiv = checkbox.closest( 'tr' ).querySelector( 'div[class*="-options"]' );
+        if ( optionsDiv ) {
+            checkbox.addEventListener( 'change', function() {
+                optionsDiv.style.display = this.checked ? '' : 'none';
+            } );
+            
+            // Initialize visibility
+            optionsDiv.style.display = checkbox.checked ? '' : 'none';
+        }
+    } );
+    
+    // Confirmation type change
+    const confirmationType = document.querySelector( 'select[name="confirmation_type"]' );
+    if ( confirmationType ) {
+        function updateConfirmationOptions() {
+            const type = confirmationType.value;
+            const messageRow = document.querySelector( '.confirmation-message-row' );
+            const redirectRow = document.querySelector( '.confirmation-redirect-row' );
+            const pageRow = document.querySelector( '.confirmation-page-row' );
+            
+            if ( messageRow ) messageRow.style.display = type === 'message' ? '' : 'none';
+            if ( redirectRow ) redirectRow.style.display = type === 'redirect' ? '' : 'none';
+            if ( pageRow ) pageRow.style.display = type === 'page' ? '' : 'none';
+        }
+        
+        confirmationType.addEventListener( 'change', updateConfirmationOptions );
+        updateConfirmationOptions();
+    }
 } )();
